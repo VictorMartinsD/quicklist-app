@@ -1,0 +1,19 @@
+/* Lógica de Carregamento (FOUC) */
+body {
+  opacity: 0;
+}
+
+.ready body {
+  opacity: 1;
+  transition: opacity 0s ease-in;
+}
+
+/* Definições globais dos SVGs */
+.icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  color: inherit;
+  transition: color 0.2s ease;
+}
