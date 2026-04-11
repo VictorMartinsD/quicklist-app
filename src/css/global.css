@@ -1,3 +1,25 @@
+:root {
+  --background-primary: #f4f5fb;
+  --background-secondary: #ffffff;
+  --color-brand: #ca3884;
+  --color-brand-hover: #a52c6b;
+  --color-danger: #c93847;
+  --content-primary: #080b12;
+  --content-secondary: #374151;
+  --content-tertiary: #9ca3af;
+  --always-white: #ffffff;
+  --border-primary: #d1d5db;
+  --border-hover: #b9c2d0;
+
+  --font-family-inter: "Inter", sans-serif;
+  --font-family-sora: "Sora", sans-serif;
+
+  --title: 700 24px/32px var(--font-family-inter);
+  --label: 600 16px/20px var(--font-family-inter);
+  --paragraph: 500 16px/20px var(--font-family-inter);
+  --link: 500 14px/16px var(--font-family-inter);
+}
+
 /* Lógica de Carregamento (FOUC) */
 body {
   opacity: 0;
@@ -16,6 +38,11 @@ body {
   vertical-align: middle;
   color: inherit;
   transition: color 0.2s ease;
+}
+
+body {
+  font: var(--paragraph);
+  color: var(--content-secondary);
 }
 
 #logo {
