@@ -14,6 +14,9 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Sora:wght@700&display=swap"
+      rel="stylesheet" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Quicklist - Gerenciador de Compras Inteligente" />
@@ -50,5 +53,57 @@
       }
     </script>
   </head>
-  <body></body>
+  <body>
+    <header class="logo-name desktop-only">
+      <svg id="logo" aria-hidden="true" focusable="false">
+        <use href="assets/img/icons.svg#logo"></use>
+      </svg>
+      <h1 class="brand">quicklist</h1>
+    </header>
+
+    <div class="grid gap-16">
+      <a href="#" class="return">&lt;- Voltar</a>
+      <h2 class="title">Compras da semana</h2>
+    </div>
+
+    <main>
+      <div class="new-item flex gap-16">
+        <input id="item" type="text" placeholder="Adicione um novo item" aria-label="Adicione um novo item" />
+        <button class="btn-add-item">Adicionar item</button>
+      </div>
+
+      <div class="items grid gap-12">
+        <div class="item-added flex gap-12 hidden">
+          <input type="checkbox" />
+          <p class="shopping-item"></p>
+          <button class="icon-button" type="button" aria-label="Apagar item.">
+            <svg id="trash" class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/img/icons.svg#trash"></use>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="alert-footer-stack">
+        <div class="alert flex gap-8 hidden">
+          <svg id="warning" class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#warning"></use>
+          </svg>
+          <p class="alert-message">O item foi removido da lista</p>
+          <button class="icon-button" type="button" aria-label="Fechar alerta de remoção.">
+            <svg id="delete" class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/img/icons.svg#delete"></use>
+            </svg>
+          </button>
+        </div>
+
+        <footer class="site-footer">
+          <p>
+            Crafted with precision by
+            <a href="https://github.com/VictorMartinsD" target="_blank" rel="noopener noreferrer">Victor Martins Dias</a>
+            © 2026
+          </p>
+        </footer>
+      </div>
+  </body>
 </html>
