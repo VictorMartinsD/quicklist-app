@@ -29,12 +29,15 @@ body {
 img,
 picture,
 video,
-canvas,
-svg {
+canvas {
   display: block;
   max-width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+svg {
+  display: block;
 }
 
 /* 5. Remove estilos de lista e links */
