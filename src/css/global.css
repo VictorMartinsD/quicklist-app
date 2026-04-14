@@ -31,9 +31,15 @@ body {
 }
 
 /* Definições globais dos SVGs */
+html,
+body {
+  overflow-x: hidden;
+}
+
 .icon {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
   display: inline-block;
   vertical-align: middle;
   color: inherit;
@@ -43,21 +49,241 @@ body {
 body {
   font: var(--paragraph);
   color: var(--content-secondary);
+  margin: 0;
+  padding-block: 25px;
+  width: min(100% - 64px, 627px);
+  margin-inline: auto;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 #logo {
   width: 31px;
   height: 24px;
+  flex-shrink: 0;
+  color: var(--color-brand);
+}
+
+.logo-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.brand {
+  color: var(--content-secondary);
+  font: 700 27px/40px var(--font-family-sora);
+  letter-spacing: -0.02em;
+}
+
+.return {
+  display: inline-block;
+  margin-top: 62px;
+  font: var(--link);
+  color: var(--color-brand);
+}
+
+.title {
+  font: var(--title);
+  color: var(--content-primary);
+}
+
+.new-item {
+  margin: 44px 0 40px 0;
+}
+
+#item {
+  width: 100%;
+  max-width: 451px;
+  padding: 11px 18px;
+  border: 2px solid var(--border-primary);
+  border-radius: 12px;
+  box-sizing: border-box;
+  font: var(--label);
+  color: var(--content-tertiary);
+}
+
+#item:hover {
+  border-color: var(--border-hover);
+}
+
+#item:focus-visible {
+  border-color: var(--color-brand);
+  outline: none;
+}
+
+.btn-add-item {
+  width: 160px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background-color: var(--color-brand);
+  border: 1px solid var(--color-brand);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font: var(--label);
+  color: var(--always-white);
+  cursor: pointer;
+}
+
+.btn-add-item:hover {
+  background-color: var(--color-brand-hover);
+}
+
+.items {
+  margin: 42px 0 36px 0;
+}
+
+.item-added {
+  justify-content: center;
+  align-items: center;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: var(--always-white);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--border-hover);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  border-right: 1.6px solid var(--always-white);
+  border-bottom: 1.6px solid var(--always-white);
+  transform: rotate(45deg);
+  margin-top: -1px;
+}
+
+.shopping-item {
+  max-width: 531px;
+  width: 100%;
+  margin: 8px 12px;
+}
+
+#trash {
+  color: #6b6671;
+  width: 16px;
+}
+
+.alert {
+  background-color: var(--color-danger);
+  padding: 12px;
+  border-radius: 12px;
+  color: var(--always-white);
+}
+
+#warning,
+#delete {
+  color: var(--always-white);
+}
+
+.alert .icon-button {
+  margin-left: auto;
+}
+
+.alert-message {
+  font: var(--label);
 }
 
 .icon-button {
-  appearance: none;
+  border: none;
   background: none;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  line-height: 1;
   cursor: pointer;
+}
+
+.alert-footer-stack {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.site-footer {
+  padding-top: 20px;
+  text-align: center;
+  font: 500 12px/16px var(--font-family-inter);
+  color: var(--content-tertiary);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible {
+  color: var(--color-brand);
+}
+
+.alert.is-hidden {
+  visibility: hidden;
+}
+
+@media (max-width: 40em) {
+  body {
+    width: auto;
+    margin: 0;
+    padding: 34px 32px;
+    min-height: 100dvh;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .title {
+    text-align: center;
+  }
+
+  .new-item {
+    display: grid;
+    flex-wrap: wrap;
+  }
+
+  #item {
+    width: 100%;
+    max-width: none;
+  }
+
+  .btn-add-item {
+    width: 100%;
+  }
+
+  .shopping-item {
+    margin: 12px;
+  }
+}
+
+@media (max-width: 14.0625em) {
+  .btn-add-item {
+    white-space: normal;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
 }
