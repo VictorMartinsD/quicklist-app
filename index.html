@@ -68,42 +68,50 @@
 
     <main>
       <div class="new-item flex gap-16">
-        <input id="item" type="text" placeholder="Adicione um novo item" aria-label="Adicione um novo item" />
+        <input
+          id="item"
+          type="text"
+          placeholder="Adicione um novo item"
+          aria-label="Adicione um novo item"
+          maxlength="240" />
         <button class="btn-add-item">Adicionar item</button>
       </div>
 
-      <div class="items grid gap-12">
-        <div class="item-added flex gap-12 hidden">
-          <input type="checkbox" />
-          <p class="shopping-item"></p>
-          <button class="icon-button" type="button" aria-label="Apagar item.">
-            <svg id="trash" class="icon" aria-hidden="true" focusable="false">
-              <use href="assets/img/icons.svg#trash"></use>
-            </svg>
-          </button>
+      <div class="items-scroll">
+        <div class="items grid gap-12">
+          <div class="item-added flex gap-12 hidden">
+            <input type="checkbox" />
+            <p class="shopping-item"></p>
+            <button class="icon-button" type="button" aria-label="Apagar item.">
+              <svg id="trash" class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/img/icons.svg#trash"></use>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
+    </main>
 
-      <div class="alert-footer-stack">
-        <div class="alert flex gap-8 hidden">
-          <svg id="warning" class="icon" aria-hidden="true" focusable="false">
-            <use href="assets/img/icons.svg#warning"></use>
+    <div class="alert-footer-stack">
+      <div class="alert flex gap-8 hidden">
+        <svg id="warning" class="icon" aria-hidden="true" focusable="false">
+          <use href="assets/img/icons.svg#warning"></use>
+        </svg>
+        <p class="alert-message">O item foi removido da lista</p>
+        <button class="icon-button" type="button" aria-label="Fechar alerta de remoção.">
+          <svg id="delete" class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#delete"></use>
           </svg>
-          <p class="alert-message">O item foi removido da lista</p>
-          <button class="icon-button" type="button" aria-label="Fechar alerta de remoção.">
-            <svg id="delete" class="icon" aria-hidden="true" focusable="false">
-              <use href="assets/img/icons.svg#delete"></use>
-            </svg>
-          </button>
-        </div>
-
-        <footer class="site-footer">
-          <p>
-            Crafted with precision by
-            <a href="https://github.com/VictorMartinsD" target="_blank" rel="noopener noreferrer">Victor Martins Dias</a>
-            © 2026
-          </p>
-        </footer>
+        </button>
       </div>
+
+      <footer class="site-footer">
+        <p>
+          Crafted with precision by
+          <a href="https://github.com/VictorMartinsD" target="_blank" rel="noopener noreferrer">Victor Martins Dias</a>
+          © 2026
+        </p>
+      </footer>
+    </div>
   </body>
 </html>

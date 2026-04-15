@@ -60,7 +60,10 @@ body {
 }
 
 main {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 #logo {
@@ -143,13 +146,27 @@ main {
 
 .item-added {
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.items-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding-right: 4px;
 }
 
 input[type="checkbox"] {
   appearance: none;
+  flex: 0 0 16px;
   width: 16px;
   height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  max-width: 16px;
+  max-height: 16px;
   border: 1px solid var(--border-primary);
   border-radius: 6px;
   background: var(--always-white);
@@ -178,9 +195,24 @@ input[type="checkbox"]:checked::after {
 }
 
 .shopping-item {
-  max-width: 531px;
-  width: 100%;
-  margin: 8px 12px;
+  flex: 1 1 260px;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.item-added .icon-button {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 #trash {
@@ -266,6 +298,35 @@ input[type="checkbox"]:checked::after {
     flex-wrap: wrap;
   }
 
+  .item-added {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "checkbox . trash"
+      "item item item";
+    align-items: start;
+    row-gap: 8px;
+  }
+
+  .item-added input[type="checkbox"] {
+    grid-area: checkbox;
+    align-self: start;
+    justify-self: start;
+    margin-top: 2px;
+  }
+
+  .item-added .shopping-item {
+    grid-area: item;
+    margin: 0;
+  }
+
+  .item-added .icon-button {
+    grid-area: trash;
+    align-self: start;
+    margin-left: 0;
+    margin-top: 2px;
+  }
+
   #item {
     width: 100%;
     max-width: none;
@@ -273,10 +334,6 @@ input[type="checkbox"]:checked::after {
 
   .btn-add-item {
     width: 100%;
-  }
-
-  .shopping-item {
-    margin: 12px;
   }
 }
 
