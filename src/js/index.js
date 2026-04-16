@@ -62,6 +62,22 @@ function handleAddItem() {
 
 btnAddItem.addEventListener("click", handleAddItem);
 
+itemsContainer.addEventListener("click", (event) => {
+  const removeButton = event.target.closest(".icon-button");
+
+  if (!removeButton) {
+    return;
+  }
+
+  const itemElement = removeButton.closest(".item-added");
+
+  if (!itemElement || itemElement.classList.contains("hidden")) {
+    return;
+  }
+
+  itemElement.remove();
+});
+
 validationCloseButton.addEventListener("click", closeValidationModal);
 
 validationModal.addEventListener("click", (event) => {
