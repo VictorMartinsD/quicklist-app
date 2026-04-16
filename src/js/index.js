@@ -7,6 +7,30 @@ import { clamp, escapeHTML, formatCurrencyBRL, formatDate, generateId } from "./
 
 const input = document.querySelector("#item");
 const btnAddItem = document.querySelector(".btn-add-item");
+const validationModal = document.querySelector(".validation-modal");
+const validationCloseButton = document.querySelector(".validation-modal__close");
+
+let validationTimeoutId = null;
+
+function closeValidationModal() {
+  validationModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+  window.clearTimeout(validationTimeoutId);
+  validationTimeoutId = null;
+  input.focus();
+}
+
+function openValidationModal(message) {
+  const modalMessage = validationModal.querySelector("#validation-modal-description");
+
+  modalMessage.textContent = message;
+  validationModal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  validationCloseButton.focus();
+
+  window.clearTimeout(validationTimeoutId);
+  validationTimeoutId = window.setTimeout(closeValidationModal, 3200);
+}
 
 btnAddItem.addEventListener("click", () => {
   const text = input.value.trim();
@@ -17,7 +41,21 @@ btnAddItem.addEventListener("click", () => {
     input.value = "";
     input.focus();
   } else {
-    alert("Por favor, digite algo!");
+    openValidationModal("Digite o nome do item antes de adicionar à lista.");
+  }
+});
+
+validationCloseButton.addEventListener("click", closeValidationModal);
+
+validationModal.addEventListener("click", (event) => {
+  if (event.target === validationModal) {
+    closeValidationModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !validationModal.classList.contains("hidden")) {
+    closeValidationModal();
   }
 });
 

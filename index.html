@@ -92,6 +92,32 @@
       </div>
     </main>
 
+    <div
+      class="validation-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="validation-modal-title"
+      aria-describedby="validation-modal-description">
+      <div class="validation-modal__panel">
+        <div class="validation-modal__icon" aria-hidden="true">
+          <svg class="icon" focusable="false">
+            <use href="assets/img/icons.svg#warning"></use>
+          </svg>
+        </div>
+
+        <div class="validation-modal__content">
+          <h3 id="validation-modal-title">Campo obrigatório</h3>
+          <p id="validation-modal-description">Digite o nome do item antes de adicionar à lista.</p>
+        </div>
+
+        <button class="icon-button validation-modal__close" type="button" aria-label="Fechar aviso">
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#delete"></use>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div class="alert-footer-stack">
       <div class="alert flex gap-8 hidden">
         <svg id="warning" class="icon" aria-hidden="true" focusable="false">

@@ -273,8 +273,73 @@ input[type="checkbox"]:checked::after {
   color: var(--color-brand);
 }
 
+.validation-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 11, 18, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.validation-modal__panel {
+  width: min(100%, 420px);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(209, 213, 219, 0.85);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf7fb 100%);
+  box-shadow: 0 24px 80px rgba(8, 11, 18, 0.24);
+}
+
+.validation-modal__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(201, 56, 71, 0.12);
+  color: var(--color-danger);
+}
+
+.validation-modal__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.validation-modal__content h3 {
+  margin-bottom: 6px;
+  font: var(--label);
+  color: var(--content-primary);
+}
+
+.validation-modal__content p {
+  color: var(--content-secondary);
+}
+
+.validation-modal__close {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--content-tertiary);
+}
+
+.validation-modal__close:hover,
+.validation-modal__close:focus-visible {
+  color: var(--color-brand);
+}
+
 .alert.is-hidden {
   visibility: hidden;
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 
 @media (max-width: 40em) {
@@ -334,6 +399,14 @@ input[type="checkbox"]:checked::after {
 
   .btn-add-item {
     width: 100%;
+  }
+
+  .validation-modal {
+    padding: 16px;
+  }
+
+  .validation-modal__panel {
+    padding: 20px;
   }
 }
 
