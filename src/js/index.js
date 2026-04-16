@@ -11,8 +11,12 @@ const itemsContainer = document.querySelector(".items");
 const itemTemplate = document.querySelector(".item-added.hidden");
 const validationModal = document.querySelector(".validation-modal");
 const validationCloseButton = document.querySelector(".validation-modal__close");
+const removalAlert = document.querySelector(".alert");
+const removalAlertMessage = removalAlert.querySelector(".alert-message");
+const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 
 let validationTimeoutId = null;
+let removalAlertTimeoutId = null;
 
 function closeValidationModal() {
   validationModal.classList.add("hidden");
@@ -32,6 +36,19 @@ function openValidationModal(message) {
 
   window.clearTimeout(validationTimeoutId);
   validationTimeoutId = window.setTimeout(closeValidationModal, 3200);
+}
+
+function closeRemovalAlert() {
+  removalAlert.classList.add("hidden");
+  window.clearTimeout(removalAlertTimeoutId);
+  removalAlertTimeoutId = null;
+}
+
+function openRemovalAlert(message) {
+  removalAlertMessage.textContent = message;
+  removalAlert.classList.remove("hidden");
+  window.clearTimeout(removalAlertTimeoutId);
+  removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
 }
 
 function createListItemElement(itemText) {
@@ -75,8 +92,18 @@ itemsContainer.addEventListener("click", (event) => {
     return;
   }
 
+  const removedItemText = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
   itemElement.remove();
+
+  if (removedItemText) {
+    openRemovalAlert(`"${removedItemText}" foi removido da lista.`);
+    return;
+  }
+
+  openRemovalAlert("O item foi removido da lista.");
 });
+
+removalAlertCloseButton.addEventListener("click", closeRemovalAlert);
 
 validationCloseButton.addEventListener("click", closeValidationModal);
 
