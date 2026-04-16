@@ -3,10 +3,12 @@
   DESCRIÇÃO: Script principal para funcionalidades do site.
 */
 
-import { clamp, escapeHTML, formatCurrencyBRL, formatDate, generateId } from "./utils.js";
+import { generateId } from "./utils.js";
 
 const input = document.querySelector("#item");
 const btnAddItem = document.querySelector(".btn-add-item");
+const itemsContainer = document.querySelector(".items");
+const itemTemplate = document.querySelector(".item-added.hidden");
 const validationModal = document.querySelector(".validation-modal");
 const validationCloseButton = document.querySelector(".validation-modal__close");
 
@@ -32,18 +34,33 @@ function openValidationModal(message) {
   validationTimeoutId = window.setTimeout(closeValidationModal, 3200);
 }
 
-btnAddItem.addEventListener("click", () => {
+function createListItemElement(itemText) {
+  const newItemElement = itemTemplate.cloneNode(true);
+  newItemElement.classList.remove("hidden");
+
+  const shoppingItemText = newItemElement.querySelector(".shopping-item");
+  shoppingItemText.textContent = itemText;
+
+  newItemElement.dataset.itemId = generateId();
+
+  return newItemElement;
+}
+
+function handleAddItem() {
   const text = input.value.trim();
 
   if (text !== "") {
-    console.log("Texto capturado:", text);
+    const newItem = createListItemElement(text);
+    itemsContainer.prepend(newItem);
 
     input.value = "";
     input.focus();
   } else {
     openValidationModal("Digite o nome do item antes de adicionar à lista.");
   }
-});
+}
+
+btnAddItem.addEventListener("click", handleAddItem);
 
 validationCloseButton.addEventListener("click", closeValidationModal);
 
@@ -59,8 +76,8 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
+input.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
     btnAddItem.click();
   }
 });
