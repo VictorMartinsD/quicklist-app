@@ -14,6 +14,7 @@ const validationCloseButton = document.querySelector(".validation-modal__close")
 const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
+const ITEMS_STORAGE_KEY = "quicklist:items";
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
@@ -51,14 +52,58 @@ function openRemovalAlert(message) {
   removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
 }
 
-function createListItemElement(itemText) {
+function saveItemsToStorage() {
+  const currentItems = [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")].map((itemElement) => {
+    const text = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+
+    return {
+      id: itemElement.dataset.itemId,
+      text,
+    };
+  });
+
+  localStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify(currentItems));
+}
+
+function loadItemsFromStorage() {
+  const storedItemsRaw = localStorage.getItem(ITEMS_STORAGE_KEY);
+
+  if (!storedItemsRaw) {
+    return;
+  }
+
+  let storedItems;
+
+  try {
+    storedItems = JSON.parse(storedItemsRaw);
+  } catch {
+    localStorage.removeItem(ITEMS_STORAGE_KEY);
+    return;
+  }
+
+  if (!Array.isArray(storedItems)) {
+    localStorage.removeItem(ITEMS_STORAGE_KEY);
+    return;
+  }
+
+  storedItems.forEach((storedItem) => {
+    if (!storedItem || typeof storedItem.text !== "string" || !storedItem.text.trim()) {
+      return;
+    }
+
+    const newItem = createListItemElement(storedItem.text.trim(), storedItem.id);
+    itemsContainer.append(newItem);
+  });
+}
+
+function createListItemElement(itemText, itemId = generateId()) {
   const newItemElement = itemTemplate.cloneNode(true);
   newItemElement.classList.remove("hidden");
 
   const shoppingItemText = newItemElement.querySelector(".shopping-item");
   shoppingItemText.textContent = itemText;
 
-  newItemElement.dataset.itemId = generateId();
+  newItemElement.dataset.itemId = itemId;
 
   return newItemElement;
 }
@@ -69,6 +114,7 @@ function handleAddItem() {
   if (text !== "") {
     const newItem = createListItemElement(text);
     itemsContainer.prepend(newItem);
+    saveItemsToStorage();
 
     input.value = "";
     input.focus();
@@ -94,6 +140,7 @@ itemsContainer.addEventListener("click", (event) => {
 
   const removedItemText = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
   itemElement.remove();
+  saveItemsToStorage();
 
   if (removedItemText) {
     openRemovalAlert(`"${removedItemText}" foi removido da lista.`);
@@ -124,3 +171,5 @@ input.addEventListener("keydown", (event) => {
     btnAddItem.click();
   }
 });
+
+loadItemsFromStorage();
