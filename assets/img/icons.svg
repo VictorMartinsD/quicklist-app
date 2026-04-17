@@ -18,6 +18,12 @@
     <path d="M12.0831 13.75V8.75" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
   </symbol>
 
+  <symbol id="move" viewBox="0 0 20 20" fill="none">
+    <path d="M10 2.5V17.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6.66663 5.83333L9.99996 2.5L13.3333 5.83333" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6.66663 14.1667L9.99996 17.5L13.3333 14.1667" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
 
   <symbol id="warning" viewBox="0 0 20 20" fill="none">
     <g clip-path="url(#clip0_3114_663)">

@@ -18,6 +18,7 @@ const ITEMS_STORAGE_KEY = "quicklist:items";
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
+let draggedItemElement = null;
 
 function closeValidationModal() {
   validationModal.classList.add("hidden");
@@ -108,6 +109,24 @@ function createListItemElement(itemText, itemId = generateId()) {
   return newItemElement;
 }
 
+function getItemAfterPointerPosition(pointerY) {
+  const listItems = [...itemsContainer.querySelectorAll(".item-added:not(.hidden):not(.is-dragging)")];
+
+  return listItems.reduce(
+    (closestItem, currentItem) => {
+      const itemRect = currentItem.getBoundingClientRect();
+      const pointerOffset = pointerY - itemRect.top - itemRect.height / 2;
+
+      if (pointerOffset < 0 && pointerOffset > closestItem.offset) {
+        return { offset: pointerOffset, element: currentItem };
+      }
+
+      return closestItem;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null },
+  ).element;
+}
+
 function handleAddItem() {
   const text = input.value.trim();
 
@@ -148,6 +167,64 @@ itemsContainer.addEventListener("click", (event) => {
   }
 
   openRemovalAlert("O item foi removido da lista.");
+});
+
+itemsContainer.addEventListener("dragstart", (event) => {
+  const dragHandle = event.target.closest(".drag-handle");
+
+  if (!dragHandle) {
+    event.preventDefault();
+    return;
+  }
+
+  draggedItemElement = dragHandle.closest(".item-added");
+
+  if (!draggedItemElement || draggedItemElement.classList.contains("hidden")) {
+    event.preventDefault();
+    return;
+  }
+
+  draggedItemElement.classList.add("is-dragging");
+  document.body.classList.add("is-grabbing");
+
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", draggedItemElement.dataset.itemId || "");
+});
+
+itemsContainer.addEventListener("dragover", (event) => {
+  if (!draggedItemElement) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const nextItem = getItemAfterPointerPosition(event.clientY);
+
+  if (!nextItem) {
+    itemsContainer.append(draggedItemElement);
+    return;
+  }
+
+  itemsContainer.insertBefore(draggedItemElement, nextItem);
+});
+
+itemsContainer.addEventListener("drop", (event) => {
+  if (!draggedItemElement) {
+    return;
+  }
+
+  event.preventDefault();
+  saveItemsToStorage();
+});
+
+itemsContainer.addEventListener("dragend", () => {
+  if (!draggedItemElement) {
+    return;
+  }
+
+  draggedItemElement.classList.remove("is-dragging");
+  document.body.classList.remove("is-grabbing");
+  draggedItemElement = null;
 });
 
 removalAlertCloseButton.addEventListener("click", closeRemovalAlert);

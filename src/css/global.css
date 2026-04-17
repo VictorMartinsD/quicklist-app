@@ -150,6 +150,10 @@ main {
   flex-wrap: nowrap;
 }
 
+.item-added.is-dragging {
+  opacity: 0.55;
+}
+
 .items-scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -173,6 +177,39 @@ input[type="checkbox"] {
   cursor: pointer;
   display: grid;
   place-content: center;
+}
+
+.drag-handle {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  color: var(--content-tertiary);
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-handle:active,
+body.is-grabbing .drag-handle {
+  cursor: grabbing;
+}
+
+body.is-grabbing {
+  cursor: grabbing;
+}
+
+#move {
+  width: 16px;
+  height: 16px;
+  color: var(--content-tertiary);
+}
+
+.drag-handle:hover,
+.drag-handle:focus-visible {
+  color: var(--content-secondary);
 }
 
 input[type="checkbox"]:hover {
@@ -365,12 +402,19 @@ body.modal-open {
 
   .item-added {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto auto 1fr auto;
     grid-template-areas:
-      "checkbox . trash"
-      "item item item";
+      "handle checkbox . trash"
+      "item item item item";
     align-items: start;
     row-gap: 8px;
+  }
+
+  .item-added .drag-handle {
+    grid-area: handle;
+    align-self: start;
+    justify-self: start;
+    margin-top: 2px;
   }
 
   .item-added input[type="checkbox"] {
