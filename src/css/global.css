@@ -293,6 +293,8 @@ input[type="checkbox"]:checked::after {
   padding: 12px;
   border-radius: 12px;
   color: var(--always-white);
+  align-items: center;
+  min-width: 0;
 }
 
 #warning,
@@ -306,6 +308,11 @@ input[type="checkbox"]:checked::after {
 
 .alert-message {
   font: var(--label);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-button {

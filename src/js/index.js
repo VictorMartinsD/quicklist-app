@@ -96,6 +96,7 @@ function closeRemovalAlert() {
 
 function openRemovalAlert(message) {
   removalAlertMessage.textContent = message;
+  removalAlertMessage.title = message;
   removalAlert.classList.remove("hidden");
   window.clearTimeout(removalAlertTimeoutId);
   removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
@@ -213,7 +214,7 @@ itemsContainer.addEventListener("click", (event) => {
   updateClearAllButtonVisibility();
 
   if (removedItemText) {
-    openRemovalAlert(`"${removedItemText}" foi removido da lista.`);
+    openRemovalAlert(`Removido da lista: "${removedItemText}".`);
     return;
   }
 
