@@ -11,6 +11,12 @@ const itemsContainer = document.querySelector(".items");
 const itemTemplate = document.querySelector(".item-added.hidden");
 const validationModal = document.querySelector(".validation-modal");
 const validationCloseButton = document.querySelector(".validation-modal__close");
+const clearAllButton = document.querySelector(".btn-clear-all");
+const clearModal = document.querySelector(".clear-modal");
+const clearModalDescription = document.querySelector("#clear-modal-description");
+const clearModalCloseButton = document.querySelector(".clear-modal__close");
+const clearModalCancelButton = document.querySelector(".btn-clear-cancel");
+const clearModalConfirmButton = document.querySelector(".btn-clear-confirm");
 const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
@@ -38,6 +44,48 @@ function openValidationModal(message) {
 
   window.clearTimeout(validationTimeoutId);
   validationTimeoutId = window.setTimeout(closeValidationModal, 3200);
+}
+
+function getVisibleItems() {
+  return [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")];
+}
+
+function updateClearAllButtonVisibility() {
+  const totalItems = getVisibleItems().length;
+  clearAllButton.classList.toggle("is-hidden", totalItems < 2);
+}
+
+function closeClearModal() {
+  clearModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+
+function openClearModal() {
+  const totalItems = getVisibleItems().length;
+
+  if (totalItems < 2) {
+    return;
+  }
+
+  clearModalDescription.textContent = `Tem certeza que deseja apagar ${totalItems} itens da lista?`;
+  clearModal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  clearModalCloseButton.focus();
+}
+
+function clearAllItems() {
+  const listItems = getVisibleItems();
+
+  if (listItems.length < 2) {
+    closeClearModal();
+    return;
+  }
+
+  listItems.forEach((itemElement) => itemElement.remove());
+  saveItemsToStorage();
+  updateClearAllButtonVisibility();
+  closeClearModal();
+  openRemovalAlert("Todos os itens foram removidos da lista.");
 }
 
 function closeRemovalAlert() {
@@ -103,6 +151,7 @@ function createListItemElement(itemText, itemId = generateId()) {
 
   const shoppingItemText = newItemElement.querySelector(".shopping-item");
   shoppingItemText.textContent = itemText;
+  shoppingItemText.title = itemText;
 
   newItemElement.dataset.itemId = itemId;
 
@@ -134,6 +183,7 @@ function handleAddItem() {
     const newItem = createListItemElement(text);
     itemsContainer.prepend(newItem);
     saveItemsToStorage();
+    updateClearAllButtonVisibility();
 
     input.value = "";
     input.focus();
@@ -160,6 +210,7 @@ itemsContainer.addEventListener("click", (event) => {
   const removedItemText = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
   itemElement.remove();
   saveItemsToStorage();
+  updateClearAllButtonVisibility();
 
   if (removedItemText) {
     openRemovalAlert(`"${removedItemText}" foi removido da lista.`);
@@ -227,6 +278,20 @@ itemsContainer.addEventListener("dragend", () => {
   draggedItemElement = null;
 });
 
+clearAllButton.addEventListener("click", openClearModal);
+
+clearModalCloseButton.addEventListener("click", closeClearModal);
+
+clearModalCancelButton.addEventListener("click", closeClearModal);
+
+clearModalConfirmButton.addEventListener("click", clearAllItems);
+
+clearModal.addEventListener("click", (event) => {
+  if (event.target === clearModal) {
+    closeClearModal();
+  }
+});
+
 removalAlertCloseButton.addEventListener("click", closeRemovalAlert);
 
 validationCloseButton.addEventListener("click", closeValidationModal);
@@ -238,6 +303,11 @@ validationModal.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !clearModal.classList.contains("hidden")) {
+    closeClearModal();
+    return;
+  }
+
   if (event.key === "Escape" && !validationModal.classList.contains("hidden")) {
     closeValidationModal();
   }
@@ -250,3 +320,4 @@ input.addEventListener("keydown", (event) => {
 });
 
 loadItemsFromStorage();
+updateClearAllButtonVisibility();

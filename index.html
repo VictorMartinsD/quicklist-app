@@ -77,6 +77,12 @@
         <button class="btn-add-item">Adicionar item</button>
       </div>
 
+      <div class="bulk-clear-slot">
+        <button class="btn-clear-all is-hidden" type="button" aria-label="Apagar todos os itens da lista.">
+          Apagar todos
+        </button>
+      </div>
+
       <div class="items-scroll">
         <div class="items grid gap-12">
           <div class="item-added flex gap-12 hidden">
@@ -120,6 +126,29 @@
             <use href="assets/img/icons.svg#delete"></use>
           </svg>
         </button>
+      </div>
+    </div>
+
+    <div
+      class="clear-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="clear-modal-title"
+      aria-describedby="clear-modal-description">
+      <div class="clear-modal__panel">
+        <button class="icon-button clear-modal__close" type="button" aria-label="Fechar confirmação de exclusão.">
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#delete"></use>
+          </svg>
+        </button>
+
+        <h3 id="clear-modal-title">Apagar todos os itens</h3>
+        <p id="clear-modal-description">Tem certeza que deseja apagar os itens da lista?</p>
+
+        <div class="clear-modal__actions">
+          <button class="btn-clear-cancel" type="button">Cancelar</button>
+          <button class="btn-clear-confirm" type="button">Confirmar</button>
+        </div>
       </div>
     </div>
 
