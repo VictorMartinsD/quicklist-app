@@ -7,6 +7,7 @@ import { generateId } from "./utils.js";
 
 const input = document.querySelector("#item");
 const btnAddItem = document.querySelector(".btn-add-item");
+const btnNewCategory = document.querySelector(".btn-new-category");
 const itemsContainer = document.querySelector(".items");
 const itemTemplate = document.querySelector(".item-added.hidden");
 const validationModal = document.querySelector(".validation-modal");
@@ -25,7 +26,10 @@ const ITEMS_STORAGE_KEY = "quicklist:items";
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
 let draggedItemElement = null;
+let draggedRows = [];
 let activeEditableItem = null;
+let clearModalMode = "all";
+let categoryRowsToDelete = [];
 
 function closeValidationModal() {
   validationModal.classList.add("hidden");
@@ -51,6 +55,94 @@ function getVisibleItems() {
   return [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")];
 }
 
+function getVisibleRows() {
+  return getVisibleItems();
+}
+
+function isCategoryRow(rowElement) {
+  return rowElement?.dataset?.rowType === "category";
+}
+
+function getNextCategoryNumber() {
+  const categoryRows = getVisibleRows().filter((rowElement) => isCategoryRow(rowElement));
+
+  const highestCategoryNumber = categoryRows.reduce((highest, rowElement) => {
+    const categoryText = rowElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+    const matchedNumber = categoryText.match(/^Lista\s+(\d+)$/i);
+
+    if (!matchedNumber) {
+      return highest;
+    }
+
+    const numericValue = Number(matchedNumber[1]);
+    return Number.isNaN(numericValue) ? highest : Math.max(highest, numericValue);
+  }, 0);
+
+  return highestCategoryNumber + 1;
+}
+
+function refreshCategoryStructure() {
+  const visibleRows = getVisibleRows();
+  let previousRow = null;
+  let currentCategoryLevel = -1;
+
+  visibleRows.forEach((rowElement) => {
+    if (isCategoryRow(rowElement)) {
+      const previousLevel = Number(previousRow?.dataset?.categoryLevel || 0);
+      const categoryLevel = previousRow && isCategoryRow(previousRow) ? previousLevel + 1 : 0;
+
+      rowElement.dataset.categoryLevel = String(categoryLevel);
+      rowElement.style.setProperty("--category-level", String(categoryLevel));
+      rowElement.classList.add("is-under-category");
+      currentCategoryLevel = categoryLevel;
+    } else {
+      const inheritedLevel = currentCategoryLevel >= 0 ? currentCategoryLevel : 0;
+
+      rowElement.style.setProperty("--category-level", String(inheritedLevel));
+      rowElement.classList.toggle("is-under-category", currentCategoryLevel >= 0);
+    }
+
+    previousRow = rowElement;
+  });
+}
+
+function getCategoryScopeRows(categoryRowElement) {
+  if (!categoryRowElement || !isCategoryRow(categoryRowElement)) {
+    return { rows: [], hasSubcategories: false };
+  }
+
+  refreshCategoryStructure();
+
+  const visibleRows = getVisibleRows();
+  const startIndex = visibleRows.indexOf(categoryRowElement);
+
+  if (startIndex === -1) {
+    return { rows: [], hasSubcategories: false };
+  }
+
+  const baseLevel = Number(categoryRowElement.dataset.categoryLevel || 0);
+  const scopedRows = [categoryRowElement];
+  let hasSubcategories = false;
+
+  for (let index = startIndex + 1; index < visibleRows.length; index += 1) {
+    const rowElement = visibleRows[index];
+
+    if (isCategoryRow(rowElement)) {
+      const rowLevel = Number(rowElement.dataset.categoryLevel || 0);
+
+      if (rowLevel <= baseLevel) {
+        break;
+      }
+
+      hasSubcategories = true;
+    }
+
+    scopedRows.push(rowElement);
+  }
+
+  return { rows: scopedRows, hasSubcategories };
+}
+
 function updateClearAllButtonVisibility() {
   const totalItems = getVisibleItems().length;
   clearAllButton.classList.toggle("is-hidden", totalItems < 2);
@@ -59,6 +151,8 @@ function updateClearAllButtonVisibility() {
 function closeClearModal() {
   clearModal.classList.add("hidden");
   document.body.classList.remove("modal-open");
+  clearModalMode = "all";
+  categoryRowsToDelete = [];
 }
 
 function openClearModal() {
@@ -69,6 +163,27 @@ function openClearModal() {
   }
 
   clearModalDescription.textContent = `Tem certeza que deseja apagar ${totalItems} itens da lista?`;
+  clearModalMode = "all";
+  categoryRowsToDelete = [];
+  clearModal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  clearModalCloseButton.focus();
+}
+
+function openCategoryClearModal(categoryRowElement) {
+  const { rows, hasSubcategories } = getCategoryScopeRows(categoryRowElement);
+
+  if (!rows.length) {
+    return;
+  }
+
+  categoryRowsToDelete = rows;
+  clearModalMode = "category";
+
+  clearModalDescription.textContent = hasSubcategories
+    ? "Tem certeza que deseja apagar os itens dessa categoria e suas sub-categorias correspondentes?"
+    : "Tem certeza que deseja apagar os itens dessa categoria?";
+
   clearModal.classList.remove("hidden");
   document.body.classList.add("modal-open");
   clearModalCloseButton.focus();
@@ -89,6 +204,20 @@ function clearAllItems() {
   openRemovalAlert("Todos os itens foram removidos da lista.");
 }
 
+function clearCategoryItems() {
+  if (!categoryRowsToDelete.length) {
+    closeClearModal();
+    return;
+  }
+
+  categoryRowsToDelete.forEach((rowElement) => rowElement.remove());
+  refreshCategoryStructure();
+  saveItemsToStorage();
+  updateClearAllButtonVisibility();
+  closeClearModal();
+  openRemovalAlert("Categoria removida com sucesso.");
+}
+
 function closeRemovalAlert() {
   removalAlert.classList.add("hidden");
   window.clearTimeout(removalAlertTimeoutId);
@@ -106,10 +235,13 @@ function openRemovalAlert(message) {
 function saveItemsToStorage() {
   const currentItems = [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")].map((itemElement) => {
     const text = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+    const checkboxElement = itemElement.querySelector('input[type="checkbox"]');
 
     return {
       id: itemElement.dataset.itemId,
+      rowType: itemElement.dataset.rowType || "item",
       text,
+      checked: Boolean(checkboxElement?.checked),
     };
   });
 
@@ -142,9 +274,22 @@ function loadItemsFromStorage() {
       return;
     }
 
-    const newItem = createListItemElement(storedItem.text.trim(), storedItem.id);
+    const rowType = storedItem.rowType === "category" ? "category" : "item";
+    const newItem =
+      rowType === "category"
+        ? createCategoryElement(storedItem.text.trim(), storedItem.id)
+        : createListItemElement(storedItem.text.trim(), storedItem.id);
+
+    const checkboxElement = newItem.querySelector('input[type="checkbox"]');
+
+    if (checkboxElement) {
+      checkboxElement.checked = Boolean(storedItem.checked);
+    }
+
     itemsContainer.append(newItem);
   });
+
+  refreshCategoryStructure();
 }
 
 function createListItemElement(itemText, itemId = generateId()) {
@@ -159,8 +304,63 @@ function createListItemElement(itemText, itemId = generateId()) {
   shoppingItemText.setAttribute("aria-label", `Renomear item: ${itemText}`);
 
   newItemElement.dataset.itemId = itemId;
+  newItemElement.dataset.rowType = "item";
+  newItemElement.classList.remove("category-added");
+
+  const checkboxElement = newItemElement.querySelector('input[type="checkbox"]');
+
+  if (checkboxElement) {
+    checkboxElement.setAttribute("aria-label", `Marcar item: ${itemText}`);
+  }
+
+  const removeButton = newItemElement.querySelector(".icon-button");
+
+  if (removeButton) {
+    removeButton.setAttribute("aria-label", "Apagar item.");
+  }
 
   return newItemElement;
+}
+
+function createCategoryElement(categoryText, categoryId = generateId()) {
+  const newCategoryElement = createListItemElement(categoryText, categoryId);
+  newCategoryElement.dataset.rowType = "category";
+  newCategoryElement.classList.add("category-added");
+
+  const shoppingItemText = newCategoryElement.querySelector(".shopping-item");
+
+  if (shoppingItemText) {
+    shoppingItemText.setAttribute("aria-label", `Renomear categoria: ${categoryText}`);
+  }
+
+  const checkboxElement = newCategoryElement.querySelector('input[type="checkbox"]');
+
+  if (checkboxElement) {
+    checkboxElement.setAttribute("aria-label", `Marcar itens da categoria: ${categoryText}`);
+  }
+
+  const removeButton = newCategoryElement.querySelector(".icon-button");
+
+  if (removeButton) {
+    removeButton.setAttribute("aria-label", "Apagar categoria.");
+  }
+
+  return newCategoryElement;
+}
+
+function handleAddCategory() {
+  const typedCategoryName = normalizeItemText(input.value);
+  const nextCategoryName = `Lista ${getNextCategoryNumber()}`;
+  const categoryName = typedCategoryName || nextCategoryName;
+  const newCategory = createCategoryElement(categoryName);
+
+  itemsContainer.prepend(newCategory);
+  refreshCategoryStructure();
+  saveItemsToStorage();
+  updateClearAllButtonVisibility();
+
+  input.value = "";
+  newCategory.querySelector(".shopping-item")?.focus();
 }
 
 function normalizeItemText(text) {
@@ -175,10 +375,24 @@ function finishItemEditing(shoppingItemText, shouldCancel = false) {
   const originalText = shoppingItemText.dataset.originalText || "";
   const editedText = normalizeItemText(shoppingItemText.textContent || "");
   const finalText = shouldCancel || !editedText ? originalText : editedText;
+  const rowElement = shoppingItemText.closest(".item-added");
+  const isCategory = isCategoryRow(rowElement);
 
   shoppingItemText.textContent = finalText;
   shoppingItemText.title = finalText;
-  shoppingItemText.setAttribute("aria-label", `Renomear item: ${finalText}`);
+  shoppingItemText.setAttribute(
+    "aria-label",
+    isCategory ? `Renomear categoria: ${finalText}` : `Renomear item: ${finalText}`,
+  );
+
+  const rowCheckbox = rowElement?.querySelector('input[type="checkbox"]');
+
+  if (rowCheckbox) {
+    rowCheckbox.setAttribute(
+      "aria-label",
+      isCategory ? `Marcar itens da categoria: ${finalText}` : `Marcar item: ${finalText}`,
+    );
+  }
   shoppingItemText.removeAttribute("contenteditable");
   shoppingItemText.removeAttribute("spellcheck");
   shoppingItemText.classList.remove("is-editing");
@@ -252,6 +466,7 @@ function handleAddItem() {
   if (text !== "") {
     const newItem = createListItemElement(text);
     itemsContainer.prepend(newItem);
+    refreshCategoryStructure();
     saveItemsToStorage();
     updateClearAllButtonVisibility();
 
@@ -263,6 +478,7 @@ function handleAddItem() {
 }
 
 btnAddItem.addEventListener("click", handleAddItem);
+btnNewCategory.addEventListener("click", handleAddCategory);
 
 itemsContainer.addEventListener("click", (event) => {
   const removeButton = event.target.closest(".icon-button");
@@ -277,8 +493,14 @@ itemsContainer.addEventListener("click", (event) => {
     return;
   }
 
+  if (isCategoryRow(itemElement)) {
+    openCategoryClearModal(itemElement);
+    return;
+  }
+
   const removedItemText = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
   itemElement.remove();
+  refreshCategoryStructure();
   saveItemsToStorage();
   updateClearAllButtonVisibility();
 
@@ -349,6 +571,44 @@ itemsContainer.addEventListener("focusout", (event) => {
   finishItemEditing(shoppingItemText);
 });
 
+itemsContainer.addEventListener("change", (event) => {
+  const checkboxElement = event.target.closest('input[type="checkbox"]');
+
+  if (!checkboxElement) {
+    return;
+  }
+
+  const rowElement = checkboxElement.closest(".item-added");
+
+  if (!rowElement || rowElement.classList.contains("hidden")) {
+    return;
+  }
+
+  if (!isCategoryRow(rowElement)) {
+    saveItemsToStorage();
+    return;
+  }
+
+  const visibleRows = getVisibleRows();
+  const categoryIndex = visibleRows.indexOf(rowElement);
+
+  for (let index = categoryIndex + 1; index < visibleRows.length; index += 1) {
+    const scopedRow = visibleRows[index];
+
+    if (isCategoryRow(scopedRow)) {
+      break;
+    }
+
+    const scopedCheckbox = scopedRow.querySelector('input[type="checkbox"]');
+
+    if (scopedCheckbox) {
+      scopedCheckbox.checked = checkboxElement.checked;
+    }
+  }
+
+  saveItemsToStorage();
+});
+
 itemsContainer.addEventListener("dragstart", (event) => {
   const dragHandle = event.target.closest(".drag-handle");
 
@@ -364,7 +624,18 @@ itemsContainer.addEventListener("dragstart", (event) => {
     return;
   }
 
-  draggedItemElement.classList.add("is-dragging");
+  if (activeEditableItem) {
+    finishItemEditing(activeEditableItem);
+  }
+
+  if (isCategoryRow(draggedItemElement)) {
+    const { rows } = getCategoryScopeRows(draggedItemElement);
+    draggedRows = rows.length ? rows : [draggedItemElement];
+  } else {
+    draggedRows = [draggedItemElement];
+  }
+
+  draggedRows.forEach((rowElement) => rowElement.classList.add("is-dragging"));
   document.body.classList.add("is-grabbing");
 
   event.dataTransfer.effectAllowed = "move";
@@ -380,12 +651,19 @@ itemsContainer.addEventListener("dragover", (event) => {
 
   const nextItem = getItemAfterPointerPosition(event.clientY);
 
-  if (!nextItem) {
-    itemsContainer.append(draggedItemElement);
+  if (nextItem && draggedRows.includes(nextItem)) {
     return;
   }
 
-  itemsContainer.insertBefore(draggedItemElement, nextItem);
+  const draggedFragment = document.createDocumentFragment();
+  draggedRows.forEach((rowElement) => draggedFragment.append(rowElement));
+
+  if (!nextItem) {
+    itemsContainer.append(draggedFragment);
+    return;
+  }
+
+  itemsContainer.insertBefore(draggedFragment, nextItem);
 });
 
 itemsContainer.addEventListener("drop", (event) => {
@@ -394,6 +672,7 @@ itemsContainer.addEventListener("drop", (event) => {
   }
 
   event.preventDefault();
+  refreshCategoryStructure();
   saveItemsToStorage();
 });
 
@@ -402,8 +681,10 @@ itemsContainer.addEventListener("dragend", () => {
     return;
   }
 
-  draggedItemElement.classList.remove("is-dragging");
+  draggedRows.forEach((rowElement) => rowElement.classList.remove("is-dragging"));
   document.body.classList.remove("is-grabbing");
+  refreshCategoryStructure();
+  draggedRows = [];
   draggedItemElement = null;
 });
 
@@ -413,7 +694,14 @@ clearModalCloseButton.addEventListener("click", closeClearModal);
 
 clearModalCancelButton.addEventListener("click", closeClearModal);
 
-clearModalConfirmButton.addEventListener("click", clearAllItems);
+clearModalConfirmButton.addEventListener("click", () => {
+  if (clearModalMode === "category") {
+    clearCategoryItems();
+    return;
+  }
+
+  clearAllItems();
+});
 
 clearModal.addEventListener("click", (event) => {
   if (event.target === clearModal) {
@@ -443,10 +731,18 @@ document.addEventListener("keydown", (event) => {
 });
 
 input.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    btnAddItem.click();
+  if (event.key !== "Enter") {
+    return;
   }
+
+  if (event.ctrlKey) {
+    btnAddItem.click();
+    return;
+  }
+
+  btnNewCategory.click();
 });
 
 loadItemsFromStorage();
+refreshCategoryStructure();
 updateClearAllButtonVisibility();
