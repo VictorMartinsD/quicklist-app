@@ -107,7 +107,7 @@ main {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  margin-bottom: 0;
+  margin-bottom: 12px;
 }
 
 .bulk-actions {
@@ -578,10 +578,6 @@ body.modal-open {
     min-height: 100dvh;
   }
 
-  .desktop-only {
-    display: none;
-  }
-
   .title {
     text-align: center;
   }
@@ -666,5 +662,24 @@ body.modal-open {
     white-space: normal;
     line-height: 1.2;
     overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 25em) {
+  .bulk-clear-slot {
+    min-height: auto;
+    margin-bottom: 16px;
+  }
+
+  .bulk-clear-slot .bulk-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .bulk-clear-slot .btn-new-category,
+  .bulk-clear-slot .btn-clear-all {
+    width: 100%;
   }
 }
