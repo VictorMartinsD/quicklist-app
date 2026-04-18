@@ -8,6 +8,8 @@ import { generateId } from "./utils.js";
 const input = document.querySelector("#item");
 const btnAddItem = document.querySelector(".btn-add-item");
 const btnNewCategory = document.querySelector(".btn-new-category");
+const btnSelectAll = document.querySelector(".btn-select-all");
+const btnManageLists = document.querySelector(".btn-manage-lists");
 const bulkClearSlot = document.querySelector(".bulk-clear-slot");
 const bulkActionsToggle = document.querySelector(".bulk-actions-toggle");
 const itemsContainer = document.querySelector(".items");
@@ -35,19 +37,28 @@ let activeEditableItem = null;
 let clearModalMode = "all";
 let categoryRowsToDelete = [];
 
+function isMobileViewport() {
+  return window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
+}
+
 function updateBulkActionsToggleState(isExpanded) {
   if (!bulkClearSlot || !bulkActionsToggle) {
     return;
   }
 
   const iconUseElement = bulkActionsToggle.querySelector("use");
+  const isMobile = isMobileViewport();
 
-  bulkClearSlot.classList.toggle("is-collapsed", !isExpanded);
+  if (isMobile) {
+    bulkClearSlot.classList.toggle("is-collapsed", !isExpanded);
+    bulkClearSlot.classList.remove("is-extra-open");
+  } else {
+    bulkClearSlot.classList.remove("is-collapsed");
+    bulkClearSlot.classList.toggle("is-extra-open", isExpanded);
+  }
+
   bulkActionsToggle.setAttribute("aria-expanded", String(isExpanded));
-  bulkActionsToggle.setAttribute(
-    "aria-label",
-    isExpanded ? "Ocultar acoes de categoria" : "Mostrar acoes de categoria",
-  );
+  bulkActionsToggle.setAttribute("aria-label", isExpanded ? "Ocultar acoes adicionais" : "Mostrar acoes adicionais");
 
   if (iconUseElement) {
     iconUseElement.setAttribute(
@@ -62,8 +73,7 @@ function syncBulkActionsByViewport() {
     return;
   }
 
-  const isMobile = window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
-  updateBulkActionsToggleState(!isMobile);
+  updateBulkActionsToggleState(false);
 }
 
 function closeValidationModal() {
@@ -92,6 +102,47 @@ function getVisibleItems() {
 
 function getVisibleRows() {
   return getVisibleItems();
+}
+
+function getVisibleCheckboxes() {
+  return getVisibleRows()
+    .map((rowElement) => rowElement.querySelector('input[type="checkbox"]'))
+    .filter(Boolean);
+}
+
+function updateSelectAllButtonState() {
+  if (!btnSelectAll) {
+    return;
+  }
+
+  const visibleCheckboxes = getVisibleCheckboxes();
+  const hasCheckboxes = visibleCheckboxes.length > 0;
+  const areAllSelected = hasCheckboxes && visibleCheckboxes.every((checkboxElement) => checkboxElement.checked);
+
+  btnSelectAll.classList.toggle("is-all-selected", areAllSelected);
+  btnSelectAll.disabled = !hasCheckboxes;
+  btnSelectAll.setAttribute(
+    "aria-label",
+    areAllSelected ? "Desmarcar todos os itens e categorias." : "Selecionar todos os itens e categorias.",
+  );
+}
+
+function handleToggleSelectAll() {
+  const visibleCheckboxes = getVisibleCheckboxes();
+
+  if (!visibleCheckboxes.length) {
+    return;
+  }
+
+  const areAllSelected = visibleCheckboxes.every((checkboxElement) => checkboxElement.checked);
+  const shouldSelectAll = !areAllSelected;
+
+  visibleCheckboxes.forEach((checkboxElement) => {
+    checkboxElement.checked = shouldSelectAll;
+  });
+
+  saveItemsToStorage();
+  updateSelectAllButtonState();
 }
 
 function isCategoryRow(rowElement) {
@@ -180,6 +231,7 @@ function getCategoryScopeRows(categoryRowElement) {
 
 function updateClearAllButtonVisibility() {
   clearAllButton.classList.remove("is-hidden");
+  updateSelectAllButtonState();
 }
 
 function closeClearModal() {
@@ -647,6 +699,7 @@ itemsContainer.addEventListener("change", (event) => {
   }
 
   saveItemsToStorage();
+  updateSelectAllButtonState();
 });
 
 itemsContainer.addEventListener("dragstart", (event) => {
@@ -778,6 +831,12 @@ input.addEventListener("keydown", (event) => {
 bulkActionsToggle?.addEventListener("click", () => {
   const isCurrentlyExpanded = bulkActionsToggle.getAttribute("aria-expanded") === "true";
   updateBulkActionsToggleState(!isCurrentlyExpanded);
+});
+
+btnSelectAll?.addEventListener("click", handleToggleSelectAll);
+
+btnManageLists?.addEventListener("click", () => {
+  openValidationModal("A funcionalidade Gerenciar listas sera implementada em breve.");
 });
 
 window.addEventListener("resize", syncBulkActionsByViewport);

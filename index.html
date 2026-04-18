@@ -78,22 +78,30 @@
       </div>
 
       <div class="bulk-clear-slot">
-        <button
-          class="bulk-actions-toggle"
-          type="button"
-          aria-label="Mostrar ações de categoria"
-          aria-expanded="false"
-          aria-controls="bulk-actions-list">
-          <svg class="icon" aria-hidden="true" focusable="false">
-            <use href="assets/img/icons.svg#chevron-down"></use>
-          </svg>
-        </button>
-
         <div class="bulk-actions flex gap-12" id="bulk-actions-list">
           <button class="btn-new-category" type="button" aria-label="Criar nova categoria de itens.">
             Nova Categoria
           </button>
           <button class="btn-clear-all" type="button" aria-label="Apagar todos os itens da lista.">Apagar todos</button>
+        </div>
+
+        <button
+          class="bulk-actions-toggle"
+          type="button"
+          aria-label="Mostrar ações adicionais"
+          aria-expanded="false"
+          aria-controls="bulk-actions-list bulk-extra-actions">
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#chevron-down"></use>
+          </svg>
+        </button>
+
+        <div class="bulk-extra-actions flex gap-12" id="bulk-extra-actions">
+          <button class="btn-select-all" type="button" aria-label="Selecionar todos os itens e categorias.">
+            <span class="btn-select-all__label btn-select-all__label--select">Selecionar todos</span>
+            <span class="btn-select-all__label btn-select-all__label--unselect">Desmarcar todos</span>
+          </button>
+          <button class="btn-manage-lists" type="button" aria-label="Gerenciar listas.">Gerenciar listas</button>
         </div>
       </div>
 
