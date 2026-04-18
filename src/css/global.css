@@ -267,10 +267,11 @@ main {
 }
 
 .item-added {
+  position: relative;
   justify-content: center;
   align-items: center;
   flex-wrap: nowrap;
-  padding-left: calc(var(--category-level, 0) * 16px);
+  padding-left: 12px;
   border-left: 2px solid transparent;
 }
 
@@ -279,16 +280,19 @@ main {
 }
 
 .item-added.category-added {
-  position: relative;
-  margin-top: 8px;
-  padding: 10px 0 8px calc(var(--category-level, 0) * 16px);
+  margin-top: 0;
+  padding: 10px 0 8px 12px;
   border-top: 1px solid rgba(156, 163, 175, 0.45);
   border-left-color: var(--color-brand);
   background: linear-gradient(90deg, rgba(202, 56, 132, 0.08), transparent 66%);
 }
 
-.item-added.category-added + .item-added.category-added {
-  margin-top: 0;
+.item-added.category-added.is-subcategory-chain {
+  border-top-color: transparent;
+}
+
+.item-added.category-added.is-grouped {
+  border-top-color: transparent;
 }
 
 .item-added.category-added .shopping-item {
@@ -298,6 +302,34 @@ main {
 
 .item-added.is-under-category:not(.category-added) {
   border-left-color: rgba(202, 56, 132, 0.34);
+}
+
+.item-added.is-group-continuation {
+  margin-top: -12px;
+}
+
+.item-added.is-grouped::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+  border-left: 1px solid rgba(156, 163, 175, 0.32);
+  border-right: 1px solid rgba(156, 163, 175, 0.32);
+  pointer-events: none;
+}
+
+.item-added.is-group-first::after {
+  border-top: 1px solid rgba(156, 163, 175, 0.32);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.item-added.is-group-last::after {
+  border-bottom: 1px solid rgba(156, 163, 175, 0.32);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .items-scroll {
@@ -396,10 +428,11 @@ input[type="checkbox"]:checked::after {
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  max-height: 72px;
+  overflow: clip;
+  max-height: calc(3 * 20px + 12px);
   text-overflow: ellipsis;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
   white-space: normal;
   transition:
     border-color 0.18s ease,
@@ -429,6 +462,7 @@ input[type="checkbox"]:checked::after {
 .item-added .icon-button {
   flex-shrink: 0;
   margin-left: auto;
+  margin-right: 14px;
   display: grid;
   place-content: center;
 }
@@ -690,6 +724,7 @@ body.modal-open {
   .item-added .icon-button {
     align-self: center;
     margin-left: 0;
+    margin-right: 14px;
     justify-self: end;
   }
 

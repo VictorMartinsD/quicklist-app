@@ -28,6 +28,7 @@ const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const ITEMS_STORAGE_KEY = "quicklist:items";
 const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
+const ITEM_NAME_MAX_LENGTH = 84;
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
@@ -36,6 +37,8 @@ let draggedRows = [];
 let activeEditableItem = null;
 let clearModalMode = "all";
 let categoryRowsToDelete = [];
+
+input.maxLength = ITEM_NAME_MAX_LENGTH;
 
 function isMobileViewport() {
   return window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
@@ -173,6 +176,17 @@ function refreshCategoryStructure() {
   let currentCategoryLevel = -1;
 
   visibleRows.forEach((rowElement) => {
+    rowElement.classList.remove(
+      "is-grouped",
+      "is-group-first",
+      "is-group-last",
+      "is-group-continuation",
+      "is-subcategory-chain",
+    );
+    delete rowElement.dataset.groupId;
+  });
+
+  visibleRows.forEach((rowElement) => {
     if (isCategoryRow(rowElement)) {
       const previousLevel = Number(previousRow?.dataset?.categoryLevel || 0);
       const categoryLevel = previousRow && isCategoryRow(previousRow) ? previousLevel + 1 : 0;
@@ -189,6 +203,55 @@ function refreshCategoryStructure() {
     }
 
     previousRow = rowElement;
+  });
+
+  let currentGroupId = -1;
+
+  visibleRows.forEach((rowElement, index) => {
+    const previousVisibleRow = visibleRows[index - 1] || null;
+
+    if (isCategoryRow(rowElement)) {
+      const categoryLevel = Number(rowElement.dataset.categoryLevel || 0);
+
+      if (categoryLevel === 0) {
+        currentGroupId += 1;
+      }
+
+      if (previousVisibleRow && isCategoryRow(previousVisibleRow)) {
+        rowElement.classList.add("is-subcategory-chain");
+      }
+    }
+
+    if (currentGroupId >= 0 && rowElement.classList.contains("is-under-category")) {
+      rowElement.dataset.groupId = String(currentGroupId);
+      rowElement.classList.add("is-grouped");
+    }
+  });
+
+  const groupedRowsById = new Map();
+
+  visibleRows.forEach((rowElement) => {
+    const groupId = rowElement.dataset.groupId;
+
+    if (!groupId) {
+      return;
+    }
+
+    const groupedRows = groupedRowsById.get(groupId) || [];
+    groupedRows.push(rowElement);
+    groupedRowsById.set(groupId, groupedRows);
+  });
+
+  groupedRowsById.forEach((groupedRows) => {
+    const firstRow = groupedRows[0];
+    const lastRow = groupedRows[groupedRows.length - 1];
+
+    firstRow.classList.add("is-group-first");
+    lastRow.classList.add("is-group-last");
+
+    groupedRows.slice(1).forEach((groupedRow) => {
+      groupedRow.classList.add("is-group-continuation");
+    });
   });
 }
 
@@ -362,15 +425,21 @@ function loadItemsFromStorage() {
   }
 
   storedItems.forEach((storedItem) => {
-    if (!storedItem || typeof storedItem.text !== "string" || !storedItem.text.trim()) {
+    if (!storedItem || typeof storedItem.text !== "string") {
+      return;
+    }
+
+    const normalizedText = normalizeItemText(storedItem.text);
+
+    if (!normalizedText) {
       return;
     }
 
     const rowType = storedItem.rowType === "category" ? "category" : "item";
     const newItem =
       rowType === "category"
-        ? createCategoryElement(storedItem.text.trim(), storedItem.id)
-        : createListItemElement(storedItem.text.trim(), storedItem.id);
+        ? createCategoryElement(normalizedText, storedItem.id)
+        : createListItemElement(normalizedText, storedItem.id);
 
     const checkboxElement = newItem.querySelector('input[type="checkbox"]');
 
@@ -387,13 +456,14 @@ function loadItemsFromStorage() {
 function createListItemElement(itemText, itemId = generateId()) {
   const newItemElement = itemTemplate.cloneNode(true);
   newItemElement.classList.remove("hidden");
+  const normalizedItemText = normalizeItemText(itemText);
 
   const shoppingItemText = newItemElement.querySelector(".shopping-item");
-  shoppingItemText.textContent = itemText;
-  shoppingItemText.title = itemText;
+  shoppingItemText.textContent = normalizedItemText;
+  shoppingItemText.title = normalizedItemText;
   shoppingItemText.tabIndex = 0;
   shoppingItemText.setAttribute("role", "button");
-  shoppingItemText.setAttribute("aria-label", `Renomear item: ${itemText}`);
+  shoppingItemText.setAttribute("aria-label", `Renomear item: ${normalizedItemText}`);
 
   newItemElement.dataset.itemId = itemId;
   newItemElement.dataset.rowType = "item";
@@ -402,7 +472,7 @@ function createListItemElement(itemText, itemId = generateId()) {
   const checkboxElement = newItemElement.querySelector('input[type="checkbox"]');
 
   if (checkboxElement) {
-    checkboxElement.setAttribute("aria-label", `Marcar item: ${itemText}`);
+    checkboxElement.setAttribute("aria-label", `Marcar item: ${normalizedItemText}`);
   }
 
   const removeButton = newItemElement.querySelector(".icon-button");
@@ -416,19 +486,20 @@ function createListItemElement(itemText, itemId = generateId()) {
 
 function createCategoryElement(categoryText, categoryId = generateId()) {
   const newCategoryElement = createListItemElement(categoryText, categoryId);
+  const normalizedCategoryText = normalizeItemText(categoryText);
   newCategoryElement.dataset.rowType = "category";
   newCategoryElement.classList.add("category-added");
 
   const shoppingItemText = newCategoryElement.querySelector(".shopping-item");
 
   if (shoppingItemText) {
-    shoppingItemText.setAttribute("aria-label", `Renomear categoria: ${categoryText}`);
+    shoppingItemText.setAttribute("aria-label", `Renomear categoria: ${normalizedCategoryText}`);
   }
 
   const checkboxElement = newCategoryElement.querySelector('input[type="checkbox"]');
 
   if (checkboxElement) {
-    checkboxElement.setAttribute("aria-label", `Marcar itens da categoria: ${categoryText}`);
+    checkboxElement.setAttribute("aria-label", `Marcar itens da categoria: ${normalizedCategoryText}`);
   }
 
   const removeButton = newCategoryElement.querySelector(".icon-button");
@@ -456,7 +527,51 @@ function handleAddCategory() {
 }
 
 function normalizeItemText(text) {
-  return text.replace(/\s+/g, " ").trim();
+  return text.replace(/\s+/g, " ").trim().slice(0, ITEM_NAME_MAX_LENGTH);
+}
+
+function getEditableSelectionLength(editableElement) {
+  const selection = window.getSelection();
+
+  if (!selection || selection.rangeCount === 0) {
+    return 0;
+  }
+
+  const activeRange = selection.getRangeAt(0);
+
+  if (!editableElement.contains(activeRange.commonAncestorContainer)) {
+    return 0;
+  }
+
+  return activeRange.toString().length;
+}
+
+function clampEditingTextLength(editableElement) {
+  if (!editableElement) {
+    return;
+  }
+
+  const currentText = editableElement.textContent || "";
+
+  if (currentText.length <= ITEM_NAME_MAX_LENGTH) {
+    return;
+  }
+
+  editableElement.textContent = currentText.slice(0, ITEM_NAME_MAX_LENGTH);
+
+  if (document.activeElement === editableElement) {
+    const selection = window.getSelection();
+
+    if (!selection) {
+      return;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(editableElement);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
 }
 
 function finishItemEditing(shoppingItemText, shouldCancel = false) {
@@ -553,7 +668,7 @@ function getItemAfterPointerPosition(pointerY) {
 }
 
 function handleAddItem() {
-  const text = input.value.trim();
+  const text = normalizeItemText(input.value);
 
   if (text !== "") {
     const newItem = createListItemElement(text);
@@ -653,6 +768,38 @@ itemsContainer.addEventListener("keydown", (event) => {
   }
 });
 
+itemsContainer.addEventListener("beforeinput", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  const isInsertOperation = event.inputType?.startsWith("insert");
+
+  if (!isInsertOperation) {
+    return;
+  }
+
+  const currentLength = (shoppingItemText.textContent || "").length;
+  const selectionLength = getEditableSelectionLength(shoppingItemText);
+  const nextLength = currentLength - selectionLength;
+
+  if (nextLength >= ITEM_NAME_MAX_LENGTH) {
+    event.preventDefault();
+  }
+});
+
+itemsContainer.addEventListener("input", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  clampEditingTextLength(shoppingItemText);
+});
+
 itemsContainer.addEventListener("focusout", (event) => {
   const shoppingItemText = event.target.closest(".shopping-item");
 
@@ -678,25 +825,19 @@ itemsContainer.addEventListener("change", (event) => {
 
   if (!isCategoryRow(rowElement)) {
     saveItemsToStorage();
+    updateSelectAllButtonState();
     return;
   }
 
-  const visibleRows = getVisibleRows();
-  const categoryIndex = visibleRows.indexOf(rowElement);
+  const { rows } = getCategoryScopeRows(rowElement);
 
-  for (let index = categoryIndex + 1; index < visibleRows.length; index += 1) {
-    const scopedRow = visibleRows[index];
-
-    if (isCategoryRow(scopedRow)) {
-      break;
-    }
-
+  rows.slice(1).forEach((scopedRow) => {
     const scopedCheckbox = scopedRow.querySelector('input[type="checkbox"]');
 
     if (scopedCheckbox) {
       scopedCheckbox.checked = checkboxElement.checked;
     }
-  }
+  });
 
   saveItemsToStorage();
   updateSelectAllButtonState();
