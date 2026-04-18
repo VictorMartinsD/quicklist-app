@@ -178,8 +178,7 @@ function getCategoryScopeRows(categoryRowElement) {
 }
 
 function updateClearAllButtonVisibility() {
-  const totalItems = getVisibleItems().length;
-  clearAllButton.classList.toggle("is-hidden", totalItems < 2);
+  clearAllButton.classList.remove("is-hidden");
 }
 
 function closeClearModal() {
@@ -193,6 +192,7 @@ function openClearModal() {
   const totalItems = getVisibleItems().length;
 
   if (totalItems < 2) {
+    openValidationModal("Adicione pelo menos 2 itens para apagar todos.");
     return;
   }
 
@@ -227,7 +227,7 @@ function clearAllItems() {
   const listItems = getVisibleItems();
 
   if (listItems.length < 2) {
-    closeClearModal();
+    openValidationModal("Adicione pelo menos 2 itens para apagar todos.");
     return;
   }
 
