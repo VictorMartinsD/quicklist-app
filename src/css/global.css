@@ -117,7 +117,7 @@ main {
   justify-content: center;
 }
 
-.bulk-extra-actions {
+.bulk-clear-slot .bulk-extra-actions {
   width: 100%;
   justify-content: center;
   display: none;
@@ -702,13 +702,37 @@ body.modal-open {
     width: 100%;
   }
 
+  .new-item {
+    margin-bottom: 12px;
+  }
+
+  .bulk-clear-slot {
+    min-height: auto;
+    margin-bottom: 16px;
+    align-items: stretch;
+  }
+
+  .bulk-actions-toggle {
+    order: 0;
+    align-self: center;
+    margin-inline: auto;
+  }
+
+  .bulk-actions {
+    order: 1;
+  }
+
+  .bulk-clear-slot .bulk-extra-actions {
+    order: 2;
+  }
+
   .bulk-actions {
     display: grid;
     width: 100%;
     grid-template-columns: 1fr;
   }
 
-  .bulk-clear-slot.is-extra-open .bulk-extra-actions {
+  .bulk-clear-slot .bulk-extra-actions {
     display: grid;
     width: 100%;
     grid-template-columns: 1fr;
@@ -719,6 +743,11 @@ body.modal-open {
   .btn-select-all,
   .btn-manage-lists {
     width: 100%;
+  }
+
+  .bulk-clear-slot.is-collapsed .bulk-actions,
+  .bulk-clear-slot.is-collapsed .bulk-extra-actions {
+    display: none;
   }
 
   .clear-modal {
@@ -752,46 +781,8 @@ body.modal-open {
 }
 
 @media (max-width: 25em) {
-  .new-item {
-    margin-bottom: 12px;
-  }
-
-  .bulk-clear-slot {
-    min-height: auto;
-    margin-bottom: 16px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .bulk-actions-toggle {
-    display: inline-flex;
-    margin-inline: auto;
-  }
-
-  .bulk-clear-slot .bulk-actions {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 12px;
-  }
-
-  .bulk-clear-slot .bulk-extra-actions {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 12px;
-  }
-
-  .bulk-clear-slot .btn-new-category,
-  .bulk-clear-slot .btn-clear-all,
-  .bulk-clear-slot .btn-select-all,
-  .bulk-clear-slot .btn-manage-lists {
-    width: 100%;
-  }
-
-  .bulk-clear-slot.is-collapsed .bulk-actions,
-  .bulk-clear-slot.is-collapsed .bulk-extra-actions {
-    display: none;
+  .bulk-actions-toggle .icon {
+    width: 9px;
+    height: 9px;
   }
 }

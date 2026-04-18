@@ -26,7 +26,7 @@ const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const ITEMS_STORAGE_KEY = "quicklist:items";
-const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 25em)";
+const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 
 let validationTimeoutId = null;
