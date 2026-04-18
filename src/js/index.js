@@ -8,6 +8,8 @@ import { generateId } from "./utils.js";
 const input = document.querySelector("#item");
 const btnAddItem = document.querySelector(".btn-add-item");
 const btnNewCategory = document.querySelector(".btn-new-category");
+const bulkClearSlot = document.querySelector(".bulk-clear-slot");
+const bulkActionsToggle = document.querySelector(".bulk-actions-toggle");
 const itemsContainer = document.querySelector(".items");
 const itemTemplate = document.querySelector(".item-added.hidden");
 const validationModal = document.querySelector(".validation-modal");
@@ -22,6 +24,7 @@ const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const ITEMS_STORAGE_KEY = "quicklist:items";
+const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 25em)";
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
@@ -30,6 +33,37 @@ let draggedRows = [];
 let activeEditableItem = null;
 let clearModalMode = "all";
 let categoryRowsToDelete = [];
+
+function updateBulkActionsToggleState(isExpanded) {
+  if (!bulkClearSlot || !bulkActionsToggle) {
+    return;
+  }
+
+  const iconUseElement = bulkActionsToggle.querySelector("use");
+
+  bulkClearSlot.classList.toggle("is-collapsed", !isExpanded);
+  bulkActionsToggle.setAttribute("aria-expanded", String(isExpanded));
+  bulkActionsToggle.setAttribute(
+    "aria-label",
+    isExpanded ? "Ocultar acoes de categoria" : "Mostrar acoes de categoria",
+  );
+
+  if (iconUseElement) {
+    iconUseElement.setAttribute(
+      "href",
+      isExpanded ? "assets/img/icons.svg#chevron-up" : "assets/img/icons.svg#chevron-down",
+    );
+  }
+}
+
+function syncBulkActionsByViewport() {
+  if (!bulkClearSlot || !bulkActionsToggle) {
+    return;
+  }
+
+  const isMobile = window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
+  updateBulkActionsToggleState(!isMobile);
+}
 
 function closeValidationModal() {
   validationModal.classList.add("hidden");
@@ -735,6 +769,14 @@ input.addEventListener("keydown", (event) => {
   btnNewCategory.click();
 });
 
+bulkActionsToggle?.addEventListener("click", () => {
+  const isCurrentlyExpanded = bulkActionsToggle.getAttribute("aria-expanded") === "true";
+  updateBulkActionsToggleState(!isCurrentlyExpanded);
+});
+
+window.addEventListener("resize", syncBulkActionsByViewport);
+
 loadItemsFromStorage();
 refreshCategoryStructure();
 updateClearAllButtonVisibility();
+syncBulkActionsByViewport();
