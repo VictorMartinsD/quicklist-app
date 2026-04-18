@@ -25,6 +25,7 @@ const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const ITEMS_STORAGE_KEY = "quicklist:items";
 const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 25em)";
+const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
@@ -266,16 +267,21 @@ function openRemovalAlert(message) {
   removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
 }
 
+function getStoredCheckedState(storedItem) {
+  return LEGACY_CHECKED_KEYS.some((key) => storedItem?.[key] === true);
+}
+
 function saveItemsToStorage() {
   const currentItems = [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")].map((itemElement) => {
     const text = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
     const checkboxElement = itemElement.querySelector('input[type="checkbox"]');
+    const isChecked = Boolean(checkboxElement?.checked);
 
     return {
       id: itemElement.dataset.itemId,
       rowType: itemElement.dataset.rowType || "item",
       text,
-      checked: Boolean(checkboxElement?.checked),
+      checked: isChecked,
     };
   });
 
@@ -317,7 +323,7 @@ function loadItemsFromStorage() {
     const checkboxElement = newItem.querySelector('input[type="checkbox"]');
 
     if (checkboxElement) {
-      checkboxElement.checked = Boolean(storedItem.checked);
+      checkboxElement.checked = getStoredCheckedState(storedItem);
     }
 
     itemsContainer.append(newItem);
