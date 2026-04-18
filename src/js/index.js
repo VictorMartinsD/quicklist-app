@@ -25,6 +25,7 @@ const ITEMS_STORAGE_KEY = "quicklist:items";
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
 let draggedItemElement = null;
+let activeEditableItem = null;
 
 function closeValidationModal() {
   validationModal.classList.add("hidden");
@@ -153,10 +154,78 @@ function createListItemElement(itemText, itemId = generateId()) {
   const shoppingItemText = newItemElement.querySelector(".shopping-item");
   shoppingItemText.textContent = itemText;
   shoppingItemText.title = itemText;
+  shoppingItemText.tabIndex = 0;
+  shoppingItemText.setAttribute("role", "button");
+  shoppingItemText.setAttribute("aria-label", `Renomear item: ${itemText}`);
 
   newItemElement.dataset.itemId = itemId;
 
   return newItemElement;
+}
+
+function normalizeItemText(text) {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function finishItemEditing(shoppingItemText, shouldCancel = false) {
+  if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  const originalText = shoppingItemText.dataset.originalText || "";
+  const editedText = normalizeItemText(shoppingItemText.textContent || "");
+  const finalText = shouldCancel || !editedText ? originalText : editedText;
+
+  shoppingItemText.textContent = finalText;
+  shoppingItemText.title = finalText;
+  shoppingItemText.setAttribute("aria-label", `Renomear item: ${finalText}`);
+  shoppingItemText.removeAttribute("contenteditable");
+  shoppingItemText.removeAttribute("spellcheck");
+  shoppingItemText.classList.remove("is-editing");
+  shoppingItemText.style.height = "";
+  shoppingItemText.style.maxHeight = "";
+  delete shoppingItemText.dataset.originalText;
+
+  if (activeEditableItem === shoppingItemText) {
+    activeEditableItem = null;
+  }
+
+  if (finalText !== originalText) {
+    saveItemsToStorage();
+  }
+}
+
+function startItemEditing(shoppingItemText) {
+  if (!shoppingItemText || shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  if (activeEditableItem && activeEditableItem !== shoppingItemText) {
+    finishItemEditing(activeEditableItem);
+  }
+
+  const stableHeight = shoppingItemText.offsetHeight;
+  shoppingItemText.dataset.originalText = shoppingItemText.textContent || "";
+  shoppingItemText.classList.add("is-editing");
+  shoppingItemText.setAttribute("contenteditable", "true");
+  shoppingItemText.setAttribute("spellcheck", "false");
+
+  shoppingItemText.style.height = `${stableHeight}px`;
+  shoppingItemText.style.maxHeight = `${stableHeight}px`;
+
+  shoppingItemText.focus();
+  activeEditableItem = shoppingItemText;
+
+  const selection = window.getSelection();
+
+  if (!selection) {
+    return;
+  }
+
+  const range = document.createRange();
+  range.selectNodeContents(shoppingItemText);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 function getItemAfterPointerPosition(pointerY) {
@@ -219,6 +288,65 @@ itemsContainer.addEventListener("click", (event) => {
   }
 
   openRemovalAlert("O item foi removido da lista.");
+});
+
+itemsContainer.addEventListener("click", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText || document.body.classList.contains("is-grabbing")) {
+    return;
+  }
+
+  startItemEditing(shoppingItemText);
+});
+
+itemsContainer.addEventListener("focusin", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText || shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  if (activeEditableItem && activeEditableItem !== shoppingItemText) {
+    finishItemEditing(activeEditableItem);
+  }
+});
+
+itemsContainer.addEventListener("keydown", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText) {
+    return;
+  }
+
+  if (!shoppingItemText.classList.contains("is-editing") && event.key === "Enter") {
+    event.preventDefault();
+    startItemEditing(shoppingItemText);
+    return;
+  }
+
+  if (shoppingItemText.classList.contains("is-editing") && event.key === "Enter") {
+    event.preventDefault();
+    finishItemEditing(shoppingItemText);
+    shoppingItemText.blur();
+    return;
+  }
+
+  if (shoppingItemText.classList.contains("is-editing") && event.key === "Escape") {
+    event.preventDefault();
+    finishItemEditing(shoppingItemText, true);
+    shoppingItemText.blur();
+  }
+});
+
+itemsContainer.addEventListener("focusout", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  finishItemEditing(shoppingItemText);
 });
 
 itemsContainer.addEventListener("dragstart", (event) => {

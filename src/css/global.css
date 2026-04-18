@@ -271,14 +271,44 @@ input[type="checkbox"]:checked::after {
   max-width: 100%;
   width: auto;
   margin: 0;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  line-height: 20px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
+  max-height: 72px;
   text-overflow: ellipsis;
   overflow-wrap: anywhere;
   word-break: break-word;
   white-space: normal;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.shopping-item:hover,
+.shopping-item:focus-visible {
+  border-color: var(--border-hover);
+  background: #f9fafb;
+}
+
+.shopping-item.is-editing {
+  border-color: var(--color-brand);
+  background: var(--always-white);
+  cursor: text;
+  outline: none;
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  max-height: none;
+  text-overflow: clip;
+  overflow-y: auto;
 }
 
 .item-added .icon-button {
