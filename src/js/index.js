@@ -628,12 +628,7 @@ itemsContainer.addEventListener("dragstart", (event) => {
     finishItemEditing(activeEditableItem);
   }
 
-  if (isCategoryRow(draggedItemElement)) {
-    const { rows } = getCategoryScopeRows(draggedItemElement);
-    draggedRows = rows.length ? rows : [draggedItemElement];
-  } else {
-    draggedRows = [draggedItemElement];
-  }
+  draggedRows = [draggedItemElement];
 
   draggedRows.forEach((rowElement) => rowElement.classList.add("is-dragging"));
   document.body.classList.add("is-grabbing");
@@ -651,19 +646,16 @@ itemsContainer.addEventListener("dragover", (event) => {
 
   const nextItem = getItemAfterPointerPosition(event.clientY);
 
-  if (nextItem && draggedRows.includes(nextItem)) {
+  if (nextItem && draggedItemElement === nextItem) {
     return;
   }
-
-  const draggedFragment = document.createDocumentFragment();
-  draggedRows.forEach((rowElement) => draggedFragment.append(rowElement));
 
   if (!nextItem) {
-    itemsContainer.append(draggedFragment);
+    itemsContainer.append(draggedItemElement);
     return;
   }
 
-  itemsContainer.insertBefore(draggedFragment, nextItem);
+  itemsContainer.insertBefore(draggedItemElement, nextItem);
 });
 
 itemsContainer.addEventListener("drop", (event) => {
