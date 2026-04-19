@@ -1038,6 +1038,7 @@ input[type="checkbox"]:checked::after {
 }
 
 .btn-switch-list-cancel,
+.btn-switch-list-save,
 .btn-switch-list-confirm {
   border-radius: 10px;
   padding: 10px 16px;
@@ -1054,6 +1055,17 @@ input[type="checkbox"]:checked::after {
 .btn-switch-list-cancel:hover,
 .btn-switch-list-cancel:focus-visible {
   border-color: var(--border-hover);
+}
+
+.btn-switch-list-save {
+  border: 1px solid color-mix(in srgb, var(--color-brand) 35%, var(--border-primary));
+  background: var(--always-white);
+  color: var(--color-brand);
+}
+
+.btn-switch-list-save:hover,
+.btn-switch-list-save:focus-visible {
+  border-color: var(--color-brand);
 }
 
 .btn-switch-list-confirm {

@@ -32,6 +32,7 @@ const manageListsBox = document.querySelector(".manage-lists-box");
 const manageListsItemsContainer = document.querySelector(".manage-lists-items");
 const manageListRowTemplate = document.querySelector(".manage-list-row.hidden");
 const switchListModal = document.querySelector(".switch-list-modal");
+const switchListSaveButton = document.querySelector(".btn-switch-list-save");
 const switchListCancelButton = document.querySelector(".btn-switch-list-cancel");
 const switchListConfirmButton = document.querySelector(".btn-switch-list-confirm");
 const removalAlert = document.querySelector(".alert");
@@ -560,7 +561,7 @@ function openSwitchListModal(savedListId) {
   pendingSelectedSavedListId = savedListId;
   switchListModal.classList.remove("hidden");
   syncModalOpenState();
-  switchListConfirmButton.focus();
+  switchListSaveButton?.focus();
 }
 
 function closeSwitchListModal() {
@@ -597,12 +598,13 @@ function applySavedList(savedListId) {
   renderSavedLists();
 }
 
-function saveCurrentList() {
+function saveCurrentList(options = {}) {
+  const { showSuccessAlert = true } = options;
   const currentRowsSnapshot = getCurrentRowsSnapshot();
 
   if (!currentRowsSnapshot.length) {
     openValidationModal("É necessário ter pelo menos um item ou categoria na lista para salvar");
-    return;
+    return false;
   }
 
   const currentSignature = getRowsSignature(currentRowsSnapshot);
@@ -610,7 +612,7 @@ function saveCurrentList() {
 
   if (alreadySaved) {
     openValidationModal("Ja existe uma lista identica salva.");
-    return;
+    return false;
   }
 
   const newSavedList = {
@@ -622,7 +624,12 @@ function saveCurrentList() {
   savedLists = [newSavedList, ...savedLists];
   saveSavedListsToStorage();
   renderSavedLists();
-  openRemovalAlert("Lista atual salva com sucesso.");
+
+  if (showSuccessAlert) {
+    openRemovalAlert("Lista atual salva com sucesso.");
+  }
+
+  return true;
 }
 
 function removeSavedList(savedListId) {
@@ -1656,6 +1663,22 @@ manageListsItemsContainer?.addEventListener("dragend", () => {
 switchListCancelButton?.addEventListener("click", () => {
   closeSwitchListModal();
   renderSavedLists();
+});
+
+switchListSaveButton?.addEventListener("click", () => {
+  if (!pendingSelectedSavedListId) {
+    return;
+  }
+
+  const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
+
+  if (!hasSavedCurrentList) {
+    return;
+  }
+
+  applySavedList(pendingSelectedSavedListId);
+  closeSwitchListModal();
+  openRemovalAlert("Lista salva e lista selecionada carregada.");
 });
 
 switchListConfirmButton?.addEventListener("click", () => {
