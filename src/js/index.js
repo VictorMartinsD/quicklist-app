@@ -41,6 +41,7 @@ const SAVED_LISTS_STORAGE_KEY = "quicklist:saved-lists";
 const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 const ITEM_NAME_MAX_LENGTH = 84;
+const SAVED_LIST_NAME_MAX_LENGTH = 40;
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
@@ -633,7 +634,10 @@ function finishManageListEditing(nameElement, shouldCancel = false) {
   }
 
   const originalName = nameElement.dataset.originalName || "";
-  const editedName = normalizeItemText(nameElement.textContent || "");
+  let editedName = normalizeItemText(nameElement.textContent || "");
+  if (editedName.length > SAVED_LIST_NAME_MAX_LENGTH) {
+    editedName = editedName.slice(0, SAVED_LIST_NAME_MAX_LENGTH);
+  }
   const finalName = shouldCancel || !editedName ? originalName : editedName;
   const rowElement = nameElement.closest(".manage-list-row");
   const savedListId = rowElement?.dataset?.savedListId;
@@ -952,18 +956,18 @@ function getEditableSelectionLength(editableElement) {
   return activeRange.toString().length;
 }
 
-function clampEditingTextLength(editableElement) {
+function clampEditingTextLength(editableElement, maxLength = ITEM_NAME_MAX_LENGTH) {
   if (!editableElement) {
     return;
   }
 
   const currentText = editableElement.textContent || "";
 
-  if (currentText.length <= ITEM_NAME_MAX_LENGTH) {
+  if (currentText.length <= maxLength) {
     return;
   }
 
-  editableElement.textContent = currentText.slice(0, ITEM_NAME_MAX_LENGTH);
+  editableElement.textContent = currentText.slice(0, maxLength);
 
   if (document.activeElement === editableElement) {
     const selection = window.getSelection();
@@ -1431,7 +1435,6 @@ manageListsItemsContainer?.addEventListener("beforeinput", (event) => {
   }
 
   const isInsertOperation = event.inputType?.startsWith("insert");
-
   if (!isInsertOperation) {
     return;
   }
@@ -1439,8 +1442,9 @@ manageListsItemsContainer?.addEventListener("beforeinput", (event) => {
   const currentLength = (listNameElement.textContent || "").length;
   const selectionLength = getEditableSelectionLength(listNameElement);
   const nextLength = currentLength - selectionLength;
+  const insertedLength = (event.data || "").length;
 
-  if (nextLength >= ITEM_NAME_MAX_LENGTH) {
+  if (nextLength >= SAVED_LIST_NAME_MAX_LENGTH || nextLength + insertedLength > SAVED_LIST_NAME_MAX_LENGTH) {
     event.preventDefault();
   }
 });
@@ -1452,7 +1456,7 @@ manageListsItemsContainer?.addEventListener("input", (event) => {
     return;
   }
 
-  clampEditingTextLength(listNameElement);
+  clampEditingTextLength(listNameElement, SAVED_LIST_NAME_MAX_LENGTH);
 });
 
 manageListsItemsContainer?.addEventListener("focusout", (event) => {

@@ -801,6 +801,8 @@ input[type="checkbox"]:checked::after {
   border-radius: 12px;
   border: 1px solid transparent;
   background: var(--always-white);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .manage-list-row:hover {
@@ -864,6 +866,9 @@ input[type="checkbox"]:checked::after {
     border-color 0.18s ease,
     background-color 0.18s ease,
     color 0.18s ease;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .manage-list-name:hover,
@@ -878,6 +883,7 @@ input[type="checkbox"]:checked::after {
   cursor: text;
   outline: none;
   white-space: nowrap;
+  overflow-x: hidden;
 }
 
 .manage-list-remove {
@@ -1121,7 +1127,7 @@ body.modal-open {
 
   .manage-list-row {
     display: grid;
-    grid-template-columns: auto auto 1fr auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     column-gap: 12px;
   }
 
