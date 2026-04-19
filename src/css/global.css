@@ -129,8 +129,8 @@ main {
 
 .bulk-actions-toggle {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   background: var(--background-secondary);
@@ -143,8 +143,8 @@ main {
 }
 
 .bulk-actions-toggle .icon {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
 }
 
 .bulk-actions-toggle:hover,
@@ -481,6 +481,12 @@ input[type="checkbox"]:checked::after {
   min-width: 0;
 }
 
+.alert.hidden {
+  display: flex;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 #warning,
 #delete {
   color: var(--always-white);
@@ -509,6 +515,45 @@ input[type="checkbox"]:checked::after {
   display: grid;
   gap: 8px;
   margin-top: 12px;
+}
+
+@media (min-width: 40.0625em) {
+  .bulk-clear-slot {
+    flex: 0 0 auto;
+    margin-bottom: 16px;
+    gap: 8px;
+  }
+
+  .bulk-clear-slot .bulk-extra-actions {
+    display: flex;
+    max-height: 0;
+    margin-top: 0;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition:
+      max-height 0.2s ease,
+      opacity 0.18s ease,
+      margin-top 0.2s ease;
+  }
+
+  .bulk-clear-slot.is-extra-open .bulk-extra-actions {
+    max-height: 56px;
+    margin-top: 2px;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .items-scroll {
+    padding-top: 0;
+  }
+
+  .alert-footer-stack {
+    min-height: 108px;
+    margin-top: 20px;
+  }
 }
 
 .site-footer {
@@ -1113,12 +1158,24 @@ body.modal-open {
     display: grid;
     width: 100%;
     grid-template-columns: 1fr;
+    overflow: hidden;
+    max-height: 160px;
+    opacity: 1;
+    transition:
+      max-height 0.2s ease,
+      opacity 0.18s ease;
   }
 
   .bulk-clear-slot .bulk-extra-actions {
     display: grid;
     width: 100%;
     grid-template-columns: 1fr;
+    overflow: hidden;
+    max-height: 220px;
+    opacity: 1;
+    transition:
+      max-height 0.2s ease,
+      opacity 0.18s ease;
   }
 
   .btn-new-category,
@@ -1130,7 +1187,9 @@ body.modal-open {
 
   .bulk-clear-slot.is-collapsed .bulk-actions,
   .bulk-clear-slot.is-collapsed .bulk-extra-actions {
-    display: none;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .clear-modal {
@@ -1218,9 +1277,3 @@ body.modal-open {
   }
 }
 
-@media (max-width: 25em) {
-  .bulk-actions-toggle .icon {
-    width: 9px;
-    height: 9px;
-  }
-}
