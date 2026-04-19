@@ -535,7 +535,7 @@ input[type="checkbox"]:checked::after {
 .validation-modal {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -764,6 +764,32 @@ input[type="checkbox"]:checked::after {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   max-width: 380px;
+}
+
+@media (min-width: 40.0625em) {
+  .manage-lists-modal__toolbar {
+    justify-items: center;
+  }
+
+  .manage-lists-modal__import-export {
+    margin-inline: auto;
+  }
+}
+
+@media (min-width: 43.75em) {
+  .manage-lists-modal__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .manage-lists-modal__import-export {
+    display: flex;
+    align-items: center;
+    max-width: none;
+    margin-inline: 0;
+  }
 }
 
 .btn-save-current-list:hover,
@@ -1138,6 +1164,10 @@ body.modal-open {
     max-height: calc(100dvh - 24px);
     border-radius: 16px;
     padding: 20px;
+  }
+
+  .manage-lists-modal__panel h3 {
+    text-align: center;
   }
 
   .manage-lists-modal__toolbar {

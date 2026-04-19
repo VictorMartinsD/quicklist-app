@@ -1004,6 +1004,27 @@ function getEditableSelectionLength(editableElement) {
   return activeRange.toString().length;
 }
 
+function clipboardHasImage(clipboardEvent) {
+  const clipboardData = clipboardEvent?.clipboardData;
+
+  if (!clipboardData) {
+    return false;
+  }
+
+  const clipboardItems = [...(clipboardData.items || [])];
+  const hasImageItem = clipboardItems.some(
+    (clipboardItem) => clipboardItem.kind === "file" && clipboardItem.type?.startsWith("image/"),
+  );
+
+  if (hasImageItem) {
+    return true;
+  }
+
+  const htmlPayload = clipboardData.getData("text/html") || "";
+
+  return /<img\b|data:image\//i.test(htmlPayload);
+}
+
 function clampEditingTextLength(editableElement, maxLength = ITEM_NAME_MAX_LENGTH) {
   if (!editableElement) {
     return;
@@ -1246,6 +1267,21 @@ itemsContainer.addEventListener("beforeinput", (event) => {
   if (nextLength >= ITEM_NAME_MAX_LENGTH) {
     event.preventDefault();
   }
+});
+
+itemsContainer.addEventListener("paste", (event) => {
+  const shoppingItemText = event.target.closest(".shopping-item");
+
+  if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
+    return;
+  }
+
+  if (!clipboardHasImage(event)) {
+    return;
+  }
+
+  event.preventDefault();
+  openValidationModal("Nao e permitido colar imagens neste campo.");
 });
 
 itemsContainer.addEventListener("input", (event) => {
@@ -1495,6 +1531,21 @@ manageListsItemsContainer?.addEventListener("beforeinput", (event) => {
   if (nextLength >= SAVED_LIST_NAME_MAX_LENGTH || nextLength + insertedLength > SAVED_LIST_NAME_MAX_LENGTH) {
     event.preventDefault();
   }
+});
+
+manageListsItemsContainer?.addEventListener("paste", (event) => {
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  if (!clipboardHasImage(event)) {
+    return;
+  }
+
+  event.preventDefault();
+  openValidationModal("Nao e permitido colar imagens neste campo.");
 });
 
 manageListsItemsContainer?.addEventListener("input", (event) => {
