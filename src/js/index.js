@@ -28,6 +28,7 @@ const manageListsModalCloseButton = document.querySelector(".manage-lists-modal_
 const btnSaveCurrentList = document.querySelector(".btn-save-current-list");
 const btnImportList = document.querySelector(".btn-import-list");
 const btnExportList = document.querySelector(".btn-export-list");
+const manageListsBox = document.querySelector(".manage-lists-box");
 const manageListsItemsContainer = document.querySelector(".manage-lists-items");
 const manageListRowTemplate = document.querySelector(".manage-list-row.hidden");
 const switchListModal = document.querySelector(".switch-list-modal");
@@ -42,6 +43,8 @@ const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 const ITEM_NAME_MAX_LENGTH = 84;
 const SAVED_LIST_NAME_MAX_LENGTH = 40;
+const SAVED_LIST_DRAG_SCROLL_EDGE_PX = 48;
+const SAVED_LIST_DRAG_SCROLL_STEP_PX = 12;
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
@@ -718,6 +721,51 @@ function getSavedListRowAfterPointerPosition(pointerY) {
     },
     { offset: Number.NEGATIVE_INFINITY, element: null },
   ).element;
+}
+
+function autoScrollSavedListsContainer(pointerY) {
+  if (!manageListsItemsContainer) {
+    return;
+  }
+
+  const containerRect = manageListsItemsContainer.getBoundingClientRect();
+  const topEdgeDistance = pointerY - containerRect.top;
+  const bottomEdgeDistance = containerRect.bottom - pointerY;
+
+  if (topEdgeDistance < SAVED_LIST_DRAG_SCROLL_EDGE_PX) {
+    const intensity = (SAVED_LIST_DRAG_SCROLL_EDGE_PX - topEdgeDistance) / SAVED_LIST_DRAG_SCROLL_EDGE_PX;
+    const scrollDelta = Math.max(1, Math.round(SAVED_LIST_DRAG_SCROLL_STEP_PX * intensity));
+    manageListsItemsContainer.scrollTop -= scrollDelta;
+    return;
+  }
+
+  if (bottomEdgeDistance < SAVED_LIST_DRAG_SCROLL_EDGE_PX) {
+    const intensity = (SAVED_LIST_DRAG_SCROLL_EDGE_PX - bottomEdgeDistance) / SAVED_LIST_DRAG_SCROLL_EDGE_PX;
+    const scrollDelta = Math.max(1, Math.round(SAVED_LIST_DRAG_SCROLL_STEP_PX * intensity));
+    manageListsItemsContainer.scrollTop += scrollDelta;
+  }
+}
+
+function handleSavedListsDragOver(event) {
+  if (!draggedSavedListElement) {
+    return;
+  }
+
+  event.preventDefault();
+  autoScrollSavedListsContainer(event.clientY);
+
+  const nextRowElement = getSavedListRowAfterPointerPosition(event.clientY);
+
+  if (nextRowElement && draggedSavedListElement === nextRowElement) {
+    return;
+  }
+
+  if (!nextRowElement) {
+    manageListsItemsContainer.append(draggedSavedListElement);
+    return;
+  }
+
+  manageListsItemsContainer.insertBefore(draggedSavedListElement, nextRowElement);
 }
 
 function persistSavedListsFromDomOrder() {
@@ -1531,26 +1579,9 @@ manageListsItemsContainer?.addEventListener("dragstart", (event) => {
   event.dataTransfer.setData("text/plain", draggedSavedListElement.dataset.savedListId || "");
 });
 
-manageListsItemsContainer?.addEventListener("dragover", (event) => {
-  if (!draggedSavedListElement) {
-    return;
-  }
+manageListsItemsContainer?.addEventListener("dragover", handleSavedListsDragOver);
 
-  event.preventDefault();
-
-  const nextRowElement = getSavedListRowAfterPointerPosition(event.clientY);
-
-  if (nextRowElement && draggedSavedListElement === nextRowElement) {
-    return;
-  }
-
-  if (!nextRowElement) {
-    manageListsItemsContainer.append(draggedSavedListElement);
-    return;
-  }
-
-  manageListsItemsContainer.insertBefore(draggedSavedListElement, nextRowElement);
-});
+manageListsBox?.addEventListener("dragover", handleSavedListsDragOver);
 
 manageListsItemsContainer?.addEventListener("drop", (event) => {
   if (!draggedSavedListElement) {

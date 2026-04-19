@@ -784,14 +784,42 @@ input[type="checkbox"]:checked::after {
   background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
   padding: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .manage-lists-items {
-  height: 100%;
+  flex: 1 1 auto;
+  height: auto;
+  max-height: none;
   min-height: 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
   padding-right: 4px;
+  overscroll-behavior: contain;
+  align-content: start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.85) transparent;
+}
+
+.manage-lists-items::-webkit-scrollbar {
+  width: 10px;
+}
+
+.manage-lists-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.manage-lists-items::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.85);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.manage-lists-items::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 102, 113, 0.9);
+  background-clip: content-box;
 }
 
 .manage-list-row {
