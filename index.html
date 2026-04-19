@@ -250,6 +250,87 @@
       </div>
     </div>
 
+    <div
+      class="import-code-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="import-code-title"
+      aria-describedby="import-code-description">
+      <div class="import-code-modal__panel">
+        <h3 id="import-code-title">Trazer uma lista existente</h3>
+        <p id="import-code-description">Cole o código JSON e confirme.</p>
+
+        <label class="import-code-modal__field-label" for="import-code-input">Código da lista</label>
+        <textarea
+          id="import-code-input"
+          class="import-code-modal__input"
+          rows="8"
+          maxlength="12000"
+          placeholder="Cole aqui o código exportado"></textarea>
+
+        <div class="import-code-modal__actions">
+          <button class="btn-import-code-cancel" type="button">Cancelar</button>
+          <button class="btn-import-code-confirm" type="button">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="import-unsaved-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="import-unsaved-title"
+      aria-describedby="import-unsaved-description">
+      <div class="import-unsaved-modal__panel">
+        <h3 id="import-unsaved-title">Importar lista</h3>
+        <p id="import-unsaved-description">Você não salvou a sua lista. <br />Deseja descartar ou salvá-la?</p>
+
+        <div class="import-unsaved-modal__actions">
+          <button class="btn-import-unsaved-save" type="button">Salvar a lista atual e importar</button>
+          <button class="btn-import-unsaved-discard" type="button">Importar e descartar</button>
+          <button class="btn-import-unsaved-cancel" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="export-save-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="export-save-title"
+      aria-describedby="export-save-description">
+      <div class="export-save-modal__panel">
+        <h3 id="export-save-title">Exportar lista</h3>
+        <p id="export-save-description">
+          Você ainda não tem nenhuma lista salva. <br />Deseja salvar a lista atual e exportar?
+        </p>
+
+        <div class="export-save-modal__actions">
+          <button class="btn-export-save-cancel" type="button">Cancelar</button>
+          <button class="btn-export-save-confirm" type="button">Salvar e exportar</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="export-success-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="export-success-title"
+      aria-describedby="export-success-description">
+      <div class="export-success-modal__panel">
+        <h3 id="export-success-title">Exportação concluída</h3>
+        <p id="export-success-description">
+          Código copiado com sucesso! <br />Cole o código no dispositivo que você deseja que a lista seja usada, em
+          "Importar lista".
+        </p>
+
+        <div class="export-success-modal__actions">
+          <button class="btn-export-success-close" type="button">Fechar</button>
+        </div>
+      </div>
+    </div>
+
     <div class="alert-footer-stack">
       <div class="alert flex gap-8 hidden">
         <svg id="warning" class="icon" aria-hidden="true" focusable="false">

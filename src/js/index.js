@@ -32,6 +32,19 @@ const manageListsBox = document.querySelector(".manage-lists-box");
 const manageListsItemsContainer = document.querySelector(".manage-lists-items");
 const manageListRowTemplate = document.querySelector(".manage-list-row.hidden");
 const switchListModal = document.querySelector(".switch-list-modal");
+const importCodeModal = document.querySelector(".import-code-modal");
+const importCodeInput = document.querySelector("#import-code-input");
+const importCodeCancelButton = document.querySelector(".btn-import-code-cancel");
+const importCodeConfirmButton = document.querySelector(".btn-import-code-confirm");
+const importUnsavedModal = document.querySelector(".import-unsaved-modal");
+const importUnsavedSaveButton = document.querySelector(".btn-import-unsaved-save");
+const importUnsavedDiscardButton = document.querySelector(".btn-import-unsaved-discard");
+const importUnsavedCancelButton = document.querySelector(".btn-import-unsaved-cancel");
+const exportSaveModal = document.querySelector(".export-save-modal");
+const exportSaveConfirmButton = document.querySelector(".btn-export-save-confirm");
+const exportSaveCancelButton = document.querySelector(".btn-export-save-cancel");
+const exportSuccessModal = document.querySelector(".export-success-modal");
+const exportSuccessCloseButton = document.querySelector(".btn-export-success-close");
 const switchListSaveButton = document.querySelector(".btn-switch-list-save");
 const switchListCancelButton = document.querySelector(".btn-switch-list-cancel");
 const switchListConfirmButton = document.querySelector(".btn-switch-list-confirm");
@@ -44,6 +57,7 @@ const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 const ITEM_NAME_MAX_LENGTH = 84;
 const SAVED_LIST_NAME_MAX_LENGTH = 40;
+const IMPORT_CODE_MAX_LENGTH = 12000;
 const SAVED_LIST_DRAG_SCROLL_EDGE_PX = 48;
 const SAVED_LIST_DRAG_SCROLL_STEP_PX = 12;
 
@@ -58,9 +72,14 @@ let categoryRowsToDelete = [];
 let categoryOnlyRowToDelete = null;
 let draggedSavedListElement = null;
 let pendingSelectedSavedListId = null;
+let pendingImportPayload = null;
 let savedLists = [];
 
 input.maxLength = ITEM_NAME_MAX_LENGTH;
+
+if (importCodeInput) {
+  importCodeInput.maxLength = IMPORT_CODE_MAX_LENGTH;
+}
 
 function isMobileViewport() {
   return window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
@@ -379,9 +398,16 @@ function openCategoryClearModal(categoryRowElement) {
 }
 
 function syncModalOpenState() {
-  const hasOpenModal = [validationModal, clearModal, manageListsModal, switchListModal].some(
-    (modalElement) => modalElement && !modalElement.classList.contains("hidden"),
-  );
+  const hasOpenModal = [
+    validationModal,
+    clearModal,
+    manageListsModal,
+    switchListModal,
+    importCodeModal,
+    importUnsavedModal,
+    exportSaveModal,
+    exportSuccessModal,
+  ].some((modalElement) => modalElement && !modalElement.classList.contains("hidden"));
 
   document.body.classList.toggle("modal-open", hasOpenModal);
 }
@@ -424,6 +450,285 @@ function getNextSavedListName() {
   }, 0);
 
   return `Lista salva ${highestUsedNumber + 1}`;
+}
+
+function getNextImportedListName() {
+  const highestImportedNumber = savedLists.reduce((highest, savedList) => {
+    const matchedNumber = (savedList.name || "").match(/^Lista importada\s+(\d+)$/i);
+
+    if (!matchedNumber) {
+      return highest;
+    }
+
+    const numericValue = Number(matchedNumber[1]);
+    return Number.isNaN(numericValue) ? highest : Math.max(highest, numericValue);
+  }, 0);
+
+  return `Lista importada ${highestImportedNumber + 1}`;
+}
+
+function resolveImportedListName(preferredName = "") {
+  const normalizedName = normalizeItemText(preferredName || "");
+  const hasDuplicateName = savedLists.some(
+    (savedList) => (savedList.name || "").toLowerCase() === normalizedName.toLowerCase(),
+  );
+  const isDefaultNamePattern =
+    /^Lista\s+salva\s+\d+$/i.test(normalizedName) || /^Lista\s+importada\s+\d+$/i.test(normalizedName);
+
+  if (!normalizedName || hasDuplicateName || isDefaultNamePattern) {
+    return getNextImportedListName();
+  }
+
+  return normalizedName;
+}
+
+function buildShareCodePayload(rowsSnapshot, preferredName = "") {
+  const normalizedRows = normalizeListRowsForComparison(rowsSnapshot).filter((row) => row.text !== "");
+
+  if (!normalizedRows.length) {
+    return null;
+  }
+
+  return {
+    name: preferredName ? normalizeItemText(preferredName) : "",
+    items: normalizedRows,
+  };
+}
+
+function getCurrentListNameForShare() {
+  const matchedListId = getCurrentSavedListMatchId();
+  const matchedSavedList = savedLists.find((savedList) => savedList.id === matchedListId);
+
+  return matchedSavedList?.name || "";
+}
+
+function encodeSharePayload(payload) {
+  return encodeURIComponent(JSON.stringify(payload));
+}
+
+function decodeSharePayload(encodedPayload) {
+  const decodedText = decodeURIComponent(encodedPayload);
+  return JSON.parse(decodedText);
+}
+
+function extractShareCode(rawInput) {
+  const inputValue = (rawInput || "").trim();
+
+  if (!inputValue) {
+    return "";
+  }
+
+  if (inputValue.startsWith("{")) {
+    return inputValue;
+  }
+
+  if (inputValue.startsWith("#") || inputValue.startsWith("?")) {
+    const leadingToken = inputValue[0] === "#" ? inputValue.slice(1) : inputValue.slice(1);
+    const parsedParams = new URLSearchParams(leadingToken);
+    return parsedParams.get("share") || parsedParams.get("list") || inputValue;
+  }
+
+  if (/^https?:\/\//i.test(inputValue)) {
+    try {
+      const parsedUrl = new URL(inputValue);
+      const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ""));
+      const queryParams = new URLSearchParams(parsedUrl.search.replace(/^\?/, ""));
+      return hashParams.get("share") || queryParams.get("list") || queryParams.get("share") || inputValue;
+    } catch {
+      return inputValue;
+    }
+  }
+
+  return inputValue;
+}
+
+function parseImportedPayload(rawCode) {
+  const candidateCode = extractShareCode(rawCode);
+
+  if (!candidateCode) {
+    return null;
+  }
+
+  let parsedPayload;
+
+  if (candidateCode.startsWith("{")) {
+    parsedPayload = JSON.parse(candidateCode);
+  } else {
+    parsedPayload = decodeSharePayload(candidateCode);
+  }
+
+  if (!parsedPayload || typeof parsedPayload !== "object") {
+    return null;
+  }
+
+  const normalizedItems = normalizeListRowsForComparison(parsedPayload.items || []).filter((row) => row.text !== "");
+
+  if (!normalizedItems.length) {
+    return null;
+  }
+
+  return {
+    name: typeof parsedPayload.name === "string" ? parsedPayload.name : "",
+    items: normalizedItems,
+  };
+}
+
+function closeImportCodeModal() {
+  importCodeModal?.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openImportCodeModal() {
+  importCodeModal?.classList.remove("hidden");
+  syncModalOpenState();
+  importCodeInput?.focus();
+}
+
+function closeImportUnsavedModal() {
+  importUnsavedModal?.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openImportUnsavedModal() {
+  importUnsavedModal?.classList.remove("hidden");
+  syncModalOpenState();
+  importUnsavedSaveButton?.focus();
+}
+
+function closeExportSaveModal() {
+  exportSaveModal?.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openExportSaveModal() {
+  exportSaveModal?.classList.remove("hidden");
+  syncModalOpenState();
+  exportSaveConfirmButton?.focus();
+}
+
+function closeExportSuccessModal() {
+  exportSuccessModal?.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openExportSuccessModal() {
+  exportSuccessModal?.classList.remove("hidden");
+  syncModalOpenState();
+  exportSuccessCloseButton?.focus();
+}
+
+function importParsedList(parsedPayload) {
+  const importedListName = resolveImportedListName(parsedPayload.name);
+  const newImportedList = {
+    id: generateId(),
+    name: importedListName,
+    items: parsedPayload.items,
+  };
+
+  savedLists = [newImportedList, ...savedLists];
+  saveSavedListsToStorage();
+  applySavedList(newImportedList.id);
+  renderSavedLists();
+}
+
+async function copyTextToClipboard(textToCopy) {
+  if (!textToCopy) {
+    return false;
+  }
+
+  if (navigator?.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      return true;
+    } catch {
+      // fallback below
+    }
+  }
+
+  const tempTextArea = document.createElement("textarea");
+  tempTextArea.value = textToCopy;
+  tempTextArea.setAttribute("readonly", "true");
+  tempTextArea.style.position = "fixed";
+  tempTextArea.style.top = "-9999px";
+  document.body.append(tempTextArea);
+  tempTextArea.select();
+
+  let copiedSuccessfully = false;
+
+  try {
+    copiedSuccessfully = document.execCommand("copy");
+  } catch {
+    copiedSuccessfully = false;
+  }
+
+  tempTextArea.remove();
+  return copiedSuccessfully;
+}
+
+async function exportCurrentList() {
+  const rowsSnapshot = getCurrentRowsSnapshot();
+
+  if (!rowsSnapshot.length) {
+    openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
+    return;
+  }
+
+  const payload = buildShareCodePayload(rowsSnapshot, getCurrentListNameForShare());
+
+  if (!payload) {
+    openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
+    return;
+  }
+
+  const encodedPayload = encodeSharePayload(payload);
+  const shareUrl = `${window.location.origin}${window.location.pathname}#share=${encodedPayload}`;
+  const copiedSuccessfully = await copyTextToClipboard(shareUrl);
+
+  if (!copiedSuccessfully) {
+    openValidationModal("Nao foi possivel copiar o codigo. Tente novamente.");
+    return;
+  }
+
+  openExportSuccessModal();
+}
+
+function handleImportConfirmRequest() {
+  const rawImportCode = importCodeInput?.value || "";
+
+  if (!rawImportCode.trim()) {
+    openValidationModal(
+      'Campo vazio. \nÉ necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
+    );
+    return;
+  }
+
+  let parsedPayload;
+
+  try {
+    parsedPayload = parseImportedPayload(rawImportCode);
+  } catch {
+    parsedPayload = null;
+  }
+
+  if (!parsedPayload) {
+    openValidationModal(
+      'Código JSON inválido. \nÉ necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
+    );
+    return;
+  }
+
+  pendingImportPayload = parsedPayload;
+
+  const currentRowsSnapshot = getCurrentRowsSnapshot();
+  if (currentRowsSnapshot.length > 0 && !isCurrentListSaved()) {
+    openImportUnsavedModal();
+    return;
+  }
+
+  importParsedList(parsedPayload);
+  pendingImportPayload = null;
+  closeImportCodeModal();
+  openRemovalAlert("Lista importada com sucesso!");
 }
 
 function loadSavedListsFromStorage() {
@@ -1451,11 +1756,107 @@ manageListsModal?.addEventListener("click", (event) => {
 btnSaveCurrentList?.addEventListener("click", saveCurrentList);
 
 btnImportList?.addEventListener("click", () => {
-  openValidationModal("A funcionalidade Importar lista sera implementada em breve.");
+  openImportCodeModal();
 });
 
-btnExportList?.addEventListener("click", () => {
-  openValidationModal("A funcionalidade Exportar lista sera implementada em breve.");
+btnExportList?.addEventListener("click", async () => {
+  if (!savedLists.length) {
+    const rowsSnapshot = getCurrentRowsSnapshot();
+
+    if (!rowsSnapshot.length) {
+      openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
+      return;
+    }
+
+    openExportSaveModal();
+    return;
+  }
+
+  await exportCurrentList();
+});
+
+importCodeCancelButton?.addEventListener("click", closeImportCodeModal);
+
+importCodeConfirmButton?.addEventListener("click", handleImportConfirmRequest);
+
+importCodeInput?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    handleImportConfirmRequest();
+  }
+});
+
+importCodeModal?.addEventListener("click", (event) => {
+  if (event.target === importCodeModal) {
+    closeImportCodeModal();
+  }
+});
+
+importUnsavedSaveButton?.addEventListener("click", () => {
+  if (!pendingImportPayload) {
+    return;
+  }
+
+  const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
+
+  if (!hasSavedCurrentList) {
+    return;
+  }
+
+  importParsedList(pendingImportPayload);
+  pendingImportPayload = null;
+  closeImportUnsavedModal();
+  closeImportCodeModal();
+  openRemovalAlert("Lista importada com sucesso!");
+});
+
+importUnsavedDiscardButton?.addEventListener("click", () => {
+  if (!pendingImportPayload) {
+    return;
+  }
+
+  importParsedList(pendingImportPayload);
+  pendingImportPayload = null;
+  closeImportUnsavedModal();
+  closeImportCodeModal();
+  openRemovalAlert("Lista importada com sucesso!");
+});
+
+importUnsavedCancelButton?.addEventListener("click", () => {
+  closeImportUnsavedModal();
+});
+
+importUnsavedModal?.addEventListener("click", (event) => {
+  if (event.target === importUnsavedModal) {
+    closeImportUnsavedModal();
+  }
+});
+
+exportSaveConfirmButton?.addEventListener("click", async () => {
+  const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
+
+  if (!hasSavedCurrentList) {
+    return;
+  }
+
+  closeExportSaveModal();
+  await exportCurrentList();
+});
+
+exportSaveCancelButton?.addEventListener("click", closeExportSaveModal);
+
+exportSaveModal?.addEventListener("click", (event) => {
+  if (event.target === exportSaveModal) {
+    closeExportSaveModal();
+  }
+});
+
+exportSuccessCloseButton?.addEventListener("click", closeExportSuccessModal);
+
+exportSuccessModal?.addEventListener("click", (event) => {
+  if (event.target === exportSuccessModal) {
+    closeExportSuccessModal();
+  }
 });
 
 manageListsItemsContainer?.addEventListener("click", (event) => {
@@ -1707,6 +2108,26 @@ validationModal.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !exportSuccessModal.classList.contains("hidden")) {
+    closeExportSuccessModal();
+    return;
+  }
+
+  if (event.key === "Escape" && !exportSaveModal.classList.contains("hidden")) {
+    closeExportSaveModal();
+    return;
+  }
+
+  if (event.key === "Escape" && !importUnsavedModal.classList.contains("hidden")) {
+    closeImportUnsavedModal();
+    return;
+  }
+
+  if (event.key === "Escape" && !importCodeModal.classList.contains("hidden")) {
+    closeImportCodeModal();
+    return;
+  }
+
   if (event.key === "Escape" && !switchListModal.classList.contains("hidden")) {
     closeSwitchListModal();
     renderSavedLists();
