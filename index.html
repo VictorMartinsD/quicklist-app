@@ -175,6 +175,77 @@
       </div>
     </div>
 
+    <div
+      class="manage-lists-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="manage-lists-title"
+      aria-describedby="manage-lists-description">
+      <div class="manage-lists-modal__panel">
+        <button class="icon-button manage-lists-modal__close" type="button" aria-label="Fechar gerenciador de listas.">
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#delete"></use>
+          </svg>
+        </button>
+
+        <h3 id="manage-lists-title">Gerenciador de listas</h3>
+        <p id="manage-lists-description">Salve e organize suas listas para alternar rapidamente entre elas.</p>
+
+        <div class="manage-lists-modal__toolbar">
+          <button class="btn-save-current-list" type="button">Salvar a lista atual</button>
+
+          <div class="manage-lists-modal__import-export">
+            <button class="btn-import-list" type="button">Importar lista</button>
+            <button class="btn-export-list" type="button">Exportar lista</button>
+          </div>
+        </div>
+
+        <div class="manage-lists-box">
+          <div class="manage-lists-items grid gap-12">
+            <div class="manage-list-row flex gap-12 hidden">
+              <button
+                class="drag-handle manage-list-drag-handle"
+                type="button"
+                draggable="true"
+                aria-label="Mover lista salva.">
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/img/icons.svg#move"></use>
+                </svg>
+              </button>
+              <input
+                class="manage-list-radio"
+                type="radio"
+                name="saved-list-selection"
+                aria-label="Selecionar lista salva" />
+              <p class="manage-list-name"></p>
+              <button class="icon-button manage-list-remove" type="button" aria-label="Apagar lista salva.">
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/img/icons.svg#trash"></use>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="switch-list-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="switch-list-title"
+      aria-describedby="switch-list-description">
+      <div class="switch-list-modal__panel">
+        <h3 id="switch-list-title">Trocar lista</h3>
+        <p id="switch-list-description">Tem certeza que deseja exibir essa lista? <br />A lista atual não foi salva!</p>
+
+        <div class="switch-list-modal__actions">
+          <button class="btn-switch-list-cancel" type="button">Cancelar</button>
+          <button class="btn-switch-list-confirm" type="button">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
     <div class="alert-footer-stack">
       <div class="alert flex gap-8 hidden">
         <svg id="warning" class="icon" aria-hidden="true" focusable="false">

@@ -23,10 +23,21 @@ const clearModalCloseButton = document.querySelector(".clear-modal__close");
 const clearModalCancelButton = document.querySelector(".btn-clear-cancel");
 const clearModalCategoryOnlyButton = document.querySelector(".btn-clear-category-only");
 const clearModalConfirmButton = document.querySelector(".btn-clear-confirm");
+const manageListsModal = document.querySelector(".manage-lists-modal");
+const manageListsModalCloseButton = document.querySelector(".manage-lists-modal__close");
+const btnSaveCurrentList = document.querySelector(".btn-save-current-list");
+const btnImportList = document.querySelector(".btn-import-list");
+const btnExportList = document.querySelector(".btn-export-list");
+const manageListsItemsContainer = document.querySelector(".manage-lists-items");
+const manageListRowTemplate = document.querySelector(".manage-list-row.hidden");
+const switchListModal = document.querySelector(".switch-list-modal");
+const switchListCancelButton = document.querySelector(".btn-switch-list-cancel");
+const switchListConfirmButton = document.querySelector(".btn-switch-list-confirm");
 const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const ITEMS_STORAGE_KEY = "quicklist:items";
+const SAVED_LISTS_STORAGE_KEY = "quicklist:saved-lists";
 const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 const ITEM_NAME_MAX_LENGTH = 84;
@@ -36,9 +47,13 @@ let removalAlertTimeoutId = null;
 let draggedItemElement = null;
 let draggedRows = [];
 let activeEditableItem = null;
+let activeManageListEditableItem = null;
 let clearModalMode = "all";
 let categoryRowsToDelete = [];
 let categoryOnlyRowToDelete = null;
+let draggedSavedListElement = null;
+let pendingSelectedSavedListId = null;
+let savedLists = [];
 
 input.maxLength = ITEM_NAME_MAX_LENGTH;
 
@@ -83,7 +98,7 @@ function syncBulkActionsByViewport() {
 
 function closeValidationModal() {
   validationModal.classList.add("hidden");
-  document.body.classList.remove("modal-open");
+  syncModalOpenState();
   window.clearTimeout(validationTimeoutId);
   validationTimeoutId = null;
   input.focus();
@@ -94,7 +109,7 @@ function openValidationModal(message) {
 
   modalMessage.textContent = message;
   validationModal.classList.remove("hidden");
-  document.body.classList.add("modal-open");
+  syncModalOpenState();
   validationCloseButton.focus();
 
   window.clearTimeout(validationTimeoutId);
@@ -301,7 +316,7 @@ function updateClearAllButtonVisibility() {
 
 function closeClearModal() {
   clearModal.classList.add("hidden");
-  document.body.classList.remove("modal-open");
+  syncModalOpenState();
   clearModalMode = "all";
   categoryRowsToDelete = [];
   categoryOnlyRowToDelete = null;
@@ -322,7 +337,7 @@ function openClearModal() {
   categoryOnlyRowToDelete = null;
   clearModalCategoryOnlyButton.classList.add("hidden");
   clearModal.classList.remove("hidden");
-  document.body.classList.add("modal-open");
+  syncModalOpenState();
   clearModalCloseButton.focus();
 }
 
@@ -354,8 +369,366 @@ function openCategoryClearModal(categoryRowElement) {
     : "Tem certeza que deseja apagar os itens dessa categoria?";
 
   clearModal.classList.remove("hidden");
-  document.body.classList.add("modal-open");
+  syncModalOpenState();
   clearModalCloseButton.focus();
+}
+
+function syncModalOpenState() {
+  const hasOpenModal = [validationModal, clearModal, manageListsModal, switchListModal].some(
+    (modalElement) => modalElement && !modalElement.classList.contains("hidden"),
+  );
+
+  document.body.classList.toggle("modal-open", hasOpenModal);
+}
+
+function normalizeListRowsForComparison(rows) {
+  return rows.map((row) => ({
+    rowType: row.rowType === "category" ? "category" : "item",
+    text: normalizeItemText(row.text || ""),
+    checked: Boolean(row.checked),
+  }));
+}
+
+function getRowsSignature(rows) {
+  return JSON.stringify(normalizeListRowsForComparison(rows));
+}
+
+function getCurrentRowsSnapshot() {
+  return getVisibleRows().map((rowElement) => {
+    const text = rowElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+    const checkboxElement = rowElement.querySelector('input[type="checkbox"]');
+
+    return {
+      rowType: rowElement.dataset.rowType === "category" ? "category" : "item",
+      text,
+      checked: Boolean(checkboxElement?.checked),
+    };
+  });
+}
+
+function getNextSavedListName() {
+  const highestUsedNumber = savedLists.reduce((highest, savedList) => {
+    const matchedNumber = (savedList.name || "").match(/^Lista salva\s+(\d+)$/i);
+
+    if (!matchedNumber) {
+      return highest;
+    }
+
+    const numericValue = Number(matchedNumber[1]);
+    return Number.isNaN(numericValue) ? highest : Math.max(highest, numericValue);
+  }, 0);
+
+  return `Lista salva ${highestUsedNumber + 1}`;
+}
+
+function loadSavedListsFromStorage() {
+  const storedSavedListsRaw = localStorage.getItem(SAVED_LISTS_STORAGE_KEY);
+
+  if (!storedSavedListsRaw) {
+    savedLists = [];
+    return;
+  }
+
+  let parsedSavedLists;
+
+  try {
+    parsedSavedLists = JSON.parse(storedSavedListsRaw);
+  } catch {
+    localStorage.removeItem(SAVED_LISTS_STORAGE_KEY);
+    savedLists = [];
+    return;
+  }
+
+  if (!Array.isArray(parsedSavedLists)) {
+    localStorage.removeItem(SAVED_LISTS_STORAGE_KEY);
+    savedLists = [];
+    return;
+  }
+
+  savedLists = parsedSavedLists
+    .map((savedList) => {
+      if (!savedList || typeof savedList !== "object") {
+        return null;
+      }
+
+      if (!Array.isArray(savedList.items) || typeof savedList.name !== "string") {
+        return null;
+      }
+
+      const normalizedRows = normalizeListRowsForComparison(savedList.items).filter((row) => row.text !== "");
+
+      if (!normalizedRows.length) {
+        return null;
+      }
+
+      return {
+        id: savedList.id || generateId(),
+        name: normalizeItemText(savedList.name) || "Lista salva",
+        items: normalizedRows,
+      };
+    })
+    .filter(Boolean);
+}
+
+function saveSavedListsToStorage() {
+  if (!savedLists.length) {
+    localStorage.removeItem(SAVED_LISTS_STORAGE_KEY);
+    return;
+  }
+
+  localStorage.setItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(savedLists));
+}
+
+function getCurrentSavedListMatchId() {
+  const currentRowsSnapshot = getCurrentRowsSnapshot();
+
+  if (!currentRowsSnapshot.length) {
+    return null;
+  }
+
+  const currentSignature = getRowsSignature(currentRowsSnapshot);
+  const matchedList = savedLists.find((savedList) => getRowsSignature(savedList.items) === currentSignature);
+
+  return matchedList?.id || null;
+}
+
+function isCurrentListSaved() {
+  return Boolean(getCurrentSavedListMatchId());
+}
+
+function createSavedListRowElement(savedList, activeSavedListId) {
+  const savedListRowElement = manageListRowTemplate.cloneNode(true);
+  savedListRowElement.classList.remove("hidden");
+  savedListRowElement.dataset.savedListId = savedList.id;
+
+  const nameElement = savedListRowElement.querySelector(".manage-list-name");
+  const radioElement = savedListRowElement.querySelector(".manage-list-radio");
+
+  nameElement.textContent = savedList.name;
+  nameElement.title = savedList.name;
+  nameElement.tabIndex = 0;
+  nameElement.setAttribute("role", "button");
+  nameElement.setAttribute("aria-label", `Renomear lista salva: ${savedList.name}`);
+
+  radioElement.checked = activeSavedListId === savedList.id;
+  radioElement.setAttribute("aria-label", `Selecionar lista salva: ${savedList.name}`);
+
+  return savedListRowElement;
+}
+
+function renderSavedLists() {
+  if (!manageListsItemsContainer || !manageListRowTemplate) {
+    return;
+  }
+
+  const rowsToRemove = [...manageListsItemsContainer.querySelectorAll(".manage-list-row:not(.hidden)")];
+  rowsToRemove.forEach((rowElement) => rowElement.remove());
+
+  const activeSavedListId = getCurrentSavedListMatchId();
+
+  savedLists.forEach((savedList) => {
+    const savedListRowElement = createSavedListRowElement(savedList, activeSavedListId);
+    manageListsItemsContainer.append(savedListRowElement);
+  });
+}
+
+function openManageListsModal() {
+  if (activeEditableItem) {
+    finishItemEditing(activeEditableItem);
+  }
+
+  renderSavedLists();
+  manageListsModal.classList.remove("hidden");
+  syncModalOpenState();
+  manageListsModalCloseButton.focus();
+}
+
+function closeManageListsModal() {
+  if (activeManageListEditableItem) {
+    finishManageListEditing(activeManageListEditableItem);
+  }
+
+  manageListsModal.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openSwitchListModal(savedListId) {
+  pendingSelectedSavedListId = savedListId;
+  switchListModal.classList.remove("hidden");
+  syncModalOpenState();
+  switchListConfirmButton.focus();
+}
+
+function closeSwitchListModal() {
+  switchListModal.classList.add("hidden");
+  pendingSelectedSavedListId = null;
+  syncModalOpenState();
+}
+
+function applySavedList(savedListId) {
+  const targetSavedList = savedLists.find((savedList) => savedList.id === savedListId);
+
+  if (!targetSavedList) {
+    return;
+  }
+
+  getVisibleRows().forEach((rowElement) => rowElement.remove());
+
+  targetSavedList.items.forEach((savedRow) => {
+    const createdRow =
+      savedRow.rowType === "category" ? createCategoryElement(savedRow.text) : createListItemElement(savedRow.text);
+
+    const checkboxElement = createdRow.querySelector('input[type="checkbox"]');
+
+    if (checkboxElement) {
+      checkboxElement.checked = Boolean(savedRow.checked);
+    }
+
+    itemsContainer.append(createdRow);
+  });
+
+  refreshCategoryStructure();
+  saveItemsToStorage();
+  updateClearAllButtonVisibility();
+  renderSavedLists();
+}
+
+function saveCurrentList() {
+  const currentRowsSnapshot = getCurrentRowsSnapshot();
+
+  if (!currentRowsSnapshot.length) {
+    openValidationModal("É necessário ter pelo menos um item ou categoria na lista para salvar");
+    return;
+  }
+
+  const currentSignature = getRowsSignature(currentRowsSnapshot);
+  const alreadySaved = savedLists.some((savedList) => getRowsSignature(savedList.items) === currentSignature);
+
+  if (alreadySaved) {
+    openValidationModal("Ja existe uma lista identica salva.");
+    return;
+  }
+
+  const newSavedList = {
+    id: generateId(),
+    name: getNextSavedListName(),
+    items: normalizeListRowsForComparison(currentRowsSnapshot),
+  };
+
+  savedLists = [newSavedList, ...savedLists];
+  saveSavedListsToStorage();
+  renderSavedLists();
+  openRemovalAlert("Lista atual salva com sucesso.");
+}
+
+function removeSavedList(savedListId) {
+  savedLists = savedLists.filter((savedList) => savedList.id !== savedListId);
+  saveSavedListsToStorage();
+  renderSavedLists();
+}
+
+function finishManageListEditing(nameElement, shouldCancel = false) {
+  if (!nameElement || !nameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  const originalName = nameElement.dataset.originalName || "";
+  const editedName = normalizeItemText(nameElement.textContent || "");
+  const finalName = shouldCancel || !editedName ? originalName : editedName;
+  const rowElement = nameElement.closest(".manage-list-row");
+  const savedListId = rowElement?.dataset?.savedListId;
+
+  nameElement.textContent = finalName;
+  nameElement.title = finalName;
+  nameElement.setAttribute("aria-label", `Renomear lista salva: ${finalName}`);
+  nameElement.removeAttribute("contenteditable");
+  nameElement.removeAttribute("spellcheck");
+  nameElement.classList.remove("is-editing");
+  nameElement.style.height = "";
+  nameElement.style.maxHeight = "";
+  delete nameElement.dataset.originalName;
+
+  if (activeManageListEditableItem === nameElement) {
+    activeManageListEditableItem = null;
+  }
+
+  if (savedListId && finalName !== originalName) {
+    const targetSavedList = savedLists.find((savedList) => savedList.id === savedListId);
+
+    if (targetSavedList) {
+      targetSavedList.name = finalName;
+      saveSavedListsToStorage();
+      renderSavedLists();
+    }
+  }
+}
+
+function startManageListEditing(nameElement) {
+  if (!nameElement || nameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  if (activeManageListEditableItem && activeManageListEditableItem !== nameElement) {
+    finishManageListEditing(activeManageListEditableItem);
+  }
+
+  const stableHeight = nameElement.offsetHeight;
+
+  nameElement.dataset.originalName = nameElement.textContent || "";
+  nameElement.classList.add("is-editing");
+  nameElement.setAttribute("contenteditable", "true");
+  nameElement.setAttribute("spellcheck", "false");
+  nameElement.style.height = `${stableHeight}px`;
+  nameElement.style.maxHeight = `${stableHeight}px`;
+
+  nameElement.focus();
+  activeManageListEditableItem = nameElement;
+
+  const selection = window.getSelection();
+
+  if (!selection) {
+    return;
+  }
+
+  const range = document.createRange();
+  range.selectNodeContents(nameElement);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function getSavedListRowAfterPointerPosition(pointerY) {
+  const draggableRows = [
+    ...manageListsItemsContainer.querySelectorAll(".manage-list-row:not(.hidden):not(.is-dragging)"),
+  ];
+
+  return draggableRows.reduce(
+    (closestRow, currentRow) => {
+      const rowRect = currentRow.getBoundingClientRect();
+      const pointerOffset = pointerY - rowRect.top - rowRect.height / 2;
+
+      if (pointerOffset < 0 && pointerOffset > closestRow.offset) {
+        return { offset: pointerOffset, element: currentRow };
+      }
+
+      return closestRow;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null },
+  ).element;
+}
+
+function persistSavedListsFromDomOrder() {
+  const orderedIds = [...manageListsItemsContainer.querySelectorAll(".manage-list-row:not(.hidden)")].map(
+    (rowElement) => rowElement.dataset.savedListId,
+  );
+
+  if (!orderedIds.length) {
+    return;
+  }
+
+  const savedListsById = new Map(savedLists.map((savedList) => [savedList.id, savedList]));
+
+  savedLists = orderedIds.map((savedListId) => savedListsById.get(savedListId)).filter(Boolean);
+  saveSavedListsToStorage();
 }
 
 function clearAllItems() {
@@ -970,6 +1343,250 @@ clearModal.addEventListener("click", (event) => {
   }
 });
 
+btnManageLists?.addEventListener("click", openManageListsModal);
+
+manageListsModalCloseButton?.addEventListener("click", closeManageListsModal);
+
+manageListsModal?.addEventListener("click", (event) => {
+  if (event.target === manageListsModal) {
+    closeManageListsModal();
+  }
+});
+
+btnSaveCurrentList?.addEventListener("click", saveCurrentList);
+
+btnImportList?.addEventListener("click", () => {
+  openValidationModal("A funcionalidade Importar lista sera implementada em breve.");
+});
+
+btnExportList?.addEventListener("click", () => {
+  openValidationModal("A funcionalidade Exportar lista sera implementada em breve.");
+});
+
+manageListsItemsContainer?.addEventListener("click", (event) => {
+  const removeButton = event.target.closest(".manage-list-remove");
+
+  if (removeButton) {
+    const rowElement = removeButton.closest(".manage-list-row");
+    const savedListId = rowElement?.dataset?.savedListId;
+
+    if (savedListId) {
+      removeSavedList(savedListId);
+    }
+
+    return;
+  }
+
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (listNameElement) {
+    startManageListEditing(listNameElement);
+  }
+});
+
+manageListsItemsContainer?.addEventListener("focusin", (event) => {
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (!listNameElement || listNameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  if (activeManageListEditableItem && activeManageListEditableItem !== listNameElement) {
+    finishManageListEditing(activeManageListEditableItem);
+  }
+});
+
+manageListsItemsContainer?.addEventListener("keydown", (event) => {
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (!listNameElement) {
+    return;
+  }
+
+  if (!listNameElement.classList.contains("is-editing") && event.key === "Enter") {
+    event.preventDefault();
+    startManageListEditing(listNameElement);
+    return;
+  }
+
+  if (listNameElement.classList.contains("is-editing") && event.key === "Enter") {
+    event.preventDefault();
+    finishManageListEditing(listNameElement);
+    listNameElement.blur();
+    return;
+  }
+
+  if (listNameElement.classList.contains("is-editing") && event.key === "Escape") {
+    event.preventDefault();
+    finishManageListEditing(listNameElement, true);
+    listNameElement.blur();
+  }
+});
+
+manageListsItemsContainer?.addEventListener("beforeinput", (event) => {
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  const isInsertOperation = event.inputType?.startsWith("insert");
+
+  if (!isInsertOperation) {
+    return;
+  }
+
+  const currentLength = (listNameElement.textContent || "").length;
+  const selectionLength = getEditableSelectionLength(listNameElement);
+  const nextLength = currentLength - selectionLength;
+
+  if (nextLength >= ITEM_NAME_MAX_LENGTH) {
+    event.preventDefault();
+  }
+});
+
+manageListsItemsContainer?.addEventListener("input", (event) => {
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  clampEditingTextLength(listNameElement);
+});
+
+manageListsItemsContainer?.addEventListener("focusout", (event) => {
+  const listNameElement = event.target.closest(".manage-list-name");
+
+  if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    return;
+  }
+
+  finishManageListEditing(listNameElement);
+});
+
+manageListsItemsContainer?.addEventListener("change", (event) => {
+  const radioElement = event.target.closest(".manage-list-radio");
+
+  if (!radioElement) {
+    return;
+  }
+
+  const rowElement = radioElement.closest(".manage-list-row");
+  const selectedSavedListId = rowElement?.dataset?.savedListId;
+
+  if (!selectedSavedListId) {
+    return;
+  }
+
+  const selectedSavedList = savedLists.find((savedList) => savedList.id === selectedSavedListId);
+
+  if (!selectedSavedList) {
+    return;
+  }
+
+  const currentRowsSnapshot = getCurrentRowsSnapshot();
+  const currentSignature = getRowsSignature(currentRowsSnapshot);
+  const selectedSignature = getRowsSignature(selectedSavedList.items);
+
+  if (currentSignature === selectedSignature) {
+    renderSavedLists();
+    return;
+  }
+
+  if (currentRowsSnapshot.length > 0 && !isCurrentListSaved()) {
+    openSwitchListModal(selectedSavedListId);
+    return;
+  }
+
+  applySavedList(selectedSavedListId);
+});
+
+manageListsItemsContainer?.addEventListener("dragstart", (event) => {
+  const dragHandleElement = event.target.closest(".manage-list-drag-handle");
+
+  if (!dragHandleElement) {
+    event.preventDefault();
+    return;
+  }
+
+  draggedSavedListElement = dragHandleElement.closest(".manage-list-row");
+
+  if (!draggedSavedListElement || draggedSavedListElement.classList.contains("hidden")) {
+    event.preventDefault();
+    return;
+  }
+
+  if (activeManageListEditableItem) {
+    finishManageListEditing(activeManageListEditableItem);
+  }
+
+  draggedSavedListElement.classList.add("is-dragging");
+
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", draggedSavedListElement.dataset.savedListId || "");
+});
+
+manageListsItemsContainer?.addEventListener("dragover", (event) => {
+  if (!draggedSavedListElement) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const nextRowElement = getSavedListRowAfterPointerPosition(event.clientY);
+
+  if (nextRowElement && draggedSavedListElement === nextRowElement) {
+    return;
+  }
+
+  if (!nextRowElement) {
+    manageListsItemsContainer.append(draggedSavedListElement);
+    return;
+  }
+
+  manageListsItemsContainer.insertBefore(draggedSavedListElement, nextRowElement);
+});
+
+manageListsItemsContainer?.addEventListener("drop", (event) => {
+  if (!draggedSavedListElement) {
+    return;
+  }
+
+  event.preventDefault();
+  persistSavedListsFromDomOrder();
+});
+
+manageListsItemsContainer?.addEventListener("dragend", () => {
+  if (!draggedSavedListElement) {
+    return;
+  }
+
+  draggedSavedListElement.classList.remove("is-dragging");
+  draggedSavedListElement = null;
+  renderSavedLists();
+});
+
+switchListCancelButton?.addEventListener("click", () => {
+  closeSwitchListModal();
+  renderSavedLists();
+});
+
+switchListConfirmButton?.addEventListener("click", () => {
+  if (pendingSelectedSavedListId) {
+    applySavedList(pendingSelectedSavedListId);
+  }
+
+  closeSwitchListModal();
+});
+
+switchListModal?.addEventListener("click", (event) => {
+  if (event.target === switchListModal) {
+    closeSwitchListModal();
+    renderSavedLists();
+  }
+});
+
 removalAlertCloseButton.addEventListener("click", closeRemovalAlert);
 
 validationCloseButton.addEventListener("click", closeValidationModal);
@@ -981,6 +1598,17 @@ validationModal.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !switchListModal.classList.contains("hidden")) {
+    closeSwitchListModal();
+    renderSavedLists();
+    return;
+  }
+
+  if (event.key === "Escape" && !manageListsModal.classList.contains("hidden")) {
+    closeManageListsModal();
+    return;
+  }
+
   if (event.key === "Escape" && !clearModal.classList.contains("hidden")) {
     closeClearModal();
     return;
@@ -1011,13 +1639,10 @@ bulkActionsToggle?.addEventListener("click", () => {
 
 btnSelectAll?.addEventListener("click", handleToggleSelectAll);
 
-btnManageLists?.addEventListener("click", () => {
-  openValidationModal("A funcionalidade Gerenciar listas sera implementada em breve.");
-});
-
 window.addEventListener("resize", syncBulkActionsByViewport);
 
 loadItemsFromStorage();
+loadSavedListsFromStorage();
 refreshCategoryStructure();
 updateClearAllButtonVisibility();
 syncBulkActionsByViewport();
