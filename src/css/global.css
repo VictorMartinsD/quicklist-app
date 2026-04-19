@@ -645,6 +645,7 @@ input[type="checkbox"]:checked::after {
 }
 
 .btn-clear-cancel,
+.btn-clear-category-only,
 .btn-clear-confirm {
   border-radius: 10px;
   padding: 10px 16px;
@@ -661,6 +662,18 @@ input[type="checkbox"]:checked::after {
 .btn-clear-cancel:hover,
 .btn-clear-cancel:focus-visible {
   border-color: var(--border-hover);
+}
+
+.btn-clear-category-only {
+  border: 1px solid rgba(202, 56, 132, 0.4);
+  background: rgba(202, 56, 132, 0.08);
+  color: var(--color-brand);
+}
+
+.btn-clear-category-only:hover,
+.btn-clear-category-only:focus-visible {
+  border-color: var(--color-brand);
+  background: rgba(202, 56, 132, 0.12);
 }
 
 .btn-clear-confirm {

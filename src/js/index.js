@@ -21,6 +21,7 @@ const clearModal = document.querySelector(".clear-modal");
 const clearModalDescription = document.querySelector("#clear-modal-description");
 const clearModalCloseButton = document.querySelector(".clear-modal__close");
 const clearModalCancelButton = document.querySelector(".btn-clear-cancel");
+const clearModalCategoryOnlyButton = document.querySelector(".btn-clear-category-only");
 const clearModalConfirmButton = document.querySelector(".btn-clear-confirm");
 const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
@@ -37,6 +38,7 @@ let draggedRows = [];
 let activeEditableItem = null;
 let clearModalMode = "all";
 let categoryRowsToDelete = [];
+let categoryOnlyRowToDelete = null;
 
 input.maxLength = ITEM_NAME_MAX_LENGTH;
 
@@ -302,6 +304,8 @@ function closeClearModal() {
   document.body.classList.remove("modal-open");
   clearModalMode = "all";
   categoryRowsToDelete = [];
+  categoryOnlyRowToDelete = null;
+  clearModalCategoryOnlyButton.classList.add("hidden");
 }
 
 function openClearModal() {
@@ -315,6 +319,8 @@ function openClearModal() {
   clearModalDescription.textContent = `Tem certeza que deseja apagar ${totalItems} itens da lista?`;
   clearModalMode = "all";
   categoryRowsToDelete = [];
+  categoryOnlyRowToDelete = null;
+  clearModalCategoryOnlyButton.classList.add("hidden");
   clearModal.classList.remove("hidden");
   document.body.classList.add("modal-open");
   clearModalCloseButton.focus();
@@ -327,8 +333,21 @@ function openCategoryClearModal(categoryRowElement) {
     return;
   }
 
+  if (rows.length === 1 && !hasSubcategories) {
+    categoryRowsToDelete = [categoryRowElement];
+    clearCategoryItems();
+    return;
+  }
+
   categoryRowsToDelete = rows;
   clearModalMode = "category";
+  categoryOnlyRowToDelete = hasSubcategories ? categoryRowElement : null;
+
+  if (categoryOnlyRowToDelete) {
+    clearModalCategoryOnlyButton.classList.remove("hidden");
+  } else {
+    clearModalCategoryOnlyButton.classList.add("hidden");
+  }
 
   clearModalDescription.textContent = hasSubcategories
     ? "Tem certeza que deseja apagar os itens dessa categoria e suas sub-categorias correspondentes?"
@@ -361,6 +380,20 @@ function clearCategoryItems() {
   }
 
   categoryRowsToDelete.forEach((rowElement) => rowElement.remove());
+  refreshCategoryStructure();
+  saveItemsToStorage();
+  updateClearAllButtonVisibility();
+  closeClearModal();
+  openRemovalAlert("Categoria removida com sucesso.");
+}
+
+function clearCategoryOnly() {
+  if (!categoryOnlyRowToDelete) {
+    closeClearModal();
+    return;
+  }
+
+  categoryOnlyRowToDelete.remove();
   refreshCategoryStructure();
   saveItemsToStorage();
   updateClearAllButtonVisibility();
@@ -919,6 +952,8 @@ clearAllButton.addEventListener("click", openClearModal);
 clearModalCloseButton.addEventListener("click", closeClearModal);
 
 clearModalCancelButton.addEventListener("click", closeClearModal);
+
+clearModalCategoryOnlyButton.addEventListener("click", clearCategoryOnly);
 
 clearModalConfirmButton.addEventListener("click", () => {
   if (clearModalMode === "category") {
