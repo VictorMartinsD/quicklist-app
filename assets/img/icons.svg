@@ -54,4 +54,19 @@
     <circle cx="10" cy="14.25" r="1" fill="currentColor"/>
   </symbol>
 
+  <symbol id="bulb-off" viewBox="0 0 24 24" fill="none">
+    <path d="M9 18H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 22H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 14.5C7.5 13.5 6 11.25 6 8.75C6 5.57 8.57 3 11.75 3H12.25C15.43 3 18 5.57 18 8.75C18 11.25 16.5 13.5 14 14.5V18H10V14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="bulb-on" viewBox="0 0 24 24" fill="none">
+    <path d="M9 18H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 22H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 14.5C7.5 13.5 6 11.25 6 8.75C6 5.57 8.57 3 11.75 3H12.25C15.43 3 18 5.57 18 8.75C18 11.25 16.5 13.5 14 14.5V18H10V14.5Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 6V1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M4.65 8.65L2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M19.35 8.65L22 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+
 </svg>

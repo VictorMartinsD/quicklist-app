@@ -6,6 +6,8 @@
 import { generateId } from "./utils.js";
 
 const input = document.querySelector("#item");
+const themeToggleButton = document.querySelector(".theme-toggle");
+const themeToggleIconUse = themeToggleButton?.querySelector("use");
 const btnAddItem = document.querySelector(".btn-add-item");
 const btnNewCategory = document.querySelector(".btn-new-category");
 const btnSelectAll = document.querySelector(".btn-select-all");
@@ -64,6 +66,7 @@ const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const ITEMS_STORAGE_KEY = "quicklist:items";
 const SAVED_LISTS_STORAGE_KEY = "quicklist:saved-lists";
+const THEME_STORAGE_KEY = "quicklist:theme";
 const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
 const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
 const ITEM_NAME_MAX_LENGTH = 84;
@@ -92,6 +95,55 @@ input.maxLength = ITEM_NAME_MAX_LENGTH;
 if (importCodeInput) {
   importCodeInput.maxLength = IMPORT_CODE_MAX_LENGTH;
 }
+
+function normalizeTheme(theme) {
+  return theme === "light" ? "light" : "dark";
+}
+
+function applyTheme(theme) {
+  const normalizedTheme = normalizeTheme(theme);
+  document.documentElement.setAttribute("data-theme", normalizedTheme);
+
+  if (!themeToggleButton || !themeToggleIconUse) {
+    return;
+  }
+
+  const isLightTheme = normalizedTheme === "light";
+
+  themeToggleIconUse.setAttribute(
+    "href",
+    isLightTheme ? "assets/img/icons.svg#bulb-on" : "assets/img/icons.svg#bulb-off",
+  );
+  themeToggleButton.setAttribute("aria-label", isLightTheme ? "Ativar modo escuro" : "Ativar modo claro");
+  themeToggleButton.setAttribute("title", isLightTheme ? "Ativar modo escuro" : "Ativar modo claro");
+}
+
+function loadSavedTheme() {
+  try {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    return normalizeTheme(savedTheme);
+  } catch {
+    return "dark";
+  }
+}
+
+function saveTheme(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, normalizeTheme(theme));
+  } catch {
+    return;
+  }
+}
+
+function toggleTheme() {
+  const currentTheme = normalizeTheme(document.documentElement.getAttribute("data-theme"));
+  const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+  applyTheme(nextTheme);
+  saveTheme(nextTheme);
+}
+
+applyTheme(loadSavedTheme());
 
 function isMobileViewport() {
   return window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
@@ -1974,6 +2026,8 @@ exportSuccessModal?.addEventListener("click", (event) => {
     closeExportSuccessModal();
   }
 });
+
+themeToggleButton?.addEventListener("click", toggleTheme);
 
 btnImportExportHelp?.addEventListener("click", openImportExportHelpModal);
 

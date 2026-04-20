@@ -42,6 +42,20 @@
     <script type="module" src="src/js/index.js"></script>
 
     <script>
+      const THEME_STORAGE_KEY = "quicklist:theme";
+
+      try {
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+
       function revealPage() {
         document.documentElement.classList.add("ready");
       }
@@ -55,10 +69,18 @@
   </head>
   <body>
     <header class="logo-name desktop-only">
-      <svg id="logo" aria-hidden="true" focusable="false">
-        <use href="assets/img/icons.svg#logo"></use>
-      </svg>
-      <h1 class="brand">quicklist</h1>
+      <div class="logo-name__brand">
+        <svg id="logo" aria-hidden="true" focusable="false">
+          <use href="assets/img/icons.svg#logo"></use>
+        </svg>
+        <h1 class="brand">quicklist</h1>
+      </div>
+
+      <button class="theme-toggle icon-button" type="button" aria-label="Ativar modo claro" title="Trocar tema">
+        <svg class="icon" aria-hidden="true" focusable="false">
+          <use href="assets/img/icons.svg#bulb-off"></use>
+        </svg>
+      </button>
     </header>
 
     <div class="grid gap-16">
