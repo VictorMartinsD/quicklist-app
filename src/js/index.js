@@ -40,6 +40,12 @@ const importUnsavedModal = document.querySelector(".import-unsaved-modal");
 const importUnsavedSaveButton = document.querySelector(".btn-import-unsaved-save");
 const importUnsavedDiscardButton = document.querySelector(".btn-import-unsaved-discard");
 const importUnsavedCancelButton = document.querySelector(".btn-import-unsaved-cancel");
+const importDuplicateModal = document.querySelector(".import-duplicate-modal");
+const importDuplicateNameElement = document.querySelector(".import-duplicate-name");
+const importDuplicateActivateButton = document.querySelector(".btn-import-duplicate-activate");
+const importDuplicateCancelButton = document.querySelector(".btn-import-duplicate-cancel");
+const importDuplicateActiveModal = document.querySelector(".import-duplicate-active-modal");
+const importDuplicateActiveConfirmButton = document.querySelector(".btn-import-duplicate-active-confirm");
 const exportSaveModal = document.querySelector(".export-save-modal");
 const exportSaveConfirmButton = document.querySelector(".btn-export-save-confirm");
 const exportSaveCancelButton = document.querySelector(".btn-export-save-cancel");
@@ -73,6 +79,7 @@ let categoryOnlyRowToDelete = null;
 let draggedSavedListElement = null;
 let pendingSelectedSavedListId = null;
 let pendingImportPayload = null;
+let pendingDuplicateSavedListId = null;
 let savedLists = [];
 
 input.maxLength = ITEM_NAME_MAX_LENGTH;
@@ -405,6 +412,8 @@ function syncModalOpenState() {
     switchListModal,
     importCodeModal,
     importUnsavedModal,
+    importDuplicateModal,
+    importDuplicateActiveModal,
     exportSaveModal,
     exportSuccessModal,
   ].some((modalElement) => modalElement && !modalElement.classList.contains("hidden"));
@@ -573,6 +582,11 @@ function parseImportedPayload(rawCode) {
   };
 }
 
+function findSavedListBySignature(rows) {
+  const targetSignature = getRowsSignature(rows);
+  return savedLists.find((savedList) => getRowsSignature(savedList.items) === targetSignature) || null;
+}
+
 function closeImportCodeModal() {
   importCodeModal?.classList.add("hidden");
   syncModalOpenState();
@@ -593,6 +607,39 @@ function openImportUnsavedModal() {
   importUnsavedModal?.classList.remove("hidden");
   syncModalOpenState();
   importUnsavedSaveButton?.focus();
+}
+
+function closeImportDuplicateModal() {
+  importDuplicateModal?.classList.add("hidden");
+  pendingDuplicateSavedListId = null;
+  syncModalOpenState();
+}
+
+function openImportDuplicateModal(savedList) {
+  if (!savedList) {
+    return;
+  }
+
+  pendingDuplicateSavedListId = savedList.id;
+
+  if (importDuplicateNameElement) {
+    importDuplicateNameElement.textContent = savedList.name;
+  }
+
+  importDuplicateModal?.classList.remove("hidden");
+  syncModalOpenState();
+  importDuplicateActivateButton?.focus();
+}
+
+function closeImportDuplicateActiveModal() {
+  importDuplicateActiveModal?.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openImportDuplicateActiveModal() {
+  importDuplicateActiveModal?.classList.remove("hidden");
+  syncModalOpenState();
+  importDuplicateActiveConfirmButton?.focus();
 }
 
 function closeExportSaveModal() {
@@ -714,6 +761,20 @@ function handleImportConfirmRequest() {
     openValidationModal(
       'Código JSON inválido. \nÉ necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
     );
+    return;
+  }
+
+  const matchedSavedList = findSavedListBySignature(parsedPayload.items);
+
+  if (matchedSavedList) {
+    const activeSavedListId = getCurrentSavedListMatchId();
+
+    if (activeSavedListId && activeSavedListId === matchedSavedList.id) {
+      openImportDuplicateActiveModal();
+      return;
+    }
+
+    openImportDuplicateModal(matchedSavedList);
     return;
   }
 
@@ -1826,6 +1887,35 @@ importUnsavedCancelButton?.addEventListener("click", () => {
   closeImportUnsavedModal();
 });
 
+importDuplicateActivateButton?.addEventListener("click", () => {
+  if (!pendingDuplicateSavedListId) {
+    return;
+  }
+
+  applySavedList(pendingDuplicateSavedListId);
+  closeImportDuplicateModal();
+  closeImportCodeModal();
+});
+
+importDuplicateCancelButton?.addEventListener("click", closeImportDuplicateModal);
+
+importDuplicateModal?.addEventListener("click", (event) => {
+  if (event.target === importDuplicateModal) {
+    closeImportDuplicateModal();
+  }
+});
+
+importDuplicateActiveConfirmButton?.addEventListener("click", () => {
+  closeImportDuplicateActiveModal();
+  closeImportCodeModal();
+});
+
+importDuplicateActiveModal?.addEventListener("click", (event) => {
+  if (event.target === importDuplicateActiveModal) {
+    closeImportDuplicateActiveModal();
+  }
+});
+
 importUnsavedModal?.addEventListener("click", (event) => {
   if (event.target === importUnsavedModal) {
     closeImportUnsavedModal();
@@ -2120,6 +2210,16 @@ document.addEventListener("keydown", (event) => {
 
   if (event.key === "Escape" && !importUnsavedModal.classList.contains("hidden")) {
     closeImportUnsavedModal();
+    return;
+  }
+
+  if (event.key === "Escape" && !importDuplicateModal.classList.contains("hidden")) {
+    closeImportDuplicateModal();
+    return;
+  }
+
+  if (event.key === "Escape" && !importDuplicateActiveModal.classList.contains("hidden")) {
+    closeImportDuplicateActiveModal();
     return;
   }
 

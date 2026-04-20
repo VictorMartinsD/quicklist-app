@@ -1082,6 +1082,8 @@ input[type="checkbox"]:checked::after {
 
 .import-code-modal,
 .import-unsaved-modal,
+.import-duplicate-modal,
+.import-duplicate-active-modal,
 .export-save-modal,
 .export-success-modal {
   position: fixed;
@@ -1096,12 +1098,16 @@ input[type="checkbox"]:checked::after {
 }
 
 .import-unsaved-modal,
+.import-duplicate-modal,
+.import-duplicate-active-modal,
 .export-save-modal {
   z-index: 35;
 }
 
 .import-code-modal__panel,
 .import-unsaved-modal__panel,
+.import-duplicate-modal__panel,
+.import-duplicate-active-modal__panel,
 .export-save-modal__panel,
 .export-success-modal__panel {
   width: min(100%, 560px);
@@ -1115,6 +1121,8 @@ input[type="checkbox"]:checked::after {
 
 .import-code-modal__panel h3,
 .import-unsaved-modal__panel h3,
+.import-duplicate-modal__panel h3,
+.import-duplicate-active-modal__panel h3,
 .export-save-modal__panel h3,
 .export-success-modal__panel h3 {
   margin-bottom: 8px;
@@ -1124,9 +1132,19 @@ input[type="checkbox"]:checked::after {
 
 .import-code-modal__panel p,
 .import-unsaved-modal__panel p,
+.import-duplicate-modal__panel p,
+.import-duplicate-active-modal__panel p,
 .export-save-modal__panel p,
 .export-success-modal__panel p {
   color: var(--content-secondary);
+}
+
+.modal-text-line {
+  display: block;
+}
+
+.modal-text-line--spaced {
+  margin-top: 10px;
 }
 
 .import-code-modal__field-label {
@@ -1159,6 +1177,8 @@ input[type="checkbox"]:checked::after {
 
 .import-code-modal__actions,
 .import-unsaved-modal__actions,
+.import-duplicate-modal__actions,
+.import-duplicate-active-modal__actions,
 .export-save-modal__actions,
 .export-success-modal__actions {
   display: flex;
@@ -1169,11 +1189,14 @@ input[type="checkbox"]:checked::after {
 
 .btn-import-code-cancel,
 .btn-import-unsaved-cancel,
+.btn-import-duplicate-cancel,
 .btn-export-save-cancel,
 .btn-export-success-close,
 .btn-import-code-confirm,
 .btn-import-unsaved-save,
 .btn-import-unsaved-discard,
+.btn-import-duplicate-activate,
+.btn-import-duplicate-active-confirm,
 .btn-export-save-confirm {
   border-radius: 10px;
   padding: 10px 16px;
@@ -1183,6 +1206,7 @@ input[type="checkbox"]:checked::after {
 
 .btn-import-code-cancel,
 .btn-import-unsaved-cancel,
+.btn-import-duplicate-cancel,
 .btn-export-save-cancel,
 .btn-export-success-close {
   border: 1px solid var(--border-primary);
@@ -1194,6 +1218,8 @@ input[type="checkbox"]:checked::after {
 .btn-import-code-cancel:focus-visible,
 .btn-import-unsaved-cancel:hover,
 .btn-import-unsaved-cancel:focus-visible,
+.btn-import-duplicate-cancel:hover,
+.btn-import-duplicate-cancel:focus-visible,
 .btn-export-save-cancel:hover,
 .btn-export-save-cancel:focus-visible,
 .btn-export-success-close:hover,
@@ -1203,6 +1229,8 @@ input[type="checkbox"]:checked::after {
 
 .btn-import-code-confirm,
 .btn-import-unsaved-save,
+.btn-import-duplicate-activate,
+.btn-import-duplicate-active-confirm,
 .btn-export-save-confirm {
   border: 1px solid var(--color-brand);
   background: var(--color-brand);
@@ -1213,6 +1241,10 @@ input[type="checkbox"]:checked::after {
 .btn-import-code-confirm:focus-visible,
 .btn-import-unsaved-save:hover,
 .btn-import-unsaved-save:focus-visible,
+.btn-import-duplicate-activate:hover,
+.btn-import-duplicate-activate:focus-visible,
+.btn-import-duplicate-active-confirm:hover,
+.btn-import-duplicate-active-confirm:focus-visible,
 .btn-export-save-confirm:hover,
 .btn-export-save-confirm:focus-visible {
   background: var(--color-brand-hover);
@@ -1433,6 +1465,8 @@ body.modal-open {
 
   .import-code-modal,
   .import-unsaved-modal,
+  .import-duplicate-modal,
+  .import-duplicate-active-modal,
   .export-save-modal,
   .export-success-modal {
     padding: 16px;
@@ -1440,6 +1474,8 @@ body.modal-open {
 
   .import-code-modal__panel,
   .import-unsaved-modal__panel,
+  .import-duplicate-modal__panel,
+  .import-duplicate-active-modal__panel,
   .export-save-modal__panel,
   .export-success-modal__panel {
     padding: 20px;
@@ -1447,6 +1483,8 @@ body.modal-open {
 
   .import-code-modal__actions,
   .import-unsaved-modal__actions,
+  .import-duplicate-modal__actions,
+  .import-duplicate-active-modal__actions,
   .export-save-modal__actions,
   .export-success-modal__actions {
     display: grid;

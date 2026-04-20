@@ -294,6 +294,43 @@
     </div>
 
     <div
+      class="import-duplicate-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="import-duplicate-title"
+      aria-describedby="import-duplicate-description">
+      <div class="import-duplicate-modal__panel">
+        <h3 id="import-duplicate-title">Importar lista</h3>
+        <p id="import-duplicate-description">
+          <span class="modal-text-line">Você já tem essa lista!</span>
+          <span class="modal-text-line">O nome dela é "<strong class="import-duplicate-name">X</strong>".</span>
+          <span class="modal-text-line modal-text-line--spaced">Deseja ativá-la?</span>
+        </p>
+
+        <div class="import-duplicate-modal__actions">
+          <button class="btn-import-duplicate-activate" type="button">Ativar</button>
+          <button class="btn-import-duplicate-cancel" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="import-duplicate-active-modal hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="import-duplicate-active-title"
+      aria-describedby="import-duplicate-active-description">
+      <div class="import-duplicate-active-modal__panel">
+        <h3 id="import-duplicate-active-title">Importar lista</h3>
+        <p id="import-duplicate-active-description">Você já tem essa lista, e ela está ativada!</p>
+
+        <div class="import-duplicate-active-modal__actions">
+          <button class="btn-import-duplicate-active-confirm" type="button">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <div
       class="export-save-modal hidden"
       role="alertdialog"
       aria-modal="true"
@@ -321,8 +358,10 @@
       <div class="export-success-modal__panel">
         <h3 id="export-success-title">Exportação concluída</h3>
         <p id="export-success-description">
-          Código copiado com sucesso! <br />Cole o código no dispositivo que você deseja que a lista seja usada, em
-          "Importar lista".
+          <span class="modal-text-line">Código copiado com sucesso!</span>
+          <span class="modal-text-line modal-text-line--spaced">
+            Cole o código no dispositivo que você deseja que a lista seja usada, em "Importar lista".
+          </span>
         </p>
 
         <div class="export-success-modal__actions">
