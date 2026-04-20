@@ -7,6 +7,7 @@
   --content-primary: #fafafa;
   --content-secondary: #a1a1aa;
   --content-tertiary: #71717a;
+  --text-on-light-surface: #18181b;
   --always-white: #fafafa;
   --border-primary: #3f3f46;
   --border-hover: #52525b;
@@ -40,6 +41,7 @@ html[data-theme="light"] {
   --content-primary: #080b12;
   --content-secondary: #374151;
   --content-tertiary: #9ca3af;
+  --text-on-light-surface: #374151;
   --always-white: #ffffff;
   --border-primary: #d1d5db;
   --border-hover: #b9c2d0;
@@ -793,7 +795,7 @@ input[type="checkbox"]:checked::after {
 .btn-clear-cancel {
   border: 1px solid var(--border-primary);
   background: var(--always-white);
-  color: var(--content-secondary);
+  color: var(--text-on-light-surface);
 }
 
 .btn-clear-cancel:hover,
@@ -1147,7 +1149,7 @@ html[data-theme="dark"] .btn-export-list {
 .btn-switch-list-cancel {
   border: 1px solid var(--border-primary);
   background: var(--always-white);
-  color: var(--content-secondary);
+  color: var(--text-on-light-surface);
 }
 
 .btn-switch-list-cancel:hover,
@@ -1260,7 +1262,7 @@ html[data-theme="dark"] .btn-export-list {
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   font: var(--link);
-  color: var(--content-primary);
+  color: var(--background-secondary);
   resize: vertical;
   overflow-y: auto;
   box-sizing: border-box;
@@ -1310,7 +1312,7 @@ html[data-theme="dark"] .btn-export-list {
 .btn-export-success-close {
   border: 1px solid var(--border-primary);
   background: var(--always-white);
-  color: var(--content-secondary);
+  color: var(--text-on-light-surface);
 }
 
 .btn-import-code-cancel:hover,
