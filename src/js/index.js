@@ -35,6 +35,7 @@ const switchListModal = document.querySelector(".switch-list-modal");
 const importCodeModal = document.querySelector(".import-code-modal");
 const importCodeInput = document.querySelector("#import-code-input");
 const importCodeCancelButton = document.querySelector(".btn-import-code-cancel");
+const importCodeClearButton = document.querySelector(".btn-import-code-clear");
 const importCodeConfirmButton = document.querySelector(".btn-import-code-confirm");
 const importUnsavedModal = document.querySelector(".import-unsaved-modal");
 const importUnsavedSaveButton = document.querySelector(".btn-import-unsaved-save");
@@ -138,7 +139,7 @@ function closeValidationModal() {
 function openValidationModal(message) {
   const modalMessage = validationModal.querySelector("#validation-modal-description");
 
-  modalMessage.textContent = message;
+  modalMessage.innerHTML = message;
   validationModal.classList.remove("hidden");
   syncModalOpenState();
   validationCloseButton.focus();
@@ -588,6 +589,9 @@ function findSavedListBySignature(rows) {
 }
 
 function closeImportCodeModal() {
+  if (importCodeInput) {
+    importCodeInput.value = "";
+  }
   importCodeModal?.classList.add("hidden");
   syncModalOpenState();
 }
@@ -744,7 +748,7 @@ function handleImportConfirmRequest() {
 
   if (!rawImportCode.trim()) {
     openValidationModal(
-      'Campo vazio. \nÉ necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
+      'Campo vazio. <br> <br> É necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
     );
     return;
   }
@@ -759,7 +763,7 @@ function handleImportConfirmRequest() {
 
   if (!parsedPayload) {
     openValidationModal(
-      'Código JSON inválido. \nÉ necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
+      'Código JSON inválido. <br> <br> É necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
     );
     return;
   }
@@ -1837,6 +1841,13 @@ btnExportList?.addEventListener("click", async () => {
 });
 
 importCodeCancelButton?.addEventListener("click", closeImportCodeModal);
+
+importCodeClearButton?.addEventListener("click", () => {
+  if (importCodeInput) {
+    importCodeInput.value = "";
+    importCodeInput.focus();
+  }
+});
 
 importCodeConfirmButton?.addEventListener("click", handleImportConfirmRequest);
 

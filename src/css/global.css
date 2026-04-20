@@ -1188,6 +1188,7 @@ input[type="checkbox"]:checked::after {
 }
 
 .btn-import-code-cancel,
+.btn-import-code-clear,
 .btn-import-unsaved-cancel,
 .btn-import-duplicate-cancel,
 .btn-export-save-cancel,
@@ -1205,6 +1206,7 @@ input[type="checkbox"]:checked::after {
 }
 
 .btn-import-code-cancel,
+.btn-import-code-clear,
 .btn-import-unsaved-cancel,
 .btn-import-duplicate-cancel,
 .btn-export-save-cancel,
@@ -1216,6 +1218,8 @@ input[type="checkbox"]:checked::after {
 
 .btn-import-code-cancel:hover,
 .btn-import-code-cancel:focus-visible,
+.btn-import-code-clear:hover,
+.btn-import-code-clear:focus-visible,
 .btn-import-unsaved-cancel:hover,
 .btn-import-unsaved-cancel:focus-visible,
 .btn-import-duplicate-cancel:hover,
@@ -1499,4 +1503,3 @@ body.modal-open {
     overflow-wrap: anywhere;
   }
 }
-
