@@ -197,6 +197,14 @@
           <div class="manage-lists-modal__import-export">
             <button class="btn-import-list" type="button">Importar lista</button>
             <button class="btn-export-list" type="button">Exportar lista</button>
+            <button
+              class="btn-import-export-help icon-button"
+              type="button"
+              aria-label="Ajuda de importação e exportação">
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/img/icons.svg#help"></use>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -367,6 +375,47 @@
 
         <div class="export-success-modal__actions">
           <button class="btn-export-success-close" type="button">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="import-export-help-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="import-export-help-title">
+      <div class="import-export-help-modal__panel">
+        <button
+          class="icon-button import-export-help-modal__close"
+          type="button"
+          aria-label="Fechar ajuda de importação e exportação">
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#delete"></use>
+          </svg>
+        </button>
+
+        <h3 id="import-export-help-title">Como usar Importação e Exportação</h3>
+
+        <div class="import-export-help-modal__content">
+          <section class="import-export-help-section">
+            <h4>Trazer uma lista</h4>
+            <p>
+              Use a opção "Importar lista" para trazer uma lista existente de outro dispositivo. Cole o código gerado
+              pela exportação e confirme para começar a usar essa lista.
+            </p>
+          </section>
+
+          <section class="import-export-help-section">
+            <h4>Compartilhar lista</h4>
+            <p>
+              Use a opção "Exportar lista" para gerar um código que represente sua lista atual. Copie este código e
+              compartilhe com outros dispositivos para sincronizar suas compras.
+            </p>
+          </section>
+        </div>
+
+        <div class="import-export-help-modal__actions">
+          <button class="btn-import-export-help-close" type="button">Fechar</button>
         </div>
       </div>
     </div>

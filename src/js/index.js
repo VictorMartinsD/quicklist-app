@@ -52,6 +52,10 @@ const exportSaveConfirmButton = document.querySelector(".btn-export-save-confirm
 const exportSaveCancelButton = document.querySelector(".btn-export-save-cancel");
 const exportSuccessModal = document.querySelector(".export-success-modal");
 const exportSuccessCloseButton = document.querySelector(".btn-export-success-close");
+const importExportHelpModal = document.querySelector(".import-export-help-modal");
+const btnImportExportHelp = document.querySelector(".btn-import-export-help");
+const importExportHelpCloseButton = document.querySelector(".import-export-help-modal__close");
+const btnImportExportHelpClose = document.querySelector(".btn-import-export-help-close");
 const switchListSaveButton = document.querySelector(".btn-switch-list-save");
 const switchListCancelButton = document.querySelector(".btn-switch-list-cancel");
 const switchListConfirmButton = document.querySelector(".btn-switch-list-confirm");
@@ -666,6 +670,17 @@ function openExportSuccessModal() {
   exportSuccessModal?.classList.remove("hidden");
   syncModalOpenState();
   exportSuccessCloseButton?.focus();
+}
+
+function closeImportExportHelpModal() {
+  importExportHelpModal?.classList.add("hidden");
+  syncModalOpenState();
+}
+
+function openImportExportHelpModal() {
+  importExportHelpModal?.classList.remove("hidden");
+  syncModalOpenState();
+  btnImportExportHelpClose?.focus();
 }
 
 function importParsedList(parsedPayload) {
@@ -1957,6 +1972,18 @@ exportSuccessCloseButton?.addEventListener("click", closeExportSuccessModal);
 exportSuccessModal?.addEventListener("click", (event) => {
   if (event.target === exportSuccessModal) {
     closeExportSuccessModal();
+  }
+});
+
+btnImportExportHelp?.addEventListener("click", openImportExportHelpModal);
+
+importExportHelpCloseButton?.addEventListener("click", closeImportExportHelpModal);
+
+btnImportExportHelpClose?.addEventListener("click", closeImportExportHelpModal);
+
+importExportHelpModal?.addEventListener("click", (event) => {
+  if (event.target === importExportHelpModal) {
+    closeImportExportHelpModal();
   }
 });
 
