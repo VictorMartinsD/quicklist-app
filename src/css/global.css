@@ -323,6 +323,10 @@ html[data-theme="light"] .theme-toggle {
   color: var(--content-primary);
 }
 
+html[data-theme="dark"] #item {
+  color: var(--text-on-light-surface);
+}
+
 #item::placeholder {
   color: var(--content-tertiary);
 }

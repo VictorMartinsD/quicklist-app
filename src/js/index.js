@@ -1409,19 +1409,35 @@ function createCategoryElement(categoryText, categoryId = generateId()) {
   return newCategoryElement;
 }
 
+function scrollMainListToBottom() {
+  const mainListScrollContainer = itemsContainer?.closest(".items-scroll");
+
+  if (!mainListScrollContainer) {
+    return;
+  }
+
+  mainListScrollContainer.scrollTo({
+    top: mainListScrollContainer.scrollHeight,
+    behavior: "smooth",
+  });
+}
+
 function handleAddCategory() {
   const typedCategoryName = normalizeItemText(input.value);
   const nextCategoryName = `Lista ${getNextCategoryNumber()}`;
   const categoryName = typedCategoryName || nextCategoryName;
   const newCategory = createCategoryElement(categoryName);
 
-  itemsContainer.prepend(newCategory);
+  itemsContainer.append(newCategory);
   refreshCategoryStructure();
   saveItemsToStorage();
   updateClearAllButtonVisibility();
+  scrollMainListToBottom();
 
   input.value = "";
-  newCategory.querySelector(".shopping-item")?.focus();
+  window.setTimeout(() => {
+    newCategory.querySelector(".shopping-item")?.focus();
+  }, 180);
 }
 
 function normalizeItemText(text) {
@@ -1591,10 +1607,11 @@ function handleAddItem() {
 
   if (text !== "") {
     const newItem = createListItemElement(text);
-    itemsContainer.prepend(newItem);
+    itemsContainer.append(newItem);
     refreshCategoryStructure();
     saveItemsToStorage();
     updateClearAllButtonVisibility();
+    scrollMainListToBottom();
 
     input.value = "";
     input.focus();
