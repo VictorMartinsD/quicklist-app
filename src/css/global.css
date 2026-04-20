@@ -539,6 +539,12 @@ input[type="checkbox"]:checked::after {
   background: var(--row-hover-surface);
 }
 
+.shopping-item.is-editing,
+.item-added.category-added .shopping-item.is-editing,
+.manage-list-name.is-editing {
+  color: var(--text-on-light-surface);
+}
+
 .shopping-item.is-editing {
   border-color: var(--color-brand);
   background: var(--always-white);
