@@ -1,0 +1,12 @@
+export const APP_CONSTANTS = {
+  ITEMS_STORAGE_KEY: "quicklist:items",
+  SAVED_LISTS_STORAGE_KEY: "quicklist:saved-lists",
+  THEME_STORAGE_KEY: "quicklist:theme",
+  MOBILE_BULK_ACTIONS_MEDIA_QUERY: "(max-width: 40em)",
+  LEGACY_CHECKED_KEYS: ["checked", "isChecked", "done"],
+  ITEM_NAME_MAX_LENGTH: 84,
+  SAVED_LIST_NAME_MAX_LENGTH: 40,
+  IMPORT_CODE_MAX_LENGTH: 12000,
+  SAVED_LIST_DRAG_SCROLL_EDGE_PX: 48,
+  SAVED_LIST_DRAG_SCROLL_STEP_PX: 12,
+};

@@ -3,77 +3,84 @@
   DESCRIÇÃO: Script principal para funcionalidades do site.
 */
 
+import { APP_CONSTANTS } from "./app/constants.js";
+import { DOM_SELECTORS } from "./dom/selectors.js";
 import { generateId } from "./utils.js";
 
-const input = document.querySelector("#item");
-const themeToggleButton = document.querySelector(".theme-toggle");
+const {
+  input,
+  themeToggleButton,
+  btnAddItem,
+  btnNewCategory,
+  btnSelectAll,
+  btnManageLists,
+  bulkClearSlot,
+  bulkActionsToggle,
+  itemsContainer,
+  itemTemplate,
+  validationModal,
+  validationCloseButton,
+  clearAllButton,
+  clearModal,
+  clearModalDescription,
+  clearModalCloseButton,
+  clearModalCancelButton,
+  clearModalCategoryOnlyButton,
+  clearModalConfirmButton,
+  manageListsModal,
+  manageListsModalCloseButton,
+  btnSaveCurrentList,
+  btnImportList,
+  btnExportList,
+  manageListsBox,
+  manageListsItemsContainer,
+  manageListRowTemplate,
+  switchListModal,
+  importCodeModal,
+  importCodeInput,
+  importCodeCancelButton,
+  importCodeClearButton,
+  importCodeConfirmButton,
+  importUnsavedModal,
+  importUnsavedSaveButton,
+  importUnsavedDiscardButton,
+  importUnsavedCancelButton,
+  importDuplicateModal,
+  importDuplicateNameElement,
+  importDuplicateActivateButton,
+  importDuplicateCancelButton,
+  importDuplicateActiveModal,
+  importDuplicateActiveConfirmButton,
+  exportSaveModal,
+  exportSaveConfirmButton,
+  exportSaveCancelButton,
+  exportSuccessModal,
+  exportSuccessCloseButton,
+  importExportHelpModal,
+  btnImportExportHelp,
+  importExportHelpCloseButton,
+  btnImportExportHelpClose,
+  switchListSaveButton,
+  switchListCancelButton,
+  switchListConfirmButton,
+  removalAlert,
+} = DOM_SELECTORS;
+
 const themeToggleIconUse = themeToggleButton?.querySelector("use");
-const btnAddItem = document.querySelector(".btn-add-item");
-const btnNewCategory = document.querySelector(".btn-new-category");
-const btnSelectAll = document.querySelector(".btn-select-all");
-const btnManageLists = document.querySelector(".btn-manage-lists");
-const bulkClearSlot = document.querySelector(".bulk-clear-slot");
-const bulkActionsToggle = document.querySelector(".bulk-actions-toggle");
-const itemsContainer = document.querySelector(".items");
-const itemTemplate = document.querySelector(".item-added.hidden");
-const validationModal = document.querySelector(".validation-modal");
-const validationCloseButton = document.querySelector(".validation-modal__close");
-const clearAllButton = document.querySelector(".btn-clear-all");
-const clearModal = document.querySelector(".clear-modal");
-const clearModalDescription = document.querySelector("#clear-modal-description");
-const clearModalCloseButton = document.querySelector(".clear-modal__close");
-const clearModalCancelButton = document.querySelector(".btn-clear-cancel");
-const clearModalCategoryOnlyButton = document.querySelector(".btn-clear-category-only");
-const clearModalConfirmButton = document.querySelector(".btn-clear-confirm");
-const manageListsModal = document.querySelector(".manage-lists-modal");
-const manageListsModalCloseButton = document.querySelector(".manage-lists-modal__close");
-const btnSaveCurrentList = document.querySelector(".btn-save-current-list");
-const btnImportList = document.querySelector(".btn-import-list");
-const btnExportList = document.querySelector(".btn-export-list");
-const manageListsBox = document.querySelector(".manage-lists-box");
-const manageListsItemsContainer = document.querySelector(".manage-lists-items");
-const manageListRowTemplate = document.querySelector(".manage-list-row.hidden");
-const switchListModal = document.querySelector(".switch-list-modal");
-const importCodeModal = document.querySelector(".import-code-modal");
-const importCodeInput = document.querySelector("#import-code-input");
-const importCodeCancelButton = document.querySelector(".btn-import-code-cancel");
-const importCodeClearButton = document.querySelector(".btn-import-code-clear");
-const importCodeConfirmButton = document.querySelector(".btn-import-code-confirm");
-const importUnsavedModal = document.querySelector(".import-unsaved-modal");
-const importUnsavedSaveButton = document.querySelector(".btn-import-unsaved-save");
-const importUnsavedDiscardButton = document.querySelector(".btn-import-unsaved-discard");
-const importUnsavedCancelButton = document.querySelector(".btn-import-unsaved-cancel");
-const importDuplicateModal = document.querySelector(".import-duplicate-modal");
-const importDuplicateNameElement = document.querySelector(".import-duplicate-name");
-const importDuplicateActivateButton = document.querySelector(".btn-import-duplicate-activate");
-const importDuplicateCancelButton = document.querySelector(".btn-import-duplicate-cancel");
-const importDuplicateActiveModal = document.querySelector(".import-duplicate-active-modal");
-const importDuplicateActiveConfirmButton = document.querySelector(".btn-import-duplicate-active-confirm");
-const exportSaveModal = document.querySelector(".export-save-modal");
-const exportSaveConfirmButton = document.querySelector(".btn-export-save-confirm");
-const exportSaveCancelButton = document.querySelector(".btn-export-save-cancel");
-const exportSuccessModal = document.querySelector(".export-success-modal");
-const exportSuccessCloseButton = document.querySelector(".btn-export-success-close");
-const importExportHelpModal = document.querySelector(".import-export-help-modal");
-const btnImportExportHelp = document.querySelector(".btn-import-export-help");
-const importExportHelpCloseButton = document.querySelector(".import-export-help-modal__close");
-const btnImportExportHelpClose = document.querySelector(".btn-import-export-help-close");
-const switchListSaveButton = document.querySelector(".btn-switch-list-save");
-const switchListCancelButton = document.querySelector(".btn-switch-list-cancel");
-const switchListConfirmButton = document.querySelector(".btn-switch-list-confirm");
-const removalAlert = document.querySelector(".alert");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
-const ITEMS_STORAGE_KEY = "quicklist:items";
-const SAVED_LISTS_STORAGE_KEY = "quicklist:saved-lists";
-const THEME_STORAGE_KEY = "quicklist:theme";
-const MOBILE_BULK_ACTIONS_MEDIA_QUERY = "(max-width: 40em)";
-const LEGACY_CHECKED_KEYS = ["checked", "isChecked", "done"];
-const ITEM_NAME_MAX_LENGTH = 84;
-const SAVED_LIST_NAME_MAX_LENGTH = 40;
-const IMPORT_CODE_MAX_LENGTH = 12000;
-const SAVED_LIST_DRAG_SCROLL_EDGE_PX = 48;
-const SAVED_LIST_DRAG_SCROLL_STEP_PX = 12;
+const {
+  ITEMS_STORAGE_KEY,
+  SAVED_LISTS_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  MOBILE_BULK_ACTIONS_MEDIA_QUERY,
+  LEGACY_CHECKED_KEYS,
+  ITEM_NAME_MAX_LENGTH,
+  SAVED_LIST_NAME_MAX_LENGTH,
+  IMPORT_CODE_MAX_LENGTH,
+  SAVED_LIST_DRAG_SCROLL_EDGE_PX,
+  SAVED_LIST_DRAG_SCROLL_STEP_PX,
+} = APP_CONSTANTS;
 
 let validationTimeoutId = null;
 let removalAlertTimeoutId = null;
