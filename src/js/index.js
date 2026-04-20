@@ -5,6 +5,8 @@
 
 import { APP_CONSTANTS } from "./app/constants.js";
 import { DOM_SELECTORS } from "./dom/selectors.js";
+import { createAppState } from "./state/appState.js";
+import { getStorageItem, removeStorageItem, setStorageItem } from "./storage/localStorage.js";
 import { generateId } from "./utils.js";
 
 const {
@@ -82,20 +84,7 @@ const {
   SAVED_LIST_DRAG_SCROLL_STEP_PX,
 } = APP_CONSTANTS;
 
-let validationTimeoutId = null;
-let removalAlertTimeoutId = null;
-let draggedItemElement = null;
-let draggedRows = [];
-let activeEditableItem = null;
-let activeManageListEditableItem = null;
-let clearModalMode = "all";
-let categoryRowsToDelete = [];
-let categoryOnlyRowToDelete = null;
-let draggedSavedListElement = null;
-let pendingSelectedSavedListId = null;
-let pendingImportPayload = null;
-let pendingDuplicateSavedListId = null;
-let savedLists = [];
+const appState = createAppState();
 
 input.maxLength = ITEM_NAME_MAX_LENGTH;
 
@@ -127,7 +116,7 @@ function applyTheme(theme) {
 
 function loadSavedTheme() {
   try {
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    const savedTheme = getStorageItem(THEME_STORAGE_KEY);
     return normalizeTheme(savedTheme);
   } catch {
     return "dark";
@@ -136,7 +125,7 @@ function loadSavedTheme() {
 
 function saveTheme(theme) {
   try {
-    localStorage.setItem(THEME_STORAGE_KEY, normalizeTheme(theme));
+    setStorageItem(THEME_STORAGE_KEY, normalizeTheme(theme));
   } catch {
     return;
   }
@@ -194,8 +183,8 @@ function syncBulkActionsByViewport() {
 function closeValidationModal() {
   validationModal.classList.add("hidden");
   syncModalOpenState();
-  window.clearTimeout(validationTimeoutId);
-  validationTimeoutId = null;
+  window.clearTimeout(appState.validationTimeoutId);
+  appState.validationTimeoutId = null;
   input.focus();
 }
 
@@ -207,8 +196,8 @@ function openValidationModal(message) {
   syncModalOpenState();
   validationCloseButton.focus();
 
-  window.clearTimeout(validationTimeoutId);
-  validationTimeoutId = window.setTimeout(closeValidationModal, 3200);
+  window.clearTimeout(appState.validationTimeoutId);
+  appState.validationTimeoutId = window.setTimeout(closeValidationModal, 3200);
 }
 
 function getVisibleItems() {
@@ -412,9 +401,9 @@ function updateClearAllButtonVisibility() {
 function closeClearModal() {
   clearModal.classList.add("hidden");
   syncModalOpenState();
-  clearModalMode = "all";
-  categoryRowsToDelete = [];
-  categoryOnlyRowToDelete = null;
+  appState.clearModalMode = "all";
+  appState.categoryRowsToDelete = [];
+  appState.categoryOnlyRowToDelete = null;
   clearModalCategoryOnlyButton.classList.add("hidden");
 }
 
@@ -427,9 +416,9 @@ function openClearModal() {
   }
 
   clearModalDescription.textContent = `Tem certeza que deseja apagar ${totalItems} itens da lista?`;
-  clearModalMode = "all";
-  categoryRowsToDelete = [];
-  categoryOnlyRowToDelete = null;
+  appState.clearModalMode = "all";
+  appState.categoryRowsToDelete = [];
+  appState.categoryOnlyRowToDelete = null;
   clearModalCategoryOnlyButton.classList.add("hidden");
   clearModal.classList.remove("hidden");
   syncModalOpenState();
@@ -444,16 +433,16 @@ function openCategoryClearModal(categoryRowElement) {
   }
 
   if (rows.length === 1 && !hasSubcategories) {
-    categoryRowsToDelete = [categoryRowElement];
+    appState.categoryRowsToDelete = [categoryRowElement];
     clearCategoryItems();
     return;
   }
 
-  categoryRowsToDelete = rows;
-  clearModalMode = "category";
-  categoryOnlyRowToDelete = hasSubcategories ? categoryRowElement : null;
+  appState.categoryRowsToDelete = rows;
+  appState.clearModalMode = "category";
+  appState.categoryOnlyRowToDelete = hasSubcategories ? categoryRowElement : null;
 
-  if (categoryOnlyRowToDelete) {
+  if (appState.categoryOnlyRowToDelete) {
     clearModalCategoryOnlyButton.classList.remove("hidden");
   } else {
     clearModalCategoryOnlyButton.classList.add("hidden");
@@ -511,7 +500,7 @@ function getCurrentRowsSnapshot() {
 }
 
 function getNextSavedListName() {
-  const highestUsedNumber = savedLists.reduce((highest, savedList) => {
+  const highestUsedNumber = appState.savedLists.reduce((highest, savedList) => {
     const matchedNumber = (savedList.name || "").match(/^Lista salva\s+(\d+)$/i);
 
     if (!matchedNumber) {
@@ -526,7 +515,7 @@ function getNextSavedListName() {
 }
 
 function getNextImportedListName() {
-  const highestImportedNumber = savedLists.reduce((highest, savedList) => {
+  const highestImportedNumber = appState.savedLists.reduce((highest, savedList) => {
     const matchedNumber = (savedList.name || "").match(/^Lista importada\s+(\d+)$/i);
 
     if (!matchedNumber) {
@@ -542,7 +531,7 @@ function getNextImportedListName() {
 
 function resolveImportedListName(preferredName = "") {
   const normalizedName = normalizeItemText(preferredName || "");
-  const hasDuplicateName = savedLists.some(
+  const hasDuplicateName = appState.savedLists.some(
     (savedList) => (savedList.name || "").toLowerCase() === normalizedName.toLowerCase(),
   );
   const isDefaultNamePattern =
@@ -570,7 +559,7 @@ function buildShareCodePayload(rowsSnapshot, preferredName = "") {
 
 function getCurrentListNameForShare() {
   const matchedListId = getCurrentSavedListMatchId();
-  const matchedSavedList = savedLists.find((savedList) => savedList.id === matchedListId);
+  const matchedSavedList = appState.savedLists.find((savedList) => savedList.id === matchedListId);
 
   return matchedSavedList?.name || "";
 }
@@ -648,7 +637,7 @@ function parseImportedPayload(rawCode) {
 
 function findSavedListBySignature(rows) {
   const targetSignature = getRowsSignature(rows);
-  return savedLists.find((savedList) => getRowsSignature(savedList.items) === targetSignature) || null;
+  return appState.savedLists.find((savedList) => getRowsSignature(savedList.items) === targetSignature) || null;
 }
 
 function closeImportCodeModal() {
@@ -678,7 +667,7 @@ function openImportUnsavedModal() {
 
 function closeImportDuplicateModal() {
   importDuplicateModal?.classList.add("hidden");
-  pendingDuplicateSavedListId = null;
+  appState.pendingDuplicateSavedListId = null;
   syncModalOpenState();
 }
 
@@ -687,7 +676,7 @@ function openImportDuplicateModal(savedList) {
     return;
   }
 
-  pendingDuplicateSavedListId = savedList.id;
+  appState.pendingDuplicateSavedListId = savedList.id;
 
   if (importDuplicateNameElement) {
     importDuplicateNameElement.textContent = savedList.name;
@@ -750,7 +739,7 @@ function importParsedList(parsedPayload) {
     items: parsedPayload.items,
   };
 
-  savedLists = [newImportedList, ...savedLists];
+  appState.savedLists = [newImportedList, ...appState.savedLists];
   saveSavedListsToStorage();
   applySavedList(newImportedList.id);
   renderSavedLists();
@@ -856,7 +845,7 @@ function handleImportConfirmRequest() {
     return;
   }
 
-  pendingImportPayload = parsedPayload;
+  appState.pendingImportPayload = parsedPayload;
 
   const currentRowsSnapshot = getCurrentRowsSnapshot();
   if (currentRowsSnapshot.length > 0 && !isCurrentListSaved()) {
@@ -865,16 +854,16 @@ function handleImportConfirmRequest() {
   }
 
   importParsedList(parsedPayload);
-  pendingImportPayload = null;
+  appState.pendingImportPayload = null;
   closeImportCodeModal();
   openRemovalAlert("Lista importada com sucesso!");
 }
 
 function loadSavedListsFromStorage() {
-  const storedSavedListsRaw = localStorage.getItem(SAVED_LISTS_STORAGE_KEY);
+  const storedSavedListsRaw = getStorageItem(SAVED_LISTS_STORAGE_KEY);
 
   if (!storedSavedListsRaw) {
-    savedLists = [];
+    appState.savedLists = [];
     return;
   }
 
@@ -883,18 +872,18 @@ function loadSavedListsFromStorage() {
   try {
     parsedSavedLists = JSON.parse(storedSavedListsRaw);
   } catch {
-    localStorage.removeItem(SAVED_LISTS_STORAGE_KEY);
-    savedLists = [];
+    removeStorageItem(SAVED_LISTS_STORAGE_KEY);
+    appState.savedLists = [];
     return;
   }
 
   if (!Array.isArray(parsedSavedLists)) {
-    localStorage.removeItem(SAVED_LISTS_STORAGE_KEY);
-    savedLists = [];
+    removeStorageItem(SAVED_LISTS_STORAGE_KEY);
+    appState.savedLists = [];
     return;
   }
 
-  savedLists = parsedSavedLists
+  appState.savedLists = parsedSavedLists
     .map((savedList) => {
       if (!savedList || typeof savedList !== "object") {
         return null;
@@ -920,12 +909,12 @@ function loadSavedListsFromStorage() {
 }
 
 function saveSavedListsToStorage() {
-  if (!savedLists.length) {
-    localStorage.removeItem(SAVED_LISTS_STORAGE_KEY);
+  if (!appState.savedLists.length) {
+    removeStorageItem(SAVED_LISTS_STORAGE_KEY);
     return;
   }
 
-  localStorage.setItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(savedLists));
+  setStorageItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(appState.savedLists));
 }
 
 function getCurrentSavedListMatchId() {
@@ -936,7 +925,7 @@ function getCurrentSavedListMatchId() {
   }
 
   const currentSignature = getRowsSignature(currentRowsSnapshot);
-  const matchedList = savedLists.find((savedList) => getRowsSignature(savedList.items) === currentSignature);
+  const matchedList = appState.savedLists.find((savedList) => getRowsSignature(savedList.items) === currentSignature);
 
   return matchedList?.id || null;
 }
@@ -975,15 +964,15 @@ function renderSavedLists() {
 
   const activeSavedListId = getCurrentSavedListMatchId();
 
-  savedLists.forEach((savedList) => {
+  appState.savedLists.forEach((savedList) => {
     const savedListRowElement = createSavedListRowElement(savedList, activeSavedListId);
     manageListsItemsContainer.append(savedListRowElement);
   });
 }
 
 function openManageListsModal() {
-  if (activeEditableItem) {
-    finishItemEditing(activeEditableItem);
+  if (appState.activeEditableItem) {
+    finishItemEditing(appState.activeEditableItem);
   }
 
   renderSavedLists();
@@ -993,8 +982,8 @@ function openManageListsModal() {
 }
 
 function closeManageListsModal() {
-  if (activeManageListEditableItem) {
-    finishManageListEditing(activeManageListEditableItem);
+  if (appState.activeManageListEditableItem) {
+    finishManageListEditing(appState.activeManageListEditableItem);
   }
 
   manageListsModal.classList.add("hidden");
@@ -1002,7 +991,7 @@ function closeManageListsModal() {
 }
 
 function openSwitchListModal(savedListId) {
-  pendingSelectedSavedListId = savedListId;
+  appState.pendingSelectedSavedListId = savedListId;
   switchListModal.classList.remove("hidden");
   syncModalOpenState();
   switchListSaveButton?.focus();
@@ -1010,12 +999,12 @@ function openSwitchListModal(savedListId) {
 
 function closeSwitchListModal() {
   switchListModal.classList.add("hidden");
-  pendingSelectedSavedListId = null;
+  appState.pendingSelectedSavedListId = null;
   syncModalOpenState();
 }
 
 function applySavedList(savedListId) {
-  const targetSavedList = savedLists.find((savedList) => savedList.id === savedListId);
+  const targetSavedList = appState.savedLists.find((savedList) => savedList.id === savedListId);
 
   if (!targetSavedList) {
     return;
@@ -1052,7 +1041,7 @@ function saveCurrentList(options = {}) {
   }
 
   const currentSignature = getRowsSignature(currentRowsSnapshot);
-  const alreadySaved = savedLists.some((savedList) => getRowsSignature(savedList.items) === currentSignature);
+  const alreadySaved = appState.savedLists.some((savedList) => getRowsSignature(savedList.items) === currentSignature);
 
   if (alreadySaved) {
     openValidationModal("Ja existe uma lista identica salva.");
@@ -1065,7 +1054,7 @@ function saveCurrentList(options = {}) {
     items: normalizeListRowsForComparison(currentRowsSnapshot),
   };
 
-  savedLists = [newSavedList, ...savedLists];
+  appState.savedLists = [newSavedList, ...appState.savedLists];
   saveSavedListsToStorage();
   renderSavedLists();
 
@@ -1077,7 +1066,7 @@ function saveCurrentList(options = {}) {
 }
 
 function removeSavedList(savedListId) {
-  savedLists = savedLists.filter((savedList) => savedList.id !== savedListId);
+  appState.savedLists = appState.savedLists.filter((savedList) => savedList.id !== savedListId);
   saveSavedListsToStorage();
   renderSavedLists();
 }
@@ -1106,12 +1095,12 @@ function finishManageListEditing(nameElement, shouldCancel = false) {
   nameElement.style.maxHeight = "";
   delete nameElement.dataset.originalName;
 
-  if (activeManageListEditableItem === nameElement) {
-    activeManageListEditableItem = null;
+  if (appState.activeManageListEditableItem === nameElement) {
+    appState.activeManageListEditableItem = null;
   }
 
   if (savedListId && finalName !== originalName) {
-    const targetSavedList = savedLists.find((savedList) => savedList.id === savedListId);
+    const targetSavedList = appState.savedLists.find((savedList) => savedList.id === savedListId);
 
     if (targetSavedList) {
       targetSavedList.name = finalName;
@@ -1126,8 +1115,8 @@ function startManageListEditing(nameElement) {
     return;
   }
 
-  if (activeManageListEditableItem && activeManageListEditableItem !== nameElement) {
-    finishManageListEditing(activeManageListEditableItem);
+  if (appState.activeManageListEditableItem && appState.activeManageListEditableItem !== nameElement) {
+    finishManageListEditing(appState.activeManageListEditableItem);
   }
 
   const stableHeight = nameElement.offsetHeight;
@@ -1140,7 +1129,7 @@ function startManageListEditing(nameElement) {
   nameElement.style.maxHeight = `${stableHeight}px`;
 
   nameElement.focus();
-  activeManageListEditableItem = nameElement;
+  appState.activeManageListEditableItem = nameElement;
 
   const selection = window.getSelection();
 
@@ -1198,7 +1187,7 @@ function autoScrollSavedListsContainer(pointerY) {
 }
 
 function handleSavedListsDragOver(event) {
-  if (!draggedSavedListElement) {
+  if (!appState.draggedSavedListElement) {
     return;
   }
 
@@ -1207,16 +1196,16 @@ function handleSavedListsDragOver(event) {
 
   const nextRowElement = getSavedListRowAfterPointerPosition(event.clientY);
 
-  if (nextRowElement && draggedSavedListElement === nextRowElement) {
+  if (nextRowElement && appState.draggedSavedListElement === nextRowElement) {
     return;
   }
 
   if (!nextRowElement) {
-    manageListsItemsContainer.append(draggedSavedListElement);
+    manageListsItemsContainer.append(appState.draggedSavedListElement);
     return;
   }
 
-  manageListsItemsContainer.insertBefore(draggedSavedListElement, nextRowElement);
+  manageListsItemsContainer.insertBefore(appState.draggedSavedListElement, nextRowElement);
 }
 
 function persistSavedListsFromDomOrder() {
@@ -1228,9 +1217,9 @@ function persistSavedListsFromDomOrder() {
     return;
   }
 
-  const savedListsById = new Map(savedLists.map((savedList) => [savedList.id, savedList]));
+  const savedListsById = new Map(appState.savedLists.map((savedList) => [savedList.id, savedList]));
 
-  savedLists = orderedIds.map((savedListId) => savedListsById.get(savedListId)).filter(Boolean);
+  appState.savedLists = orderedIds.map((savedListId) => savedListsById.get(savedListId)).filter(Boolean);
   saveSavedListsToStorage();
 }
 
@@ -1250,12 +1239,12 @@ function clearAllItems() {
 }
 
 function clearCategoryItems() {
-  if (!categoryRowsToDelete.length) {
+  if (!appState.categoryRowsToDelete.length) {
     closeClearModal();
     return;
   }
 
-  categoryRowsToDelete.forEach((rowElement) => rowElement.remove());
+  appState.categoryRowsToDelete.forEach((rowElement) => rowElement.remove());
   refreshCategoryStructure();
   saveItemsToStorage();
   updateClearAllButtonVisibility();
@@ -1264,12 +1253,12 @@ function clearCategoryItems() {
 }
 
 function clearCategoryOnly() {
-  if (!categoryOnlyRowToDelete) {
+  if (!appState.categoryOnlyRowToDelete) {
     closeClearModal();
     return;
   }
 
-  categoryOnlyRowToDelete.remove();
+  appState.categoryOnlyRowToDelete.remove();
   refreshCategoryStructure();
   saveItemsToStorage();
   updateClearAllButtonVisibility();
@@ -1279,16 +1268,16 @@ function clearCategoryOnly() {
 
 function closeRemovalAlert() {
   removalAlert.classList.add("hidden");
-  window.clearTimeout(removalAlertTimeoutId);
-  removalAlertTimeoutId = null;
+  window.clearTimeout(appState.removalAlertTimeoutId);
+  appState.removalAlertTimeoutId = null;
 }
 
 function openRemovalAlert(message) {
   removalAlertMessage.textContent = message;
   removalAlertMessage.title = message;
   removalAlert.classList.remove("hidden");
-  window.clearTimeout(removalAlertTimeoutId);
-  removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
+  window.clearTimeout(appState.removalAlertTimeoutId);
+  appState.removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
 }
 
 function getStoredCheckedState(storedItem) {
@@ -1309,11 +1298,11 @@ function saveItemsToStorage() {
     };
   });
 
-  localStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify(currentItems));
+  setStorageItem(ITEMS_STORAGE_KEY, JSON.stringify(currentItems));
 }
 
 function loadItemsFromStorage() {
-  const storedItemsRaw = localStorage.getItem(ITEMS_STORAGE_KEY);
+  const storedItemsRaw = getStorageItem(ITEMS_STORAGE_KEY);
 
   if (!storedItemsRaw) {
     return;
@@ -1324,12 +1313,12 @@ function loadItemsFromStorage() {
   try {
     storedItems = JSON.parse(storedItemsRaw);
   } catch {
-    localStorage.removeItem(ITEMS_STORAGE_KEY);
+    removeStorageItem(ITEMS_STORAGE_KEY);
     return;
   }
 
   if (!Array.isArray(storedItems)) {
-    localStorage.removeItem(ITEMS_STORAGE_KEY);
+    removeStorageItem(ITEMS_STORAGE_KEY);
     return;
   }
 
@@ -1537,8 +1526,8 @@ function finishItemEditing(shoppingItemText, shouldCancel = false) {
   shoppingItemText.style.maxHeight = "";
   delete shoppingItemText.dataset.originalText;
 
-  if (activeEditableItem === shoppingItemText) {
-    activeEditableItem = null;
+  if (appState.activeEditableItem === shoppingItemText) {
+    appState.activeEditableItem = null;
   }
 
   if (finalText !== originalText) {
@@ -1551,8 +1540,8 @@ function startItemEditing(shoppingItemText) {
     return;
   }
 
-  if (activeEditableItem && activeEditableItem !== shoppingItemText) {
-    finishItemEditing(activeEditableItem);
+  if (appState.activeEditableItem && appState.activeEditableItem !== shoppingItemText) {
+    finishItemEditing(appState.activeEditableItem);
   }
 
   const stableHeight = shoppingItemText.offsetHeight;
@@ -1565,7 +1554,7 @@ function startItemEditing(shoppingItemText) {
   shoppingItemText.style.maxHeight = `${stableHeight}px`;
 
   shoppingItemText.focus();
-  activeEditableItem = shoppingItemText;
+  appState.activeEditableItem = shoppingItemText;
 
   const selection = window.getSelection();
 
@@ -1666,8 +1655,8 @@ itemsContainer.addEventListener("focusin", (event) => {
     return;
   }
 
-  if (activeEditableItem && activeEditableItem !== shoppingItemText) {
-    finishItemEditing(activeEditableItem);
+  if (appState.activeEditableItem && appState.activeEditableItem !== shoppingItemText) {
+    finishItemEditing(appState.activeEditableItem);
   }
 });
 
@@ -1796,28 +1785,28 @@ itemsContainer.addEventListener("dragstart", (event) => {
     return;
   }
 
-  draggedItemElement = dragHandle.closest(".item-added");
+  appState.draggedItemElement = dragHandle.closest(".item-added");
 
-  if (!draggedItemElement || draggedItemElement.classList.contains("hidden")) {
+  if (!appState.draggedItemElement || appState.draggedItemElement.classList.contains("hidden")) {
     event.preventDefault();
     return;
   }
 
-  if (activeEditableItem) {
-    finishItemEditing(activeEditableItem);
+  if (appState.activeEditableItem) {
+    finishItemEditing(appState.activeEditableItem);
   }
 
-  draggedRows = [draggedItemElement];
+  appState.draggedRows = [appState.draggedItemElement];
 
-  draggedRows.forEach((rowElement) => rowElement.classList.add("is-dragging"));
+  appState.draggedRows.forEach((rowElement) => rowElement.classList.add("is-dragging"));
   document.body.classList.add("is-grabbing");
 
   event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("text/plain", draggedItemElement.dataset.itemId || "");
+  event.dataTransfer.setData("text/plain", appState.draggedItemElement.dataset.itemId || "");
 });
 
 itemsContainer.addEventListener("dragover", (event) => {
-  if (!draggedItemElement) {
+  if (!appState.draggedItemElement) {
     return;
   }
 
@@ -1825,20 +1814,20 @@ itemsContainer.addEventListener("dragover", (event) => {
 
   const nextItem = getItemAfterPointerPosition(event.clientY);
 
-  if (nextItem && draggedItemElement === nextItem) {
+  if (nextItem && appState.draggedItemElement === nextItem) {
     return;
   }
 
   if (!nextItem) {
-    itemsContainer.append(draggedItemElement);
+    itemsContainer.append(appState.draggedItemElement);
     return;
   }
 
-  itemsContainer.insertBefore(draggedItemElement, nextItem);
+  itemsContainer.insertBefore(appState.draggedItemElement, nextItem);
 });
 
 itemsContainer.addEventListener("drop", (event) => {
-  if (!draggedItemElement) {
+  if (!appState.draggedItemElement) {
     return;
   }
 
@@ -1848,15 +1837,15 @@ itemsContainer.addEventListener("drop", (event) => {
 });
 
 itemsContainer.addEventListener("dragend", () => {
-  if (!draggedItemElement) {
+  if (!appState.draggedItemElement) {
     return;
   }
 
-  draggedRows.forEach((rowElement) => rowElement.classList.remove("is-dragging"));
+  appState.draggedRows.forEach((rowElement) => rowElement.classList.remove("is-dragging"));
   document.body.classList.remove("is-grabbing");
   refreshCategoryStructure();
-  draggedRows = [];
-  draggedItemElement = null;
+  appState.draggedRows = [];
+  appState.draggedItemElement = null;
 });
 
 clearAllButton.addEventListener("click", openClearModal);
@@ -1868,7 +1857,7 @@ clearModalCancelButton.addEventListener("click", closeClearModal);
 clearModalCategoryOnlyButton.addEventListener("click", clearCategoryOnly);
 
 clearModalConfirmButton.addEventListener("click", () => {
-  if (clearModalMode === "category") {
+  if (appState.clearModalMode === "category") {
     clearCategoryItems();
     return;
   }
@@ -1899,7 +1888,7 @@ btnImportList?.addEventListener("click", () => {
 });
 
 btnExportList?.addEventListener("click", async () => {
-  if (!savedLists.length) {
+  if (!appState.savedLists.length) {
     const rowsSnapshot = getCurrentRowsSnapshot();
 
     if (!rowsSnapshot.length) {
@@ -1939,7 +1928,7 @@ importCodeModal?.addEventListener("click", (event) => {
 });
 
 importUnsavedSaveButton?.addEventListener("click", () => {
-  if (!pendingImportPayload) {
+  if (!appState.pendingImportPayload) {
     return;
   }
 
@@ -1949,20 +1938,20 @@ importUnsavedSaveButton?.addEventListener("click", () => {
     return;
   }
 
-  importParsedList(pendingImportPayload);
-  pendingImportPayload = null;
+  importParsedList(appState.pendingImportPayload);
+  appState.pendingImportPayload = null;
   closeImportUnsavedModal();
   closeImportCodeModal();
   openRemovalAlert("Lista importada com sucesso!");
 });
 
 importUnsavedDiscardButton?.addEventListener("click", () => {
-  if (!pendingImportPayload) {
+  if (!appState.pendingImportPayload) {
     return;
   }
 
-  importParsedList(pendingImportPayload);
-  pendingImportPayload = null;
+  importParsedList(appState.pendingImportPayload);
+  appState.pendingImportPayload = null;
   closeImportUnsavedModal();
   closeImportCodeModal();
   openRemovalAlert("Lista importada com sucesso!");
@@ -1973,11 +1962,11 @@ importUnsavedCancelButton?.addEventListener("click", () => {
 });
 
 importDuplicateActivateButton?.addEventListener("click", () => {
-  if (!pendingDuplicateSavedListId) {
+  if (!appState.pendingDuplicateSavedListId) {
     return;
   }
 
-  applySavedList(pendingDuplicateSavedListId);
+  applySavedList(appState.pendingDuplicateSavedListId);
   closeImportDuplicateModal();
   closeImportCodeModal();
 });
@@ -2076,8 +2065,8 @@ manageListsItemsContainer?.addEventListener("focusin", (event) => {
     return;
   }
 
-  if (activeManageListEditableItem && activeManageListEditableItem !== listNameElement) {
-    finishManageListEditing(activeManageListEditableItem);
+  if (appState.activeManageListEditableItem && appState.activeManageListEditableItem !== listNameElement) {
+    finishManageListEditing(appState.activeManageListEditableItem);
   }
 });
 
@@ -2179,7 +2168,7 @@ manageListsItemsContainer?.addEventListener("change", (event) => {
     return;
   }
 
-  const selectedSavedList = savedLists.find((savedList) => savedList.id === selectedSavedListId);
+  const selectedSavedList = appState.savedLists.find((savedList) => savedList.id === selectedSavedListId);
 
   if (!selectedSavedList) {
     return;
@@ -2210,21 +2199,21 @@ manageListsItemsContainer?.addEventListener("dragstart", (event) => {
     return;
   }
 
-  draggedSavedListElement = dragHandleElement.closest(".manage-list-row");
+  appState.draggedSavedListElement = dragHandleElement.closest(".manage-list-row");
 
-  if (!draggedSavedListElement || draggedSavedListElement.classList.contains("hidden")) {
+  if (!appState.draggedSavedListElement || appState.draggedSavedListElement.classList.contains("hidden")) {
     event.preventDefault();
     return;
   }
 
-  if (activeManageListEditableItem) {
-    finishManageListEditing(activeManageListEditableItem);
+  if (appState.activeManageListEditableItem) {
+    finishManageListEditing(appState.activeManageListEditableItem);
   }
 
-  draggedSavedListElement.classList.add("is-dragging");
+  appState.draggedSavedListElement.classList.add("is-dragging");
 
   event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("text/plain", draggedSavedListElement.dataset.savedListId || "");
+  event.dataTransfer.setData("text/plain", appState.draggedSavedListElement.dataset.savedListId || "");
 });
 
 manageListsItemsContainer?.addEventListener("dragover", handleSavedListsDragOver);
@@ -2232,7 +2221,7 @@ manageListsItemsContainer?.addEventListener("dragover", handleSavedListsDragOver
 manageListsBox?.addEventListener("dragover", handleSavedListsDragOver);
 
 manageListsItemsContainer?.addEventListener("drop", (event) => {
-  if (!draggedSavedListElement) {
+  if (!appState.draggedSavedListElement) {
     return;
   }
 
@@ -2241,12 +2230,12 @@ manageListsItemsContainer?.addEventListener("drop", (event) => {
 });
 
 manageListsItemsContainer?.addEventListener("dragend", () => {
-  if (!draggedSavedListElement) {
+  if (!appState.draggedSavedListElement) {
     return;
   }
 
-  draggedSavedListElement.classList.remove("is-dragging");
-  draggedSavedListElement = null;
+  appState.draggedSavedListElement.classList.remove("is-dragging");
+  appState.draggedSavedListElement = null;
   renderSavedLists();
 });
 
@@ -2256,7 +2245,7 @@ switchListCancelButton?.addEventListener("click", () => {
 });
 
 switchListSaveButton?.addEventListener("click", () => {
-  if (!pendingSelectedSavedListId) {
+  if (!appState.pendingSelectedSavedListId) {
     return;
   }
 
@@ -2266,14 +2255,14 @@ switchListSaveButton?.addEventListener("click", () => {
     return;
   }
 
-  applySavedList(pendingSelectedSavedListId);
+  applySavedList(appState.pendingSelectedSavedListId);
   closeSwitchListModal();
   openRemovalAlert("Lista salva e lista selecionada carregada.");
 });
 
 switchListConfirmButton?.addEventListener("click", () => {
-  if (pendingSelectedSavedListId) {
-    applySavedList(pendingSelectedSavedListId);
+  if (appState.pendingSelectedSavedListId) {
+    applySavedList(appState.pendingSelectedSavedListId);
   }
 
   closeSwitchListModal();
