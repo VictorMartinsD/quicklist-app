@@ -186,6 +186,103 @@ html[data-theme="light"] .theme-toggle {
   color: var(--content-primary);
 }
 
+.title-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.title-row .title {
+  grid-column: 2;
+  text-align: center;
+  margin: 0;
+}
+
+.focus-mode-toggle {
+  grid-column: 3;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  background: var(--background-secondary);
+  color: var(--content-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  margin-right: 2px;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.focus-mode-toggle .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.focus-mode-toggle:hover,
+.focus-mode-toggle:focus-visible {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.focus-mode-collapsible {
+  overflow: visible;
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transform-origin: top center;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    max-height 0.28s ease,
+    margin 0.25s ease,
+    padding 0.25s ease;
+}
+
+.focus-mode-alert {
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    max-height 0.28s ease,
+    margin 0.25s ease,
+    padding 0.25s ease;
+  transform-origin: top center;
+  max-height: 64px;
+}
+
+body.focus-mode .focus-mode-collapsible {
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.98);
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0;
+  pointer-events: none;
+}
+
+body.focus-mode .focus-mode-alert {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.98);
+  max-height: 0;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  pointer-events: none;
+}
+
+body.focus-mode .alert-footer-stack {
+  gap: 0;
+  min-height: 0 !important;
+}
+
 .new-item {
   margin: 44px 0 24px 0;
 }
@@ -1560,6 +1657,19 @@ html[data-theme="dark"] .btn-import-export-help {
 
   .site-footer__break-mobile {
     display: block;
+  }
+
+  .title-row {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .title-row .title {
+    grid-column: 1;
+    text-align: left;
+  }
+
+  .focus-mode-toggle {
+    grid-column: 2;
   }
 }
 

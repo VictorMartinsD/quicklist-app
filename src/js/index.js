@@ -12,6 +12,7 @@ import { generateId } from "./utils.js";
 const {
   input,
   themeToggleButton,
+  focusModeToggleButton,
   btnAddItem,
   btnNewCategory,
   btnSelectAll,
@@ -69,6 +70,7 @@ const {
 } = DOM_SELECTORS;
 
 const themeToggleIconUse = themeToggleButton?.querySelector("use");
+const focusModeToggleIconUse = focusModeToggleButton?.querySelector("use");
 const removalAlertMessage = removalAlert.querySelector(".alert-message");
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 const {
@@ -137,6 +139,34 @@ function toggleTheme() {
 
   applyTheme(nextTheme);
   saveTheme(nextTheme);
+}
+
+function updateFocusModeToggleButton(isFocusModeEnabled) {
+  if (!focusModeToggleButton || !focusModeToggleIconUse) {
+    return;
+  }
+
+  const labelText = isFocusModeEnabled ? "Recolher lista" : "Expandir lista";
+  const iconId = isFocusModeEnabled ? "minimize" : "expand";
+
+  focusModeToggleButton.setAttribute("aria-label", labelText);
+  focusModeToggleButton.setAttribute("title", labelText);
+  focusModeToggleButton.setAttribute("aria-pressed", String(isFocusModeEnabled));
+  focusModeToggleIconUse.setAttribute("href", `assets/img/icons.svg#${iconId}`);
+}
+
+function applyFocusMode(isFocusModeEnabled) {
+  appState.isFocusMode = Boolean(isFocusModeEnabled);
+  document.body.classList.toggle("focus-mode", appState.isFocusMode);
+  updateFocusModeToggleButton(appState.isFocusMode);
+
+  if (appState.isFocusMode) {
+    closeRemovalAlert();
+  }
+}
+
+function toggleFocusMode() {
+  applyFocusMode(!appState.isFocusMode);
 }
 
 applyTheme(loadSavedTheme());
@@ -1273,6 +1303,10 @@ function closeRemovalAlert() {
 }
 
 function openRemovalAlert(message) {
+  if (appState.isFocusMode) {
+    return;
+  }
+
   removalAlertMessage.textContent = message;
   removalAlertMessage.title = message;
   removalAlert.classList.remove("hidden");
@@ -2042,6 +2076,8 @@ exportSuccessModal?.addEventListener("click", (event) => {
 
 themeToggleButton?.addEventListener("click", toggleTheme);
 
+focusModeToggleButton?.addEventListener("click", toggleFocusMode);
+
 btnImportExportHelp?.addEventListener("click", openImportExportHelpModal);
 
 importExportHelpCloseButton?.addEventListener("click", closeImportExportHelpModal);
@@ -2381,3 +2417,4 @@ loadSavedListsFromStorage();
 refreshCategoryStructure();
 updateClearAllButtonVisibility();
 syncBulkActionsByViewport();
+applyFocusMode(false);

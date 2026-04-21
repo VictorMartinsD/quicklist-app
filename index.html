@@ -83,13 +83,27 @@
       </button>
     </header>
 
-    <div class="grid gap-16">
-      <a href="#" class="return">&lt;- Voltar</a>
-      <h2 class="title">Lista de compras</h2>
+    <div class="app-heading grid gap-16">
+      <a href="#" class="return focus-mode-collapsible">&lt;- Voltar</a>
+
+      <div class="title-row">
+        <h2 class="title">Lista de compras</h2>
+
+        <button
+          class="focus-mode-toggle icon-button"
+          type="button"
+          aria-label="Expandir lista"
+          title="Expandir lista"
+          aria-pressed="false">
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/img/icons.svg#expand"></use>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <main>
-      <div class="new-item flex gap-16">
+      <div class="new-item focus-mode-collapsible flex gap-16">
         <input
           id="item"
           type="text"
@@ -99,7 +113,7 @@
         <button class="btn-add-item">Adicionar item</button>
       </div>
 
-      <div class="bulk-clear-slot">
+      <div class="bulk-clear-slot focus-mode-collapsible">
         <div class="bulk-actions flex gap-12" id="bulk-actions-list">
           <button class="btn-new-category" type="button" aria-label="Criar nova categoria de itens.">
             Nova Categoria
@@ -459,7 +473,7 @@
     </div>
 
     <div class="alert-footer-stack">
-      <div class="alert flex gap-8 hidden">
+      <div class="alert focus-mode-alert flex gap-8 hidden">
         <svg id="warning" class="icon" aria-hidden="true" focusable="false">
           <use href="assets/img/icons.svg#warning"></use>
         </svg>

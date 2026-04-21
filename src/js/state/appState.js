@@ -14,5 +14,6 @@ export function createAppState() {
     pendingImportPayload: null,
     pendingDuplicateSavedListId: null,
     savedLists: [],
+    isFocusMode: false,
   };
 }

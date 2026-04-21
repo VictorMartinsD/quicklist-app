@@ -1,6 +1,7 @@
 export const DOM_SELECTORS = {
   input: document.querySelector("#item"),
   themeToggleButton: document.querySelector(".theme-toggle"),
+  focusModeToggleButton: document.querySelector(".focus-mode-toggle"),
   btnAddItem: document.querySelector(".btn-add-item"),
   btnNewCategory: document.querySelector(".btn-new-category"),
   btnSelectAll: document.querySelector(".btn-select-all"),
