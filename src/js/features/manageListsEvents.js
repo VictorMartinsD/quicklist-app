@@ -18,6 +18,30 @@ const {
   switchListConfirmButton,
 } = DOM_SELECTORS;
 
+/**
+ * Vincula eventos do modal de gerenciamento de listas
+ * @param {any} appState - Estado da aplicação
+ * @param {Function} openManageListsModal - Função para abrir modal de gerenciamento
+ * @param {Function} closeManageListsModal - Função para fechar modal de gerenciamento
+ * @param {Function} saveCurrentList - Função para salvar lista atual
+ * @param {Function} removeSavedList - Função para remover lista salva
+ * @param {Function} startManageListEditing - Função para iniciar edição de lista
+ * @param {Function} finishManageListEditing - Função para finalizar edição de lista
+ * @param {Function} getEditableSelectionLength - Função para obter tamanho da seleção
+ * @param {number} SAVED_LIST_NAME_MAX_LENGTH - Tamanho máximo do nome da lista salva
+ * @param {Function} clipboardHasImage - Função para verificar se clipboard tem imagem
+ * @param {Function} openValidationModal - Função para abrir modal de validação
+ * @param {Function} clampEditingTextLength - Função para limitar tamanho do texto
+ * @param {Function} getCurrentRowsSnapshot - Função para obter snapshot das linhas
+ * @param {Function} getRowsSignature - Função para obter assinatura das linhas
+ * @param {Function} openSwitchListModal - Função para abrir modal de troca de lista
+ * @param {Function} applySavedList - Função para aplicar lista salva
+ * @param {Function} handleSavedListsDragOver - Função para lidar com drag over de listas
+ * @param {Function} persistSavedListsFromDomOrder - Função para persistir ordem das listas
+ * @param {Function} renderSavedLists - Função para renderizar listas salvas
+ * @returns {void}
+ * @description Configura listeners para modal de gerenciamento de listas salvas
+ */
 export function bindManageListsEvents(
   appState,
   openManageListsModal,
@@ -37,7 +61,7 @@ export function bindManageListsEvents(
   applySavedList,
   handleSavedListsDragOver,
   persistSavedListsFromDomOrder,
-  renderSavedLists
+  renderSavedLists,
 ) {
   btnManageLists?.addEventListener("click", openManageListsModal);
   manageListsModalCloseButton?.addEventListener("click", closeManageListsModal);
@@ -252,7 +276,25 @@ export function bindManageListsEvents(
   });
 }
 
-export function bindSwitchListEvents(appState, closeSwitchListModal, renderSavedLists, saveCurrentList, applySavedList, openRemovalAlert) {
+/**
+ * Vincula eventos do modal de troca de lista
+ * @param {any} appState - Estado da aplicação
+ * @param {Function} closeSwitchListModal - Função para fechar modal de troca de lista
+ * @param {Function} renderSavedLists - Função para renderizar listas salvas
+ * @param {Function} saveCurrentList - Função para salvar lista atual
+ * @param {Function} applySavedList - Função para aplicar lista salva
+ * @param {Function} openRemovalAlert - Função para abrir alerta de remoção
+ * @returns {void}
+ * @description Configura listeners para modal de confirmação de troca de lista
+ */
+export function bindSwitchListEvents(
+  appState,
+  closeSwitchListModal,
+  renderSavedLists,
+  saveCurrentList,
+  applySavedList,
+  openRemovalAlert,
+) {
   switchListCancelButton?.addEventListener("click", () => {
     closeSwitchListModal();
     renderSavedLists();

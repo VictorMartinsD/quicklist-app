@@ -5,16 +5,23 @@
 
 import { DOM_SELECTORS } from "../dom/selectors.js";
 
-const {
-  btnAddItem,
-  btnNewCategory,
-  btnSelectAll,
-  bulkActionsToggle,
-  input,
-  itemsContainer,
-} = DOM_SELECTORS;
+const { btnAddItem, btnNewCategory, btnSelectAll, bulkActionsToggle, input, itemsContainer } = DOM_SELECTORS;
 
-export function bindListActionEvents(handleAddItem, handleAddCategory, updateBulkActionsToggleState, handleToggleSelectAll) {
+/**
+ * Vincula eventos de ação da lista principal
+ * @param {Function} handleAddItem - Função para adicionar item
+ * @param {Function} handleAddCategory - Função para adicionar categoria
+ * @param {Function} updateBulkActionsToggleState - Função para atualizar estado do toggle
+ * @param {Function} handleToggleSelectAll - Função para alternar seleção de todos
+ * @returns {void}
+ * @description Configura listeners para botões de adicionar item, categoria e ações em massa
+ */
+export function bindListActionEvents(
+  handleAddItem,
+  handleAddCategory,
+  updateBulkActionsToggleState,
+  handleToggleSelectAll,
+) {
   btnAddItem.addEventListener("click", handleAddItem);
   btnNewCategory.addEventListener("click", handleAddCategory);
 
@@ -39,6 +46,28 @@ export function bindListActionEvents(handleAddItem, handleAddCategory, updateBul
   btnSelectAll?.addEventListener("click", handleToggleSelectAll);
 }
 
+/**
+ * Vincula eventos de interação dos itens da lista
+ * @param {any} appState - Estado da aplicação
+ * @param {Function} isCategoryRow - Função para verificar se é categoria
+ * @param {Function} openCategoryClearModal - Função para abrir modal de limpeza de categoria
+ * @param {Function} refreshCategoryStructure - Função para atualizar estrutura de categorias
+ * @param {Function} saveItemsToStorage - Função para salvar itens no storage
+ * @param {Function} updateClearAllButtonVisibility - Função para atualizar visibilidade do botão limpar
+ * @param {Function} openRemovalAlert - Função para abrir alerta de remoção
+ * @param {Function} startItemEditing - Função para iniciar edição de item
+ * @param {Function} finishItemEditing - Função para finalizar edição de item
+ * @param {Function} getEditableSelectionLength - Função para obter tamanho da seleção
+ * @param {number} ITEM_NAME_MAX_LENGTH - Tamanho máximo do nome do item
+ * @param {Function} clipboardHasImage - Função para verificar se clipboard tem imagem
+ * @param {Function} openValidationModal - Função para abrir modal de validação
+ * @param {Function} clampEditingTextLength - Função para limitar tamanho do texto
+ * @param {Function} updateSelectAllButtonState - Função para atualizar estado do botão selecionar todos
+ * @param {Function} getCategoryScopeRows - Função para obter linhas do escopo da categoria
+ * @param {Function} getItemAfterPointerPosition - Função para obter item após posição do ponteiro
+ * @returns {void}
+ * @description Configura listeners para interações com itens da lista (click, drag, edit, etc)
+ */
 export function bindListItemEvents(
   appState,
   isCategoryRow,
@@ -56,7 +85,7 @@ export function bindListItemEvents(
   clampEditingTextLength,
   updateSelectAllButtonState,
   getCategoryScopeRows,
-  getItemAfterPointerPosition
+  getItemAfterPointerPosition,
 ) {
   itemsContainer.addEventListener("click", (event) => {
     const removeButton = event.target.closest(".icon-button");

@@ -34,6 +34,32 @@ const {
   btnImportExportHelpClose,
 } = DOM_SELECTORS;
 
+/**
+ * Vincula eventos dos modais de importação e exportação
+ * @param {any} appState - Estado da aplicação
+ * @param {Function} openImportCodeModal - Função para abrir modal de código de importação
+ * @param {Function} closeImportCodeModal - Função para fechar modal de código de importação
+ * @param {Function} openExportSaveModal - Função para abrir modal de exportação salvar
+ * @param {Function} exportCurrentList - Função para exportar lista atual
+ * @param {Function} handleImportConfirmRequest - Função para confirmar importação
+ * @param {Function} saveCurrentList - Função para salvar lista atual
+ * @param {Function} importParsedList - Função para importar lista parseada
+ * @param {Function} openRemovalAlert - Função para abrir alerta de remoção
+ * @param {Function} closeImportUnsavedModal - Função para fechar modal de importação não salvo
+ * @param {Function} openImportUnsavedModal - Função para abrir modal de importação não salvo
+ * @param {Function} closeImportDuplicateModal - Função para fechar modal de importação duplicada
+ * @param {Function} openImportDuplicateModal - Função para abrir modal de importação duplicada
+ * @param {Function} closeImportDuplicateActiveModal - Função para fechar modal de importação duplicada ativa
+ * @param {Function} openImportDuplicateActiveModal - Função para abrir modal de importação duplicada ativa
+ * @param {Function} closeExportSaveModal - Função para fechar modal de exportação salvar
+ * @param {Function} closeExportSuccessModal - Função para fechar modal de exportação sucesso
+ * @param {Function} openExportSuccessModal - Função para abrir modal de exportação sucesso
+ * @param {Function} openImportExportHelpModal - Função para abrir modal de ajuda import/export
+ * @param {Function} closeImportExportHelpModal - Função para fechar modal de ajuda import/export
+ * @param {Function} getCurrentRowsSnapshot - Função para obter snapshot das linhas atuais
+ * @returns {void}
+ * @description Configura listeners para todos os modais de importação e exportação
+ */
 export function bindImportExportModalEvents(
   appState,
   openImportCodeModal,
@@ -55,7 +81,7 @@ export function bindImportExportModalEvents(
   openExportSuccessModal,
   openImportExportHelpModal,
   closeImportExportHelpModal,
-  getCurrentRowsSnapshot
+  getCurrentRowsSnapshot,
 ) {
   btnImportList?.addEventListener("click", () => {
     openImportCodeModal();

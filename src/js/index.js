@@ -146,6 +146,12 @@ function toggleTheme() {
   saveTheme(nextTheme);
 }
 
+/**
+ * Atualiza o botão de toggle do modo de foco
+ * @param {boolean} isFocusModeEnabled - Estado do modo de foco
+ * @returns {void}
+ * @description Atualiza texto, ícone e estado ARIA do botão de modo de foco
+ */
 function updateFocusModeToggleButton(isFocusModeEnabled) {
   if (!focusModeToggleButton || !focusModeToggleIconUse) {
     return;
@@ -160,6 +166,12 @@ function updateFocusModeToggleButton(isFocusModeEnabled) {
   focusModeToggleIconUse.setAttribute("href", `assets/img/icons.svg#${iconId}`);
 }
 
+/**
+ * Aplica o modo de foco à interface
+ * @param {boolean} isFocusModeEnabled - Estado do modo de foco a ser aplicado
+ * @returns {void}
+ * @description Ativa/desativa o modo de foco e atualiza elementos da UI
+ */
 function applyFocusMode(isFocusModeEnabled) {
   appState.isFocusMode = Boolean(isFocusModeEnabled);
   document.body.classList.toggle("focus-mode", appState.isFocusMode);
@@ -170,16 +182,32 @@ function applyFocusMode(isFocusModeEnabled) {
   }
 }
 
+/**
+ * Alterna o estado do modo de foco
+ * @returns {void}
+ * @description Inverte o estado atual do modo de foco
+ */
 function toggleFocusMode() {
   applyFocusMode(!appState.isFocusMode);
 }
 
 applyTheme(loadSavedTheme());
 
+/**
+ * Verifica se a viewport está em modo mobile
+ * @returns {boolean} True se estiver em viewport mobile
+ * @description Verifica se a viewport corresponde à media query de dispositivos móveis
+ */
 function isMobileViewport() {
   return window.matchMedia(MOBILE_BULK_ACTIONS_MEDIA_QUERY).matches;
 }
 
+/**
+ * Atualiza o estado do toggle de ações em massa
+ * @param {boolean} isExpanded - Estado de expansão do toggle
+ * @returns {void}
+ * @description Atualiza classes CSS e atributos ARIA do toggle de ações em massa
+ */
 function updateBulkActionsToggleState(isExpanded) {
   if (!bulkClearSlot || !bulkActionsToggle) {
     return;
@@ -207,6 +235,11 @@ function updateBulkActionsToggleState(isExpanded) {
   }
 }
 
+/**
+ * Sincroniza ações em massa com a viewport atual
+ * @returns {void}
+ * @description Ajusta o estado das ações em massa baseado no tamanho da viewport
+ */
 function syncBulkActionsByViewport() {
   if (!bulkClearSlot || !bulkActionsToggle) {
     return;

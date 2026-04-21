@@ -24,6 +24,27 @@ const {
 
 const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
 
+/**
+ * Vincula eventos globais da interface do usuário
+ * @param {any} appState - Estado da aplicação
+ * @param {Function} toggleTheme - Função para alternar tema
+ * @param {Function} toggleFocusMode - Função para alternar modo de foco
+ * @param {Function} closeRemovalAlert - Função para fechar alerta de remoção
+ * @param {Function} closeValidationModal - Função para fechar modal de validação
+ * @param {Function} closeExportSuccessModal - Função para fechar modal de exportação sucesso
+ * @param {Function} closeExportSaveModal - Função para fechar modal de exportação salvar
+ * @param {Function} closeImportUnsavedModal - Função para fechar modal de importação não salvo
+ * @param {Function} closeImportDuplicateModal - Função para fechar modal de importação duplicada
+ * @param {Function} closeImportDuplicateActiveModal - Função para fechar modal de importação duplicada ativa
+ * @param {Function} closeImportCodeModal - Função para fechar modal de código de importação
+ * @param {Function} closeSwitchListModal - Função para fechar modal de troca de lista
+ * @param {Function} renderSavedLists - Função para renderizar listas salvas
+ * @param {Function} closeManageListsModal - Função para fechar modal de gerenciamento de listas
+ * @param {Function} closeClearModal - Função para fechar modal de limpeza
+ * @param {Function} syncBulkActionsByViewport - Função para sincronizar ações em massa com viewport
+ * @returns {void}
+ * @description Configura listeners para eventos globais como tema, modo de foco e fechamento de modais
+ */
 export function bindGlobalUiEvents(
   appState,
   toggleTheme,
@@ -40,7 +61,7 @@ export function bindGlobalUiEvents(
   renderSavedLists,
   closeManageListsModal,
   closeClearModal,
-  syncBulkActionsByViewport
+  syncBulkActionsByViewport,
 ) {
   themeToggleButton?.addEventListener("click", toggleTheme);
   focusModeToggleButton?.addEventListener("click", toggleFocusMode);
