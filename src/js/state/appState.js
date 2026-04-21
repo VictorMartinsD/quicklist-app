@@ -6,7 +6,7 @@ export function createAppState() {
     draggedRows: [],
     activeEditableItem: null,
     activeManageListEditableItem: null,
-    clearModalMode: "all",
+    clearModalMode: 'all',
     categoryRowsToDelete: [],
     categoryOnlyRowToDelete: null,
     draggedSavedListElement: null,

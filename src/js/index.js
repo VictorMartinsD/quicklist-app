@@ -3,16 +3,16 @@
   DESCRIÇÃO: Script principal para funcionalidades do site.
 */
 
-import { APP_CONSTANTS } from "./app/constants.js";
-import { DOM_SELECTORS } from "./dom/selectors.js";
-import { createAppState } from "./state/appState.js";
-import { getStorageItem, removeStorageItem, setStorageItem } from "./storage/localStorage.js";
-import { generateId } from "./utils.js";
-import { bindListActionEvents, bindListItemEvents } from "./features/listEvents.js";
-import { bindClearModalEvents, bindValidationModalEvents } from "./features/modalEvents.js";
-import { bindImportExportModalEvents } from "./features/importExportEvents.js";
-import { bindManageListsEvents, bindSwitchListEvents } from "./features/manageListsEvents.js";
-import { bindGlobalUiEvents } from "./features/globalEvents.js";
+import { APP_CONSTANTS } from './app/constants.js';
+import { DOM_SELECTORS } from './dom/selectors.js';
+import { createAppState } from './state/appState.js';
+import { getStorageItem, removeStorageItem, setStorageItem } from './storage/localStorage.js';
+import { generateId } from './utils.js';
+import { bindListActionEvents, bindListItemEvents } from './features/listEvents.js';
+import { bindClearModalEvents, bindValidationModalEvents } from './features/modalEvents.js';
+import { bindImportExportModalEvents } from './features/importExportEvents.js';
+import { bindManageListsEvents, bindSwitchListEvents } from './features/manageListsEvents.js';
+import { bindGlobalUiEvents } from './features/globalEvents.js';
 
 const {
   input,
@@ -74,10 +74,10 @@ const {
   removalAlert,
 } = DOM_SELECTORS;
 
-const themeToggleIconUse = themeToggleButton?.querySelector("use");
-const focusModeToggleIconUse = focusModeToggleButton?.querySelector("use");
-const removalAlertMessage = removalAlert.querySelector(".alert-message");
-const removalAlertCloseButton = removalAlert.querySelector(".icon-button");
+const themeToggleIconUse = themeToggleButton?.querySelector('use');
+const focusModeToggleIconUse = focusModeToggleButton?.querySelector('use');
+const removalAlertMessage = removalAlert.querySelector('.alert-message');
+const removalAlertCloseButton = removalAlert.querySelector('.icon-button');
 const {
   ITEMS_STORAGE_KEY,
   SAVED_LISTS_STORAGE_KEY,
@@ -100,25 +100,25 @@ if (importCodeInput) {
 }
 
 function normalizeTheme(theme) {
-  return theme === "light" ? "light" : "dark";
+  return theme === 'light' ? 'light' : 'dark';
 }
 
 function applyTheme(theme) {
   const normalizedTheme = normalizeTheme(theme);
-  document.documentElement.setAttribute("data-theme", normalizedTheme);
+  document.documentElement.setAttribute('data-theme', normalizedTheme);
 
   if (!themeToggleButton || !themeToggleIconUse) {
     return;
   }
 
-  const isLightTheme = normalizedTheme === "light";
+  const isLightTheme = normalizedTheme === 'light';
 
   themeToggleIconUse.setAttribute(
-    "href",
-    isLightTheme ? "assets/img/icons.svg#bulb-on" : "assets/img/icons.svg#bulb-off",
+    'href',
+    isLightTheme ? 'assets/img/icons.svg#bulb-on' : 'assets/img/icons.svg#bulb-off'
   );
-  themeToggleButton.setAttribute("aria-label", isLightTheme ? "Ativar modo escuro" : "Ativar modo claro");
-  themeToggleButton.setAttribute("title", isLightTheme ? "Ativar modo escuro" : "Ativar modo claro");
+  themeToggleButton.setAttribute('aria-label', isLightTheme ? 'Ativar modo escuro' : 'Ativar modo claro');
+  themeToggleButton.setAttribute('title', isLightTheme ? 'Ativar modo escuro' : 'Ativar modo claro');
 }
 
 function loadSavedTheme() {
@@ -126,7 +126,7 @@ function loadSavedTheme() {
     const savedTheme = getStorageItem(THEME_STORAGE_KEY);
     return normalizeTheme(savedTheme);
   } catch {
-    return "dark";
+    return 'dark';
   }
 }
 
@@ -139,8 +139,8 @@ function saveTheme(theme) {
 }
 
 function toggleTheme() {
-  const currentTheme = normalizeTheme(document.documentElement.getAttribute("data-theme"));
-  const nextTheme = currentTheme === "dark" ? "light" : "dark";
+  const currentTheme = normalizeTheme(document.documentElement.getAttribute('data-theme'));
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
   applyTheme(nextTheme);
   saveTheme(nextTheme);
@@ -157,13 +157,13 @@ function updateFocusModeToggleButton(isFocusModeEnabled) {
     return;
   }
 
-  const labelText = isFocusModeEnabled ? "Recolher lista" : "Expandir lista";
-  const iconId = isFocusModeEnabled ? "minimize" : "expand";
+  const labelText = isFocusModeEnabled ? 'Recolher lista' : 'Expandir lista';
+  const iconId = isFocusModeEnabled ? 'minimize' : 'expand';
 
-  focusModeToggleButton.setAttribute("aria-label", labelText);
-  focusModeToggleButton.setAttribute("title", labelText);
-  focusModeToggleButton.setAttribute("aria-pressed", String(isFocusModeEnabled));
-  focusModeToggleIconUse.setAttribute("href", `assets/img/icons.svg#${iconId}`);
+  focusModeToggleButton.setAttribute('aria-label', labelText);
+  focusModeToggleButton.setAttribute('title', labelText);
+  focusModeToggleButton.setAttribute('aria-pressed', String(isFocusModeEnabled));
+  focusModeToggleIconUse.setAttribute('href', `assets/img/icons.svg#${iconId}`);
 }
 
 /**
@@ -174,7 +174,7 @@ function updateFocusModeToggleButton(isFocusModeEnabled) {
  */
 function applyFocusMode(isFocusModeEnabled) {
   appState.isFocusMode = Boolean(isFocusModeEnabled);
-  document.body.classList.toggle("focus-mode", appState.isFocusMode);
+  document.body.classList.toggle('focus-mode', appState.isFocusMode);
   updateFocusModeToggleButton(appState.isFocusMode);
 
   if (appState.isFocusMode) {
@@ -213,24 +213,24 @@ function updateBulkActionsToggleState(isExpanded) {
     return;
   }
 
-  const iconUseElement = bulkActionsToggle.querySelector("use");
+  const iconUseElement = bulkActionsToggle.querySelector('use');
   const isMobile = isMobileViewport();
 
   if (isMobile) {
-    bulkClearSlot.classList.toggle("is-collapsed", !isExpanded);
-    bulkClearSlot.classList.remove("is-extra-open");
+    bulkClearSlot.classList.toggle('is-collapsed', !isExpanded);
+    bulkClearSlot.classList.remove('is-extra-open');
   } else {
-    bulkClearSlot.classList.remove("is-collapsed");
-    bulkClearSlot.classList.toggle("is-extra-open", isExpanded);
+    bulkClearSlot.classList.remove('is-collapsed');
+    bulkClearSlot.classList.toggle('is-extra-open', isExpanded);
   }
 
-  bulkActionsToggle.setAttribute("aria-expanded", String(isExpanded));
-  bulkActionsToggle.setAttribute("aria-label", isExpanded ? "Ocultar acoes adicionais" : "Mostrar acoes adicionais");
+  bulkActionsToggle.setAttribute('aria-expanded', String(isExpanded));
+  bulkActionsToggle.setAttribute('aria-label', isExpanded ? 'Ocultar acoes adicionais' : 'Mostrar acoes adicionais');
 
   if (iconUseElement) {
     iconUseElement.setAttribute(
-      "href",
-      isExpanded ? "assets/img/icons.svg#chevron-up" : "assets/img/icons.svg#chevron-down",
+      'href',
+      isExpanded ? 'assets/img/icons.svg#chevron-up' : 'assets/img/icons.svg#chevron-down'
     );
   }
 }
@@ -249,7 +249,7 @@ function syncBulkActionsByViewport() {
 }
 
 function closeValidationModal() {
-  validationModal.classList.add("hidden");
+  validationModal.classList.add('hidden');
   syncModalOpenState();
   window.clearTimeout(appState.validationTimeoutId);
   appState.validationTimeoutId = null;
@@ -257,10 +257,10 @@ function closeValidationModal() {
 }
 
 function openValidationModal(message) {
-  const modalMessage = validationModal.querySelector("#validation-modal-description");
+  const modalMessage = validationModal.querySelector('#validation-modal-description');
 
   modalMessage.innerHTML = message;
-  validationModal.classList.remove("hidden");
+  validationModal.classList.remove('hidden');
   syncModalOpenState();
   validationCloseButton.focus();
 
@@ -269,7 +269,7 @@ function openValidationModal(message) {
 }
 
 function getVisibleItems() {
-  return [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")];
+  return [...itemsContainer.querySelectorAll('.item-added:not(.hidden)')];
 }
 
 function getVisibleRows() {
@@ -278,7 +278,7 @@ function getVisibleRows() {
 
 function getVisibleCheckboxes() {
   return getVisibleRows()
-    .map((rowElement) => rowElement.querySelector('input[type="checkbox"]'))
+    .map(rowElement => rowElement.querySelector('input[type="checkbox"]'))
     .filter(Boolean);
 }
 
@@ -289,13 +289,13 @@ function updateSelectAllButtonState() {
 
   const visibleCheckboxes = getVisibleCheckboxes();
   const hasCheckboxes = visibleCheckboxes.length > 0;
-  const areAllSelected = hasCheckboxes && visibleCheckboxes.every((checkboxElement) => checkboxElement.checked);
+  const areAllSelected = hasCheckboxes && visibleCheckboxes.every(checkboxElement => checkboxElement.checked);
 
-  btnSelectAll.classList.toggle("is-all-selected", areAllSelected);
+  btnSelectAll.classList.toggle('is-all-selected', areAllSelected);
   btnSelectAll.disabled = !hasCheckboxes;
   btnSelectAll.setAttribute(
-    "aria-label",
-    areAllSelected ? "Desmarcar todos os itens e categorias." : "Selecionar todos os itens e categorias.",
+    'aria-label',
+    areAllSelected ? 'Desmarcar todos os itens e categorias.' : 'Selecionar todos os itens e categorias.'
   );
 }
 
@@ -306,10 +306,10 @@ function handleToggleSelectAll() {
     return;
   }
 
-  const areAllSelected = visibleCheckboxes.every((checkboxElement) => checkboxElement.checked);
+  const areAllSelected = visibleCheckboxes.every(checkboxElement => checkboxElement.checked);
   const shouldSelectAll = !areAllSelected;
 
-  visibleCheckboxes.forEach((checkboxElement) => {
+  visibleCheckboxes.forEach(checkboxElement => {
     checkboxElement.checked = shouldSelectAll;
   });
 
@@ -318,14 +318,14 @@ function handleToggleSelectAll() {
 }
 
 function isCategoryRow(rowElement) {
-  return rowElement?.dataset?.rowType === "category";
+  return rowElement?.dataset?.rowType === 'category';
 }
 
 function getNextCategoryNumber() {
-  const categoryRows = getVisibleRows().filter((rowElement) => isCategoryRow(rowElement));
+  const categoryRows = getVisibleRows().filter(rowElement => isCategoryRow(rowElement));
 
   const highestCategoryNumber = categoryRows.reduce((highest, rowElement) => {
-    const categoryText = rowElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+    const categoryText = rowElement.querySelector('.shopping-item')?.textContent?.trim() || '';
     const matchedNumber = categoryText.match(/^Lista\s+(\d+)$/i);
 
     if (!matchedNumber) {
@@ -344,31 +344,31 @@ function refreshCategoryStructure() {
   let previousRow = null;
   let currentCategoryLevel = -1;
 
-  visibleRows.forEach((rowElement) => {
+  visibleRows.forEach(rowElement => {
     rowElement.classList.remove(
-      "is-grouped",
-      "is-group-first",
-      "is-group-last",
-      "is-group-continuation",
-      "is-subcategory-chain",
+      'is-grouped',
+      'is-group-first',
+      'is-group-last',
+      'is-group-continuation',
+      'is-subcategory-chain'
     );
     delete rowElement.dataset.groupId;
   });
 
-  visibleRows.forEach((rowElement) => {
+  visibleRows.forEach(rowElement => {
     if (isCategoryRow(rowElement)) {
       const previousLevel = Number(previousRow?.dataset?.categoryLevel || 0);
       const categoryLevel = previousRow && isCategoryRow(previousRow) ? previousLevel + 1 : 0;
 
       rowElement.dataset.categoryLevel = String(categoryLevel);
-      rowElement.style.setProperty("--category-level", String(categoryLevel));
-      rowElement.classList.add("is-under-category");
+      rowElement.style.setProperty('--category-level', String(categoryLevel));
+      rowElement.classList.add('is-under-category');
       currentCategoryLevel = categoryLevel;
     } else {
       const inheritedLevel = currentCategoryLevel >= 0 ? currentCategoryLevel : 0;
 
-      rowElement.style.setProperty("--category-level", String(inheritedLevel));
-      rowElement.classList.toggle("is-under-category", currentCategoryLevel >= 0);
+      rowElement.style.setProperty('--category-level', String(inheritedLevel));
+      rowElement.classList.toggle('is-under-category', currentCategoryLevel >= 0);
     }
 
     previousRow = rowElement;
@@ -387,19 +387,19 @@ function refreshCategoryStructure() {
       }
 
       if (previousVisibleRow && isCategoryRow(previousVisibleRow)) {
-        rowElement.classList.add("is-subcategory-chain");
+        rowElement.classList.add('is-subcategory-chain');
       }
     }
 
-    if (currentGroupId >= 0 && rowElement.classList.contains("is-under-category")) {
+    if (currentGroupId >= 0 && rowElement.classList.contains('is-under-category')) {
       rowElement.dataset.groupId = String(currentGroupId);
-      rowElement.classList.add("is-grouped");
+      rowElement.classList.add('is-grouped');
     }
   });
 
   const groupedRowsById = new Map();
 
-  visibleRows.forEach((rowElement) => {
+  visibleRows.forEach(rowElement => {
     const groupId = rowElement.dataset.groupId;
 
     if (!groupId) {
@@ -411,15 +411,15 @@ function refreshCategoryStructure() {
     groupedRowsById.set(groupId, groupedRows);
   });
 
-  groupedRowsById.forEach((groupedRows) => {
+  groupedRowsById.forEach(groupedRows => {
     const firstRow = groupedRows[0];
     const lastRow = groupedRows[groupedRows.length - 1];
 
-    firstRow.classList.add("is-group-first");
-    lastRow.classList.add("is-group-last");
+    firstRow.classList.add('is-group-first');
+    lastRow.classList.add('is-group-last');
 
-    groupedRows.slice(1).forEach((groupedRow) => {
-      groupedRow.classList.add("is-group-continuation");
+    groupedRows.slice(1).forEach(groupedRow => {
+      groupedRow.classList.add('is-group-continuation');
     });
   });
 }
@@ -462,33 +462,33 @@ function getCategoryScopeRows(categoryRowElement) {
 }
 
 function updateClearAllButtonVisibility() {
-  clearAllButton.classList.remove("is-hidden");
+  clearAllButton.classList.remove('is-hidden');
   updateSelectAllButtonState();
 }
 
 function closeClearModal() {
-  clearModal.classList.add("hidden");
+  clearModal.classList.add('hidden');
   syncModalOpenState();
-  appState.clearModalMode = "all";
+  appState.clearModalMode = 'all';
   appState.categoryRowsToDelete = [];
   appState.categoryOnlyRowToDelete = null;
-  clearModalCategoryOnlyButton.classList.add("hidden");
+  clearModalCategoryOnlyButton.classList.add('hidden');
 }
 
 function openClearModal() {
   const totalItems = getVisibleItems().length;
 
   if (totalItems < 2) {
-    openValidationModal("Adicione pelo menos 2 itens para apagar todos.");
+    openValidationModal('Adicione pelo menos 2 itens para apagar todos.');
     return;
   }
 
   clearModalDescription.textContent = `Tem certeza que deseja apagar ${totalItems} itens da lista?`;
-  appState.clearModalMode = "all";
+  appState.clearModalMode = 'all';
   appState.categoryRowsToDelete = [];
   appState.categoryOnlyRowToDelete = null;
-  clearModalCategoryOnlyButton.classList.add("hidden");
-  clearModal.classList.remove("hidden");
+  clearModalCategoryOnlyButton.classList.add('hidden');
+  clearModal.classList.remove('hidden');
   syncModalOpenState();
   clearModalCloseButton.focus();
 }
@@ -507,20 +507,20 @@ function openCategoryClearModal(categoryRowElement) {
   }
 
   appState.categoryRowsToDelete = rows;
-  appState.clearModalMode = "category";
+  appState.clearModalMode = 'category';
   appState.categoryOnlyRowToDelete = hasSubcategories ? categoryRowElement : null;
 
   if (appState.categoryOnlyRowToDelete) {
-    clearModalCategoryOnlyButton.classList.remove("hidden");
+    clearModalCategoryOnlyButton.classList.remove('hidden');
   } else {
-    clearModalCategoryOnlyButton.classList.add("hidden");
+    clearModalCategoryOnlyButton.classList.add('hidden');
   }
 
   clearModalDescription.textContent = hasSubcategories
-    ? "Tem certeza que deseja apagar os itens dessa categoria e suas sub-categorias correspondentes?"
-    : "Tem certeza que deseja apagar os itens dessa categoria?";
+    ? 'Tem certeza que deseja apagar os itens dessa categoria e suas sub-categorias correspondentes?'
+    : 'Tem certeza que deseja apagar os itens dessa categoria?';
 
-  clearModal.classList.remove("hidden");
+  clearModal.classList.remove('hidden');
   syncModalOpenState();
   clearModalCloseButton.focus();
 }
@@ -537,15 +537,15 @@ function syncModalOpenState() {
     importDuplicateActiveModal,
     exportSaveModal,
     exportSuccessModal,
-  ].some((modalElement) => modalElement && !modalElement.classList.contains("hidden"));
+  ].some(modalElement => modalElement && !modalElement.classList.contains('hidden'));
 
-  document.body.classList.toggle("modal-open", hasOpenModal);
+  document.body.classList.toggle('modal-open', hasOpenModal);
 }
 
 function normalizeListRowsForComparison(rows) {
-  return rows.map((row) => ({
-    rowType: row.rowType === "category" ? "category" : "item",
-    text: normalizeItemText(row.text || ""),
+  return rows.map(row => ({
+    rowType: row.rowType === 'category' ? 'category' : 'item',
+    text: normalizeItemText(row.text || ''),
     checked: Boolean(row.checked),
   }));
 }
@@ -555,12 +555,12 @@ function getRowsSignature(rows) {
 }
 
 function getCurrentRowsSnapshot() {
-  return getVisibleRows().map((rowElement) => {
-    const text = rowElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+  return getVisibleRows().map(rowElement => {
+    const text = rowElement.querySelector('.shopping-item')?.textContent?.trim() || '';
     const checkboxElement = rowElement.querySelector('input[type="checkbox"]');
 
     return {
-      rowType: rowElement.dataset.rowType === "category" ? "category" : "item",
+      rowType: rowElement.dataset.rowType === 'category' ? 'category' : 'item',
       text,
       checked: Boolean(checkboxElement?.checked),
     };
@@ -569,7 +569,7 @@ function getCurrentRowsSnapshot() {
 
 function getNextSavedListName() {
   const highestUsedNumber = appState.savedLists.reduce((highest, savedList) => {
-    const matchedNumber = (savedList.name || "").match(/^Lista salva\s+(\d+)$/i);
+    const matchedNumber = (savedList.name || '').match(/^Lista salva\s+(\d+)$/i);
 
     if (!matchedNumber) {
       return highest;
@@ -584,7 +584,7 @@ function getNextSavedListName() {
 
 function getNextImportedListName() {
   const highestImportedNumber = appState.savedLists.reduce((highest, savedList) => {
-    const matchedNumber = (savedList.name || "").match(/^Lista importada\s+(\d+)$/i);
+    const matchedNumber = (savedList.name || '').match(/^Lista importada\s+(\d+)$/i);
 
     if (!matchedNumber) {
       return highest;
@@ -597,10 +597,10 @@ function getNextImportedListName() {
   return `Lista importada ${highestImportedNumber + 1}`;
 }
 
-function resolveImportedListName(preferredName = "") {
-  const normalizedName = normalizeItemText(preferredName || "");
+function resolveImportedListName(preferredName = '') {
+  const normalizedName = normalizeItemText(preferredName || '');
   const hasDuplicateName = appState.savedLists.some(
-    (savedList) => (savedList.name || "").toLowerCase() === normalizedName.toLowerCase(),
+    savedList => (savedList.name || '').toLowerCase() === normalizedName.toLowerCase()
   );
   const isDefaultNamePattern =
     /^Lista\s+salva\s+\d+$/i.test(normalizedName) || /^Lista\s+importada\s+\d+$/i.test(normalizedName);
@@ -612,24 +612,24 @@ function resolveImportedListName(preferredName = "") {
   return normalizedName;
 }
 
-function buildShareCodePayload(rowsSnapshot, preferredName = "") {
-  const normalizedRows = normalizeListRowsForComparison(rowsSnapshot).filter((row) => row.text !== "");
+function buildShareCodePayload(rowsSnapshot, preferredName = '') {
+  const normalizedRows = normalizeListRowsForComparison(rowsSnapshot).filter(row => row.text !== '');
 
   if (!normalizedRows.length) {
     return null;
   }
 
   return {
-    name: preferredName ? normalizeItemText(preferredName) : "",
+    name: preferredName ? normalizeItemText(preferredName) : '',
     items: normalizedRows,
   };
 }
 
 function getCurrentListNameForShare() {
   const matchedListId = getCurrentSavedListMatchId();
-  const matchedSavedList = appState.savedLists.find((savedList) => savedList.id === matchedListId);
+  const matchedSavedList = appState.savedLists.find(savedList => savedList.id === matchedListId);
 
-  return matchedSavedList?.name || "";
+  return matchedSavedList?.name || '';
 }
 
 function encodeSharePayload(payload) {
@@ -642,28 +642,28 @@ function decodeSharePayload(encodedPayload) {
 }
 
 function extractShareCode(rawInput) {
-  const inputValue = (rawInput || "").trim();
+  const inputValue = (rawInput || '').trim();
 
   if (!inputValue) {
-    return "";
+    return '';
   }
 
-  if (inputValue.startsWith("{")) {
+  if (inputValue.startsWith('{')) {
     return inputValue;
   }
 
-  if (inputValue.startsWith("#") || inputValue.startsWith("?")) {
-    const leadingToken = inputValue[0] === "#" ? inputValue.slice(1) : inputValue.slice(1);
+  if (inputValue.startsWith('#') || inputValue.startsWith('?')) {
+    const leadingToken = inputValue[0] === '#' ? inputValue.slice(1) : inputValue.slice(1);
     const parsedParams = new URLSearchParams(leadingToken);
-    return parsedParams.get("share") || parsedParams.get("list") || inputValue;
+    return parsedParams.get('share') || parsedParams.get('list') || inputValue;
   }
 
   if (/^https?:\/\//i.test(inputValue)) {
     try {
       const parsedUrl = new URL(inputValue);
-      const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ""));
-      const queryParams = new URLSearchParams(parsedUrl.search.replace(/^\?/, ""));
-      return hashParams.get("share") || queryParams.get("list") || queryParams.get("share") || inputValue;
+      const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ''));
+      const queryParams = new URLSearchParams(parsedUrl.search.replace(/^\?/, ''));
+      return hashParams.get('share') || queryParams.get('list') || queryParams.get('share') || inputValue;
     } catch {
       return inputValue;
     }
@@ -681,60 +681,60 @@ function parseImportedPayload(rawCode) {
 
   let parsedPayload;
 
-  if (candidateCode.startsWith("{")) {
+  if (candidateCode.startsWith('{')) {
     parsedPayload = JSON.parse(candidateCode);
   } else {
     parsedPayload = decodeSharePayload(candidateCode);
   }
 
-  if (!parsedPayload || typeof parsedPayload !== "object") {
+  if (!parsedPayload || typeof parsedPayload !== 'object') {
     return null;
   }
 
-  const normalizedItems = normalizeListRowsForComparison(parsedPayload.items || []).filter((row) => row.text !== "");
+  const normalizedItems = normalizeListRowsForComparison(parsedPayload.items || []).filter(row => row.text !== '');
 
   if (!normalizedItems.length) {
     return null;
   }
 
   return {
-    name: typeof parsedPayload.name === "string" ? parsedPayload.name : "",
+    name: typeof parsedPayload.name === 'string' ? parsedPayload.name : '',
     items: normalizedItems,
   };
 }
 
 function findSavedListBySignature(rows) {
   const targetSignature = getRowsSignature(rows);
-  return appState.savedLists.find((savedList) => getRowsSignature(savedList.items) === targetSignature) || null;
+  return appState.savedLists.find(savedList => getRowsSignature(savedList.items) === targetSignature) || null;
 }
 
 function closeImportCodeModal() {
   if (importCodeInput) {
-    importCodeInput.value = "";
+    importCodeInput.value = '';
   }
-  importCodeModal?.classList.add("hidden");
+  importCodeModal?.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openImportCodeModal() {
-  importCodeModal?.classList.remove("hidden");
+  importCodeModal?.classList.remove('hidden');
   syncModalOpenState();
   importCodeInput?.focus();
 }
 
 function closeImportUnsavedModal() {
-  importUnsavedModal?.classList.add("hidden");
+  importUnsavedModal?.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openImportUnsavedModal() {
-  importUnsavedModal?.classList.remove("hidden");
+  importUnsavedModal?.classList.remove('hidden');
   syncModalOpenState();
   importUnsavedSaveButton?.focus();
 }
 
 function closeImportDuplicateModal() {
-  importDuplicateModal?.classList.add("hidden");
+  importDuplicateModal?.classList.add('hidden');
   appState.pendingDuplicateSavedListId = null;
   syncModalOpenState();
 }
@@ -750,51 +750,51 @@ function openImportDuplicateModal(savedList) {
     importDuplicateNameElement.textContent = savedList.name;
   }
 
-  importDuplicateModal?.classList.remove("hidden");
+  importDuplicateModal?.classList.remove('hidden');
   syncModalOpenState();
   importDuplicateActivateButton?.focus();
 }
 
 function closeImportDuplicateActiveModal() {
-  importDuplicateActiveModal?.classList.add("hidden");
+  importDuplicateActiveModal?.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openImportDuplicateActiveModal() {
-  importDuplicateActiveModal?.classList.remove("hidden");
+  importDuplicateActiveModal?.classList.remove('hidden');
   syncModalOpenState();
   importDuplicateActiveConfirmButton?.focus();
 }
 
 function closeExportSaveModal() {
-  exportSaveModal?.classList.add("hidden");
+  exportSaveModal?.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openExportSaveModal() {
-  exportSaveModal?.classList.remove("hidden");
+  exportSaveModal?.classList.remove('hidden');
   syncModalOpenState();
   exportSaveConfirmButton?.focus();
 }
 
 function closeExportSuccessModal() {
-  exportSuccessModal?.classList.add("hidden");
+  exportSuccessModal?.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openExportSuccessModal() {
-  exportSuccessModal?.classList.remove("hidden");
+  exportSuccessModal?.classList.remove('hidden');
   syncModalOpenState();
   exportSuccessCloseButton?.focus();
 }
 
 function closeImportExportHelpModal() {
-  importExportHelpModal?.classList.add("hidden");
+  importExportHelpModal?.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openImportExportHelpModal() {
-  importExportHelpModal?.classList.remove("hidden");
+  importExportHelpModal?.classList.remove('hidden');
   syncModalOpenState();
   btnImportExportHelpClose?.focus();
 }
@@ -827,18 +827,18 @@ async function copyTextToClipboard(textToCopy) {
     }
   }
 
-  const tempTextArea = document.createElement("textarea");
+  const tempTextArea = document.createElement('textarea');
   tempTextArea.value = textToCopy;
-  tempTextArea.setAttribute("readonly", "true");
-  tempTextArea.style.position = "fixed";
-  tempTextArea.style.top = "-9999px";
+  tempTextArea.setAttribute('readonly', 'true');
+  tempTextArea.style.position = 'fixed';
+  tempTextArea.style.top = '-9999px';
   document.body.append(tempTextArea);
   tempTextArea.select();
 
   let copiedSuccessfully = false;
 
   try {
-    copiedSuccessfully = document.execCommand("copy");
+    copiedSuccessfully = document.execCommand('copy');
   } catch {
     copiedSuccessfully = false;
   }
@@ -851,14 +851,14 @@ async function exportCurrentList() {
   const rowsSnapshot = getCurrentRowsSnapshot();
 
   if (!rowsSnapshot.length) {
-    openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
+    openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
     return;
   }
 
   const payload = buildShareCodePayload(rowsSnapshot, getCurrentListNameForShare());
 
   if (!payload) {
-    openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
+    openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
     return;
   }
 
@@ -867,7 +867,7 @@ async function exportCurrentList() {
   const copiedSuccessfully = await copyTextToClipboard(shareUrl);
 
   if (!copiedSuccessfully) {
-    openValidationModal("Nao foi possivel copiar o codigo. Tente novamente.");
+    openValidationModal('Nao foi possivel copiar o codigo. Tente novamente.');
     return;
   }
 
@@ -875,11 +875,11 @@ async function exportCurrentList() {
 }
 
 function handleImportConfirmRequest() {
-  const rawImportCode = importCodeInput?.value || "";
+  const rawImportCode = importCodeInput?.value || '';
 
   if (!rawImportCode.trim()) {
     openValidationModal(
-      'Campo vazio. <br> <br> É necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
+      'Campo vazio. <br> <br> É necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.'
     );
     return;
   }
@@ -894,7 +894,7 @@ function handleImportConfirmRequest() {
 
   if (!parsedPayload) {
     openValidationModal(
-      'Código JSON inválido. <br> <br> É necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.',
+      'Código JSON inválido. <br> <br> É necessário utilizar o botão "Exportação" onde tem a lista que você deseja trazer e colar o código aqui.'
     );
     return;
   }
@@ -924,7 +924,7 @@ function handleImportConfirmRequest() {
   importParsedList(parsedPayload);
   appState.pendingImportPayload = null;
   closeImportCodeModal();
-  openRemovalAlert("Lista importada com sucesso!");
+  openRemovalAlert('Lista importada com sucesso!');
 }
 
 function loadSavedListsFromStorage() {
@@ -952,16 +952,16 @@ function loadSavedListsFromStorage() {
   }
 
   appState.savedLists = parsedSavedLists
-    .map((savedList) => {
-      if (!savedList || typeof savedList !== "object") {
+    .map(savedList => {
+      if (!savedList || typeof savedList !== 'object') {
         return null;
       }
 
-      if (!Array.isArray(savedList.items) || typeof savedList.name !== "string") {
+      if (!Array.isArray(savedList.items) || typeof savedList.name !== 'string') {
         return null;
       }
 
-      const normalizedRows = normalizeListRowsForComparison(savedList.items).filter((row) => row.text !== "");
+      const normalizedRows = normalizeListRowsForComparison(savedList.items).filter(row => row.text !== '');
 
       if (!normalizedRows.length) {
         return null;
@@ -969,7 +969,7 @@ function loadSavedListsFromStorage() {
 
       return {
         id: savedList.id || generateId(),
-        name: normalizeItemText(savedList.name) || "Lista salva",
+        name: normalizeItemText(savedList.name) || 'Lista salva',
         items: normalizedRows,
       };
     })
@@ -993,7 +993,7 @@ function getCurrentSavedListMatchId() {
   }
 
   const currentSignature = getRowsSignature(currentRowsSnapshot);
-  const matchedList = appState.savedLists.find((savedList) => getRowsSignature(savedList.items) === currentSignature);
+  const matchedList = appState.savedLists.find(savedList => getRowsSignature(savedList.items) === currentSignature);
 
   return matchedList?.id || null;
 }
@@ -1004,20 +1004,20 @@ function isCurrentListSaved() {
 
 function createSavedListRowElement(savedList, activeSavedListId) {
   const savedListRowElement = manageListRowTemplate.cloneNode(true);
-  savedListRowElement.classList.remove("hidden");
+  savedListRowElement.classList.remove('hidden');
   savedListRowElement.dataset.savedListId = savedList.id;
 
-  const nameElement = savedListRowElement.querySelector(".manage-list-name");
-  const radioElement = savedListRowElement.querySelector(".manage-list-radio");
+  const nameElement = savedListRowElement.querySelector('.manage-list-name');
+  const radioElement = savedListRowElement.querySelector('.manage-list-radio');
 
   nameElement.textContent = savedList.name;
   nameElement.title = savedList.name;
   nameElement.tabIndex = 0;
-  nameElement.setAttribute("role", "button");
-  nameElement.setAttribute("aria-label", `Renomear lista salva: ${savedList.name}`);
+  nameElement.setAttribute('role', 'button');
+  nameElement.setAttribute('aria-label', `Renomear lista salva: ${savedList.name}`);
 
   radioElement.checked = activeSavedListId === savedList.id;
-  radioElement.setAttribute("aria-label", `Selecionar lista salva: ${savedList.name}`);
+  radioElement.setAttribute('aria-label', `Selecionar lista salva: ${savedList.name}`);
 
   return savedListRowElement;
 }
@@ -1027,12 +1027,12 @@ function renderSavedLists() {
     return;
   }
 
-  const rowsToRemove = [...manageListsItemsContainer.querySelectorAll(".manage-list-row:not(.hidden)")];
-  rowsToRemove.forEach((rowElement) => rowElement.remove());
+  const rowsToRemove = [...manageListsItemsContainer.querySelectorAll('.manage-list-row:not(.hidden)')];
+  rowsToRemove.forEach(rowElement => rowElement.remove());
 
   const activeSavedListId = getCurrentSavedListMatchId();
 
-  appState.savedLists.forEach((savedList) => {
+  appState.savedLists.forEach(savedList => {
     const savedListRowElement = createSavedListRowElement(savedList, activeSavedListId);
     manageListsItemsContainer.append(savedListRowElement);
   });
@@ -1044,7 +1044,7 @@ function openManageListsModal() {
   }
 
   renderSavedLists();
-  manageListsModal.classList.remove("hidden");
+  manageListsModal.classList.remove('hidden');
   syncModalOpenState();
   manageListsModalCloseButton.focus();
 }
@@ -1054,35 +1054,35 @@ function closeManageListsModal() {
     finishManageListEditing(appState.activeManageListEditableItem);
   }
 
-  manageListsModal.classList.add("hidden");
+  manageListsModal.classList.add('hidden');
   syncModalOpenState();
 }
 
 function openSwitchListModal(savedListId) {
   appState.pendingSelectedSavedListId = savedListId;
-  switchListModal.classList.remove("hidden");
+  switchListModal.classList.remove('hidden');
   syncModalOpenState();
   switchListSaveButton?.focus();
 }
 
 function closeSwitchListModal() {
-  switchListModal.classList.add("hidden");
+  switchListModal.classList.add('hidden');
   appState.pendingSelectedSavedListId = null;
   syncModalOpenState();
 }
 
 function applySavedList(savedListId) {
-  const targetSavedList = appState.savedLists.find((savedList) => savedList.id === savedListId);
+  const targetSavedList = appState.savedLists.find(savedList => savedList.id === savedListId);
 
   if (!targetSavedList) {
     return;
   }
 
-  getVisibleRows().forEach((rowElement) => rowElement.remove());
+  getVisibleRows().forEach(rowElement => rowElement.remove());
 
-  targetSavedList.items.forEach((savedRow) => {
+  targetSavedList.items.forEach(savedRow => {
     const createdRow =
-      savedRow.rowType === "category" ? createCategoryElement(savedRow.text) : createListItemElement(savedRow.text);
+      savedRow.rowType === 'category' ? createCategoryElement(savedRow.text) : createListItemElement(savedRow.text);
 
     const checkboxElement = createdRow.querySelector('input[type="checkbox"]');
 
@@ -1104,15 +1104,15 @@ function saveCurrentList(options = {}) {
   const currentRowsSnapshot = getCurrentRowsSnapshot();
 
   if (!currentRowsSnapshot.length) {
-    openValidationModal("É necessário ter pelo menos um item ou categoria na lista para salvar");
+    openValidationModal('É necessário ter pelo menos um item ou categoria na lista para salvar');
     return false;
   }
 
   const currentSignature = getRowsSignature(currentRowsSnapshot);
-  const alreadySaved = appState.savedLists.some((savedList) => getRowsSignature(savedList.items) === currentSignature);
+  const alreadySaved = appState.savedLists.some(savedList => getRowsSignature(savedList.items) === currentSignature);
 
   if (alreadySaved) {
-    openValidationModal("Ja existe uma lista identica salva.");
+    openValidationModal('Ja existe uma lista identica salva.');
     return false;
   }
 
@@ -1127,40 +1127,40 @@ function saveCurrentList(options = {}) {
   renderSavedLists();
 
   if (showSuccessAlert) {
-    openRemovalAlert("Lista atual salva com sucesso.");
+    openRemovalAlert('Lista atual salva com sucesso.');
   }
 
   return true;
 }
 
 function removeSavedList(savedListId) {
-  appState.savedLists = appState.savedLists.filter((savedList) => savedList.id !== savedListId);
+  appState.savedLists = appState.savedLists.filter(savedList => savedList.id !== savedListId);
   saveSavedListsToStorage();
   renderSavedLists();
 }
 
 function finishManageListEditing(nameElement, shouldCancel = false) {
-  if (!nameElement || !nameElement.classList.contains("is-editing")) {
+  if (!nameElement || !nameElement.classList.contains('is-editing')) {
     return;
   }
 
-  const originalName = nameElement.dataset.originalName || "";
-  let editedName = normalizeItemText(nameElement.textContent || "");
+  const originalName = nameElement.dataset.originalName || '';
+  let editedName = normalizeItemText(nameElement.textContent || '');
   if (editedName.length > SAVED_LIST_NAME_MAX_LENGTH) {
     editedName = editedName.slice(0, SAVED_LIST_NAME_MAX_LENGTH);
   }
   const finalName = shouldCancel || !editedName ? originalName : editedName;
-  const rowElement = nameElement.closest(".manage-list-row");
+  const rowElement = nameElement.closest('.manage-list-row');
   const savedListId = rowElement?.dataset?.savedListId;
 
   nameElement.textContent = finalName;
   nameElement.title = finalName;
-  nameElement.setAttribute("aria-label", `Renomear lista salva: ${finalName}`);
-  nameElement.removeAttribute("contenteditable");
-  nameElement.removeAttribute("spellcheck");
-  nameElement.classList.remove("is-editing");
-  nameElement.style.height = "";
-  nameElement.style.maxHeight = "";
+  nameElement.setAttribute('aria-label', `Renomear lista salva: ${finalName}`);
+  nameElement.removeAttribute('contenteditable');
+  nameElement.removeAttribute('spellcheck');
+  nameElement.classList.remove('is-editing');
+  nameElement.style.height = '';
+  nameElement.style.maxHeight = '';
   delete nameElement.dataset.originalName;
 
   if (appState.activeManageListEditableItem === nameElement) {
@@ -1168,7 +1168,7 @@ function finishManageListEditing(nameElement, shouldCancel = false) {
   }
 
   if (savedListId && finalName !== originalName) {
-    const targetSavedList = appState.savedLists.find((savedList) => savedList.id === savedListId);
+    const targetSavedList = appState.savedLists.find(savedList => savedList.id === savedListId);
 
     if (targetSavedList) {
       targetSavedList.name = finalName;
@@ -1179,7 +1179,7 @@ function finishManageListEditing(nameElement, shouldCancel = false) {
 }
 
 function startManageListEditing(nameElement) {
-  if (!nameElement || nameElement.classList.contains("is-editing")) {
+  if (!nameElement || nameElement.classList.contains('is-editing')) {
     return;
   }
 
@@ -1189,10 +1189,10 @@ function startManageListEditing(nameElement) {
 
   const stableHeight = nameElement.offsetHeight;
 
-  nameElement.dataset.originalName = nameElement.textContent || "";
-  nameElement.classList.add("is-editing");
-  nameElement.setAttribute("contenteditable", "true");
-  nameElement.setAttribute("spellcheck", "false");
+  nameElement.dataset.originalName = nameElement.textContent || '';
+  nameElement.classList.add('is-editing');
+  nameElement.setAttribute('contenteditable', 'true');
+  nameElement.setAttribute('spellcheck', 'false');
   nameElement.style.height = `${stableHeight}px`;
   nameElement.style.maxHeight = `${stableHeight}px`;
 
@@ -1213,7 +1213,7 @@ function startManageListEditing(nameElement) {
 
 function getSavedListRowAfterPointerPosition(pointerY) {
   const draggableRows = [
-    ...manageListsItemsContainer.querySelectorAll(".manage-list-row:not(.hidden):not(.is-dragging)"),
+    ...manageListsItemsContainer.querySelectorAll('.manage-list-row:not(.hidden):not(.is-dragging)'),
   ];
 
   return draggableRows.reduce(
@@ -1227,7 +1227,7 @@ function getSavedListRowAfterPointerPosition(pointerY) {
 
       return closestRow;
     },
-    { offset: Number.NEGATIVE_INFINITY, element: null },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
   ).element;
 }
 
@@ -1277,17 +1277,17 @@ function handleSavedListsDragOver(event) {
 }
 
 function persistSavedListsFromDomOrder() {
-  const orderedIds = [...manageListsItemsContainer.querySelectorAll(".manage-list-row:not(.hidden)")].map(
-    (rowElement) => rowElement.dataset.savedListId,
+  const orderedIds = [...manageListsItemsContainer.querySelectorAll('.manage-list-row:not(.hidden)')].map(
+    rowElement => rowElement.dataset.savedListId
   );
 
   if (!orderedIds.length) {
     return;
   }
 
-  const savedListsById = new Map(appState.savedLists.map((savedList) => [savedList.id, savedList]));
+  const savedListsById = new Map(appState.savedLists.map(savedList => [savedList.id, savedList]));
 
-  appState.savedLists = orderedIds.map((savedListId) => savedListsById.get(savedListId)).filter(Boolean);
+  appState.savedLists = orderedIds.map(savedListId => savedListsById.get(savedListId)).filter(Boolean);
   saveSavedListsToStorage();
 }
 
@@ -1295,15 +1295,15 @@ function clearAllItems() {
   const listItems = getVisibleItems();
 
   if (listItems.length < 2) {
-    openValidationModal("Adicione pelo menos 2 itens para apagar todos.");
+    openValidationModal('Adicione pelo menos 2 itens para apagar todos.');
     return;
   }
 
-  listItems.forEach((itemElement) => itemElement.remove());
+  listItems.forEach(itemElement => itemElement.remove());
   saveItemsToStorage();
   updateClearAllButtonVisibility();
   closeClearModal();
-  openRemovalAlert("Todos os itens foram removidos da lista.");
+  openRemovalAlert('Todos os itens foram removidos da lista.');
 }
 
 function clearCategoryItems() {
@@ -1312,12 +1312,12 @@ function clearCategoryItems() {
     return;
   }
 
-  appState.categoryRowsToDelete.forEach((rowElement) => rowElement.remove());
+  appState.categoryRowsToDelete.forEach(rowElement => rowElement.remove());
   refreshCategoryStructure();
   saveItemsToStorage();
   updateClearAllButtonVisibility();
   closeClearModal();
-  openRemovalAlert("Categoria removida com sucesso.");
+  openRemovalAlert('Categoria removida com sucesso.');
 }
 
 function clearCategoryOnly() {
@@ -1331,11 +1331,11 @@ function clearCategoryOnly() {
   saveItemsToStorage();
   updateClearAllButtonVisibility();
   closeClearModal();
-  openRemovalAlert("Categoria removida com sucesso.");
+  openRemovalAlert('Categoria removida com sucesso.');
 }
 
 function closeRemovalAlert() {
-  removalAlert.classList.add("hidden");
+  removalAlert.classList.add('hidden');
   window.clearTimeout(appState.removalAlertTimeoutId);
   appState.removalAlertTimeoutId = null;
 }
@@ -1347,24 +1347,24 @@ function openRemovalAlert(message) {
 
   removalAlertMessage.textContent = message;
   removalAlertMessage.title = message;
-  removalAlert.classList.remove("hidden");
+  removalAlert.classList.remove('hidden');
   window.clearTimeout(appState.removalAlertTimeoutId);
   appState.removalAlertTimeoutId = window.setTimeout(closeRemovalAlert, 6000);
 }
 
 function getStoredCheckedState(storedItem) {
-  return LEGACY_CHECKED_KEYS.some((key) => storedItem?.[key] === true);
+  return LEGACY_CHECKED_KEYS.some(key => storedItem?.[key] === true);
 }
 
 function saveItemsToStorage() {
-  const currentItems = [...itemsContainer.querySelectorAll(".item-added:not(.hidden)")].map((itemElement) => {
-    const text = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
+  const currentItems = [...itemsContainer.querySelectorAll('.item-added:not(.hidden)')].map(itemElement => {
+    const text = itemElement.querySelector('.shopping-item')?.textContent?.trim() || '';
     const checkboxElement = itemElement.querySelector('input[type="checkbox"]');
     const isChecked = Boolean(checkboxElement?.checked);
 
     return {
       id: itemElement.dataset.itemId,
-      rowType: itemElement.dataset.rowType || "item",
+      rowType: itemElement.dataset.rowType || 'item',
       text,
       checked: isChecked,
     };
@@ -1394,8 +1394,8 @@ function loadItemsFromStorage() {
     return;
   }
 
-  storedItems.forEach((storedItem) => {
-    if (!storedItem || typeof storedItem.text !== "string") {
+  storedItems.forEach(storedItem => {
+    if (!storedItem || typeof storedItem.text !== 'string') {
       return;
     }
 
@@ -1405,9 +1405,9 @@ function loadItemsFromStorage() {
       return;
     }
 
-    const rowType = storedItem.rowType === "category" ? "category" : "item";
+    const rowType = storedItem.rowType === 'category' ? 'category' : 'item';
     const newItem =
-      rowType === "category"
+      rowType === 'category'
         ? createCategoryElement(normalizedText, storedItem.id)
         : createListItemElement(normalizedText, storedItem.id);
 
@@ -1425,30 +1425,30 @@ function loadItemsFromStorage() {
 
 function createListItemElement(itemText, itemId = generateId()) {
   const newItemElement = itemTemplate.cloneNode(true);
-  newItemElement.classList.remove("hidden");
+  newItemElement.classList.remove('hidden');
   const normalizedItemText = normalizeItemText(itemText);
 
-  const shoppingItemText = newItemElement.querySelector(".shopping-item");
+  const shoppingItemText = newItemElement.querySelector('.shopping-item');
   shoppingItemText.textContent = normalizedItemText;
   shoppingItemText.title = normalizedItemText;
   shoppingItemText.tabIndex = 0;
-  shoppingItemText.setAttribute("role", "button");
-  shoppingItemText.setAttribute("aria-label", `Renomear item: ${normalizedItemText}`);
+  shoppingItemText.setAttribute('role', 'button');
+  shoppingItemText.setAttribute('aria-label', `Renomear item: ${normalizedItemText}`);
 
   newItemElement.dataset.itemId = itemId;
-  newItemElement.dataset.rowType = "item";
-  newItemElement.classList.remove("category-added");
+  newItemElement.dataset.rowType = 'item';
+  newItemElement.classList.remove('category-added');
 
   const checkboxElement = newItemElement.querySelector('input[type="checkbox"]');
 
   if (checkboxElement) {
-    checkboxElement.setAttribute("aria-label", `Marcar item: ${normalizedItemText}`);
+    checkboxElement.setAttribute('aria-label', `Marcar item: ${normalizedItemText}`);
   }
 
-  const removeButton = newItemElement.querySelector(".icon-button");
+  const removeButton = newItemElement.querySelector('.icon-button');
 
   if (removeButton) {
-    removeButton.setAttribute("aria-label", "Apagar item.");
+    removeButton.setAttribute('aria-label', 'Apagar item.');
   }
 
   return newItemElement;
@@ -1457,32 +1457,32 @@ function createListItemElement(itemText, itemId = generateId()) {
 function createCategoryElement(categoryText, categoryId = generateId()) {
   const newCategoryElement = createListItemElement(categoryText, categoryId);
   const normalizedCategoryText = normalizeItemText(categoryText);
-  newCategoryElement.dataset.rowType = "category";
-  newCategoryElement.classList.add("category-added");
+  newCategoryElement.dataset.rowType = 'category';
+  newCategoryElement.classList.add('category-added');
 
-  const shoppingItemText = newCategoryElement.querySelector(".shopping-item");
+  const shoppingItemText = newCategoryElement.querySelector('.shopping-item');
 
   if (shoppingItemText) {
-    shoppingItemText.setAttribute("aria-label", `Renomear categoria: ${normalizedCategoryText}`);
+    shoppingItemText.setAttribute('aria-label', `Renomear categoria: ${normalizedCategoryText}`);
   }
 
   const checkboxElement = newCategoryElement.querySelector('input[type="checkbox"]');
 
   if (checkboxElement) {
-    checkboxElement.setAttribute("aria-label", `Marcar itens da categoria: ${normalizedCategoryText}`);
+    checkboxElement.setAttribute('aria-label', `Marcar itens da categoria: ${normalizedCategoryText}`);
   }
 
-  const removeButton = newCategoryElement.querySelector(".icon-button");
+  const removeButton = newCategoryElement.querySelector('.icon-button');
 
   if (removeButton) {
-    removeButton.setAttribute("aria-label", "Apagar categoria.");
+    removeButton.setAttribute('aria-label', 'Apagar categoria.');
   }
 
   return newCategoryElement;
 }
 
 function scrollMainListToBottom() {
-  const mainListScrollContainer = itemsContainer?.closest(".items-scroll");
+  const mainListScrollContainer = itemsContainer?.closest('.items-scroll');
 
   if (!mainListScrollContainer) {
     return;
@@ -1490,7 +1490,7 @@ function scrollMainListToBottom() {
 
   mainListScrollContainer.scrollTo({
     top: mainListScrollContainer.scrollHeight,
-    behavior: "smooth",
+    behavior: 'smooth',
   });
 }
 
@@ -1506,14 +1506,14 @@ function handleAddCategory() {
   updateClearAllButtonVisibility();
   scrollMainListToBottom();
 
-  input.value = "";
+  input.value = '';
   window.setTimeout(() => {
-    newCategory.querySelector(".shopping-item")?.focus();
+    newCategory.querySelector('.shopping-item')?.focus();
   }, 180);
 }
 
 function normalizeItemText(text) {
-  return text.replace(/\s+/g, " ").trim().slice(0, ITEM_NAME_MAX_LENGTH);
+  return text.replace(/\s+/g, ' ').trim().slice(0, ITEM_NAME_MAX_LENGTH);
 }
 
 function getEditableSelectionLength(editableElement) {
@@ -1541,14 +1541,14 @@ function clipboardHasImage(clipboardEvent) {
 
   const clipboardItems = [...(clipboardData.items || [])];
   const hasImageItem = clipboardItems.some(
-    (clipboardItem) => clipboardItem.kind === "file" && clipboardItem.type?.startsWith("image/"),
+    clipboardItem => clipboardItem.kind === 'file' && clipboardItem.type?.startsWith('image/')
   );
 
   if (hasImageItem) {
     return true;
   }
 
-  const htmlPayload = clipboardData.getData("text/html") || "";
+  const htmlPayload = clipboardData.getData('text/html') || '';
 
   return /<img\b|data:image\//i.test(htmlPayload);
 }
@@ -1558,7 +1558,7 @@ function clampEditingTextLength(editableElement, maxLength = ITEM_NAME_MAX_LENGT
     return;
   }
 
-  const currentText = editableElement.textContent || "";
+  const currentText = editableElement.textContent || '';
 
   if (currentText.length <= maxLength) {
     return;
@@ -1582,36 +1582,36 @@ function clampEditingTextLength(editableElement, maxLength = ITEM_NAME_MAX_LENGT
 }
 
 function finishItemEditing(shoppingItemText, shouldCancel = false) {
-  if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
+  if (!shoppingItemText || !shoppingItemText.classList.contains('is-editing')) {
     return;
   }
 
-  const originalText = shoppingItemText.dataset.originalText || "";
-  const editedText = normalizeItemText(shoppingItemText.textContent || "");
+  const originalText = shoppingItemText.dataset.originalText || '';
+  const editedText = normalizeItemText(shoppingItemText.textContent || '');
   const finalText = shouldCancel || !editedText ? originalText : editedText;
-  const rowElement = shoppingItemText.closest(".item-added");
+  const rowElement = shoppingItemText.closest('.item-added');
   const isCategory = isCategoryRow(rowElement);
 
   shoppingItemText.textContent = finalText;
   shoppingItemText.title = finalText;
   shoppingItemText.setAttribute(
-    "aria-label",
-    isCategory ? `Renomear categoria: ${finalText}` : `Renomear item: ${finalText}`,
+    'aria-label',
+    isCategory ? `Renomear categoria: ${finalText}` : `Renomear item: ${finalText}`
   );
 
   const rowCheckbox = rowElement?.querySelector('input[type="checkbox"]');
 
   if (rowCheckbox) {
     rowCheckbox.setAttribute(
-      "aria-label",
-      isCategory ? `Marcar itens da categoria: ${finalText}` : `Marcar item: ${finalText}`,
+      'aria-label',
+      isCategory ? `Marcar itens da categoria: ${finalText}` : `Marcar item: ${finalText}`
     );
   }
-  shoppingItemText.removeAttribute("contenteditable");
-  shoppingItemText.removeAttribute("spellcheck");
-  shoppingItemText.classList.remove("is-editing");
-  shoppingItemText.style.height = "";
-  shoppingItemText.style.maxHeight = "";
+  shoppingItemText.removeAttribute('contenteditable');
+  shoppingItemText.removeAttribute('spellcheck');
+  shoppingItemText.classList.remove('is-editing');
+  shoppingItemText.style.height = '';
+  shoppingItemText.style.maxHeight = '';
   delete shoppingItemText.dataset.originalText;
 
   if (appState.activeEditableItem === shoppingItemText) {
@@ -1624,7 +1624,7 @@ function finishItemEditing(shoppingItemText, shouldCancel = false) {
 }
 
 function startItemEditing(shoppingItemText) {
-  if (!shoppingItemText || shoppingItemText.classList.contains("is-editing")) {
+  if (!shoppingItemText || shoppingItemText.classList.contains('is-editing')) {
     return;
   }
 
@@ -1633,10 +1633,10 @@ function startItemEditing(shoppingItemText) {
   }
 
   const stableHeight = shoppingItemText.offsetHeight;
-  shoppingItemText.dataset.originalText = shoppingItemText.textContent || "";
-  shoppingItemText.classList.add("is-editing");
-  shoppingItemText.setAttribute("contenteditable", "true");
-  shoppingItemText.setAttribute("spellcheck", "false");
+  shoppingItemText.dataset.originalText = shoppingItemText.textContent || '';
+  shoppingItemText.classList.add('is-editing');
+  shoppingItemText.setAttribute('contenteditable', 'true');
+  shoppingItemText.setAttribute('spellcheck', 'false');
 
   shoppingItemText.style.height = `${stableHeight}px`;
   shoppingItemText.style.maxHeight = `${stableHeight}px`;
@@ -1657,7 +1657,7 @@ function startItemEditing(shoppingItemText) {
 }
 
 function getItemAfterPointerPosition(pointerY) {
-  const listItems = [...itemsContainer.querySelectorAll(".item-added:not(.hidden):not(.is-dragging)")];
+  const listItems = [...itemsContainer.querySelectorAll('.item-added:not(.hidden):not(.is-dragging)')];
 
   return listItems.reduce(
     (closestItem, currentItem) => {
@@ -1670,14 +1670,14 @@ function getItemAfterPointerPosition(pointerY) {
 
       return closestItem;
     },
-    { offset: Number.NEGATIVE_INFINITY, element: null },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
   ).element;
 }
 
 function handleAddItem() {
   const text = normalizeItemText(input.value);
 
-  if (text !== "") {
+  if (text !== '') {
     const newItem = createListItemElement(text);
     itemsContainer.append(newItem);
     refreshCategoryStructure();
@@ -1685,10 +1685,10 @@ function handleAddItem() {
     updateClearAllButtonVisibility();
     scrollMainListToBottom();
 
-    input.value = "";
+    input.value = '';
     input.focus();
   } else {
-    openValidationModal("Digite o nome do item antes de adicionar à lista.");
+    openValidationModal('Digite o nome do item antes de adicionar à lista.');
   }
 }
 
@@ -1712,7 +1712,7 @@ function bindEvents() {
     clampEditingTextLength,
     updateSelectAllButtonState,
     getCategoryScopeRows,
-    getItemAfterPointerPosition,
+    getItemAfterPointerPosition
   );
 
   bindClearModalEvents(appState, openClearModal, closeClearModal, clearCategoryOnly, clearCategoryItems, clearAllItems);
@@ -1739,7 +1739,7 @@ function bindEvents() {
     openExportSuccessModal,
     openImportExportHelpModal,
     closeImportExportHelpModal,
-    getCurrentRowsSnapshot,
+    getCurrentRowsSnapshot
   );
 
   bindManageListsEvents(
@@ -1761,7 +1761,7 @@ function bindEvents() {
     applySavedList,
     handleSavedListsDragOver,
     persistSavedListsFromDomOrder,
-    renderSavedLists,
+    renderSavedLists
   );
 
   bindSwitchListEvents(
@@ -1770,7 +1770,7 @@ function bindEvents() {
     renderSavedLists,
     saveCurrentList,
     applySavedList,
-    openRemovalAlert,
+    openRemovalAlert
   );
 
   bindGlobalUiEvents(
@@ -1789,7 +1789,7 @@ function bindEvents() {
     renderSavedLists,
     closeManageListsModal,
     closeClearModal,
-    syncBulkActionsByViewport,
+    syncBulkActionsByViewport
   );
 }
 

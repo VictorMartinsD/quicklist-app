@@ -12,7 +12,8 @@
     <!-- SEO Meta Tags -->
     <meta
       name="description"
-      content="Gerencie suas listas de compras de forma simples e rápida com o Quicklist. Adicione itens, marque como concluído e tenha total controle da sua lista." />
+      content="Gerencie suas listas de compras de forma simples e rápida com o Quicklist. Adicione itens, marque como concluído e tenha total controle da sua lista."
+    />
     <meta name="author" content="Victor Martins Dias" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://victormartinsd.github.io/quicklist-app/" />
@@ -22,14 +23,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Sora:wght@700&display=swap"
-      rel="stylesheet" />
+      rel="stylesheet"
+    />
 
     <!-- Open Graph Meta Tags -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Quicklist - Gerenciador de Compras Inteligente" />
     <meta
       property="og:description"
-      content="Aplicação responsiva para gerenciar itens de mercado, com interface limpa e feedbacks em tempo real." />
+      content="Aplicação responsiva para gerenciar itens de mercado, com interface limpa e feedbacks em tempo real."
+    />
     <meta property="og:image" content="assets/img/preview.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -39,7 +42,8 @@
     <meta name="twitter:title" content="Quicklist - Gerenciador de Compras Inteligente" />
     <meta
       name="twitter:description"
-      content="Aplicação responsiva para gerenciar itens de mercado, com interface limpa e feedbacks em tempo real." />
+      content="Aplicação responsiva para gerenciar itens de mercado, com interface limpa e feedbacks em tempo real."
+    />
     <meta name="twitter:image" content="assets/img/preview.png" />
 
     <!-- Favicon & Icons -->
@@ -55,28 +59,28 @@
 
     <!-- Theme Initialization Script -->
     <script>
-      const THEME_STORAGE_KEY = "quicklist:theme";
+      const THEME_STORAGE_KEY = 'quicklist:theme';
 
       try {
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
 
-        if (savedTheme === "light" || savedTheme === "dark") {
-          document.documentElement.setAttribute("data-theme", savedTheme);
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', savedTheme);
         } else {
-          document.documentElement.setAttribute("data-theme", "dark");
+          document.documentElement.setAttribute('data-theme', 'dark');
         }
       } catch {
-        document.documentElement.setAttribute("data-theme", "dark");
+        document.documentElement.setAttribute('data-theme', 'dark');
       }
 
       function revealPage() {
-        document.documentElement.classList.add("ready");
+        document.documentElement.classList.add('ready');
       }
 
-      if (document.readyState === "interactive" || document.readyState === "complete") {
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
         revealPage();
       } else {
-        document.addEventListener("DOMContentLoaded", revealPage);
+        document.addEventListener('DOMContentLoaded', revealPage);
       }
     </script>
   </head>
@@ -116,7 +120,8 @@
           type="button"
           aria-label="Expandir lista"
           title="Expandir lista"
-          aria-pressed="false">
+          aria-pressed="false"
+        >
           <svg class="icon" aria-hidden="true" focusable="false">
             <use href="assets/img/icons.svg#expand"></use>
           </svg>
@@ -135,7 +140,8 @@
           type="text"
           placeholder="Adicione um novo item"
           aria-label="Adicione um novo item"
-          maxlength="84" />
+          maxlength="84"
+        />
         <button class="btn-add-item">Adicionar item</button>
       </div>
 
@@ -153,7 +159,8 @@
           type="button"
           aria-label="Mostrar ações adicionais"
           aria-expanded="false"
-          aria-controls="bulk-actions-list bulk-extra-actions">
+          aria-controls="bulk-actions-list bulk-extra-actions"
+        >
           <svg class="icon" aria-hidden="true" focusable="false">
             <use href="assets/img/icons.svg#chevron-down"></use>
           </svg>
@@ -199,7 +206,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="validation-modal-title"
-      aria-describedby="validation-modal-description">
+      aria-describedby="validation-modal-description"
+    >
       <div class="validation-modal__panel">
         <div class="validation-modal__icon" aria-hidden="true">
           <svg class="icon" focusable="false">
@@ -226,7 +234,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="clear-modal-title"
-      aria-describedby="clear-modal-description">
+      aria-describedby="clear-modal-description"
+    >
       <div class="clear-modal__panel">
         <button class="icon-button clear-modal__close" type="button" aria-label="Fechar confirmação de exclusão.">
           <svg class="icon" aria-hidden="true" focusable="false">
@@ -255,7 +264,8 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="manage-lists-title"
-      aria-describedby="manage-lists-description">
+      aria-describedby="manage-lists-description"
+    >
       <div class="manage-lists-modal__panel">
         <button class="icon-button manage-lists-modal__close" type="button" aria-label="Fechar gerenciador de listas.">
           <svg class="icon" aria-hidden="true" focusable="false">
@@ -275,7 +285,8 @@
             <button
               class="btn-import-export-help icon-button"
               type="button"
-              aria-label="Ajuda de importação e exportação">
+              aria-label="Ajuda de importação e exportação"
+            >
               <svg class="icon" aria-hidden="true" focusable="false">
                 <use href="assets/img/icons.svg#help"></use>
               </svg>
@@ -290,7 +301,8 @@
                 class="drag-handle manage-list-drag-handle"
                 type="button"
                 draggable="true"
-                aria-label="Mover lista salva.">
+                aria-label="Mover lista salva."
+              >
                 <svg class="icon" aria-hidden="true" focusable="false">
                   <use href="assets/img/icons.svg#move"></use>
                 </svg>
@@ -299,7 +311,8 @@
                 class="manage-list-radio"
                 type="radio"
                 name="saved-list-selection"
-                aria-label="Selecionar lista salva" />
+                aria-label="Selecionar lista salva"
+              />
               <p class="manage-list-name"></p>
               <button class="icon-button manage-list-remove" type="button" aria-label="Apagar lista salva.">
                 <svg class="icon" aria-hidden="true" focusable="false">
@@ -322,7 +335,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="switch-list-title"
-      aria-describedby="switch-list-description">
+      aria-describedby="switch-list-description"
+    >
       <div class="switch-list-modal__panel">
         <h3 id="switch-list-title">Trocar lista</h3>
         <p id="switch-list-description">
@@ -348,7 +362,8 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="import-code-title"
-      aria-describedby="import-code-description">
+      aria-describedby="import-code-description"
+    >
       <div class="import-code-modal__panel">
         <h3 id="import-code-title">Trazer uma lista existente</h3>
         <p id="import-code-description">Cole o código JSON e confirme.</p>
@@ -359,7 +374,8 @@
           class="import-code-modal__input"
           rows="8"
           maxlength="12000"
-          placeholder="Cole aqui o código exportado"></textarea>
+          placeholder="Cole aqui o código exportado"
+        ></textarea>
 
         <div class="import-code-modal__actions">
           <button class="btn-import-code-cancel" type="button">Cancelar</button>
@@ -375,7 +391,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="import-unsaved-title"
-      aria-describedby="import-unsaved-description">
+      aria-describedby="import-unsaved-description"
+    >
       <div class="import-unsaved-modal__panel">
         <h3 id="import-unsaved-title">Importar lista</h3>
         <p id="import-unsaved-description">Você não salvou a sua lista. <br />Deseja descartar ou salvá-la?</p>
@@ -394,7 +411,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="import-duplicate-title"
-      aria-describedby="import-duplicate-description">
+      aria-describedby="import-duplicate-description"
+    >
       <div class="import-duplicate-modal__panel">
         <h3 id="import-duplicate-title">Importar lista</h3>
         <p id="import-duplicate-description">
@@ -416,7 +434,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="import-duplicate-active-title"
-      aria-describedby="import-duplicate-active-description">
+      aria-describedby="import-duplicate-active-description"
+    >
       <div class="import-duplicate-active-modal__panel">
         <h3 id="import-duplicate-active-title">Importar lista</h3>
         <p id="import-duplicate-active-description">Você já tem essa lista, e ela está ativada!</p>
@@ -433,7 +452,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="export-save-title"
-      aria-describedby="export-save-description">
+      aria-describedby="export-save-description"
+    >
       <div class="export-save-modal__panel">
         <h3 id="export-save-title">Exportar lista</h3>
         <p id="export-save-description">
@@ -453,7 +473,8 @@
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="export-success-title"
-      aria-describedby="export-success-description">
+      aria-describedby="export-success-description"
+    >
       <div class="export-success-modal__panel">
         <h3 id="export-success-title">Exportação concluída</h3>
         <p id="export-success-description">
@@ -474,12 +495,14 @@
       class="import-export-help-modal hidden"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="import-export-help-title">
+      aria-labelledby="import-export-help-title"
+    >
       <div class="import-export-help-modal__panel">
         <button
           class="icon-button import-export-help-modal__close"
           type="button"
-          aria-label="Fechar ajuda de importação e exportação">
+          aria-label="Fechar ajuda de importação e exportação"
+        >
           <svg class="icon" aria-hidden="true" focusable="false">
             <use href="assets/img/icons.svg#delete"></use>
           </svg>

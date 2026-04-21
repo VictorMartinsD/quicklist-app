@@ -3,7 +3,7 @@
   DESCRIÇÃO: Event binding para modais de limpeza e validação.
 */
 
-import { DOM_SELECTORS } from "../dom/selectors.js";
+import { DOM_SELECTORS } from '../dom/selectors.js';
 
 const {
   clearAllButton,
@@ -33,15 +33,15 @@ export function bindClearModalEvents(
   closeClearModal,
   clearCategoryOnly,
   clearCategoryItems,
-  clearAllItems,
+  clearAllItems
 ) {
-  clearAllButton.addEventListener("click", openClearModal);
-  clearModalCloseButton.addEventListener("click", closeClearModal);
-  clearModalCancelButton.addEventListener("click", closeClearModal);
-  clearModalCategoryOnlyButton.addEventListener("click", clearCategoryOnly);
+  clearAllButton.addEventListener('click', openClearModal);
+  clearModalCloseButton.addEventListener('click', closeClearModal);
+  clearModalCancelButton.addEventListener('click', closeClearModal);
+  clearModalCategoryOnlyButton.addEventListener('click', clearCategoryOnly);
 
-  clearModalConfirmButton.addEventListener("click", () => {
-    if (appState.clearModalMode === "category") {
+  clearModalConfirmButton.addEventListener('click', () => {
+    if (appState.clearModalMode === 'category') {
       clearCategoryItems();
       return;
     }
@@ -49,7 +49,7 @@ export function bindClearModalEvents(
     clearAllItems();
   });
 
-  clearModal.addEventListener("click", (event) => {
+  clearModal.addEventListener('click', event => {
     if (event.target === clearModal) {
       closeClearModal();
     }
@@ -63,9 +63,9 @@ export function bindClearModalEvents(
  * @description Configura listeners de eventos para o modal de validação de campos
  */
 export function bindValidationModalEvents(closeValidationModal) {
-  validationCloseButton.addEventListener("click", closeValidationModal);
+  validationCloseButton.addEventListener('click', closeValidationModal);
 
-  validationModal.addEventListener("click", (event) => {
+  validationModal.addEventListener('click', event => {
     if (event.target === validationModal) {
       closeValidationModal();
     }

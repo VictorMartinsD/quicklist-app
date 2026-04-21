@@ -1,1 +1,11 @@
-npx lint-staged
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run format check
+echo "Running pre-commit format check..."
+npx prettier --check . || {
+  echo "Code formatting issues found. Run 'npm run format' to fix."
+  exit 1
+}
+
+echo "Pre-commit checks passed!"

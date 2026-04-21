@@ -43,8 +43,8 @@ svg {
 /* 5. Remove estilos de lista e links */
 ul,
 ol,
-ul[role="list"],
-ol[role="list"] {
+ul[role='list'],
+ol[role='list'] {
   list-style: none;
 }
 /* Importante: Use class: role="list" no HTML para manter a acessibilidade no Safari e garantir o reset em navegadores legados.*/

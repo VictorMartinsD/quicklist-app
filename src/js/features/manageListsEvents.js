@@ -3,7 +3,7 @@
   DESCRIÇÃO: Event binding para gerenciamento e troca de listas salvas.
 */
 
-import { DOM_SELECTORS } from "../dom/selectors.js";
+import { DOM_SELECTORS } from '../dom/selectors.js';
 
 const {
   btnManageLists,
@@ -61,24 +61,24 @@ export function bindManageListsEvents(
   applySavedList,
   handleSavedListsDragOver,
   persistSavedListsFromDomOrder,
-  renderSavedLists,
+  renderSavedLists
 ) {
-  btnManageLists?.addEventListener("click", openManageListsModal);
-  manageListsModalCloseButton?.addEventListener("click", closeManageListsModal);
+  btnManageLists?.addEventListener('click', openManageListsModal);
+  manageListsModalCloseButton?.addEventListener('click', closeManageListsModal);
 
-  manageListsModal?.addEventListener("click", (event) => {
+  manageListsModal?.addEventListener('click', event => {
     if (event.target === manageListsModal) {
       closeManageListsModal();
     }
   });
 
-  btnSaveCurrentList?.addEventListener("click", saveCurrentList);
+  btnSaveCurrentList?.addEventListener('click', saveCurrentList);
 
-  manageListsItemsContainer?.addEventListener("click", (event) => {
-    const removeButton = event.target.closest(".manage-list-remove");
+  manageListsItemsContainer?.addEventListener('click', event => {
+    const removeButton = event.target.closest('.manage-list-remove');
 
     if (removeButton) {
-      const rowElement = removeButton.closest(".manage-list-row");
+      const rowElement = removeButton.closest('.manage-list-row');
       const savedListId = rowElement?.dataset?.savedListId;
 
       if (savedListId) {
@@ -88,17 +88,17 @@ export function bindManageListsEvents(
       return;
     }
 
-    const listNameElement = event.target.closest(".manage-list-name");
+    const listNameElement = event.target.closest('.manage-list-name');
 
     if (listNameElement) {
       startManageListEditing(listNameElement);
     }
   });
 
-  manageListsItemsContainer?.addEventListener("focusin", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
+  manageListsItemsContainer?.addEventListener('focusin', event => {
+    const listNameElement = event.target.closest('.manage-list-name');
 
-    if (!listNameElement || listNameElement.classList.contains("is-editing")) {
+    if (!listNameElement || listNameElement.classList.contains('is-editing')) {
       return;
     }
 
@@ -107,59 +107,59 @@ export function bindManageListsEvents(
     }
   });
 
-  manageListsItemsContainer?.addEventListener("keydown", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
+  manageListsItemsContainer?.addEventListener('keydown', event => {
+    const listNameElement = event.target.closest('.manage-list-name');
 
     if (!listNameElement) {
       return;
     }
 
-    if (!listNameElement.classList.contains("is-editing") && event.key === "Enter") {
+    if (!listNameElement.classList.contains('is-editing') && event.key === 'Enter') {
       event.preventDefault();
       startManageListEditing(listNameElement);
       return;
     }
 
-    if (listNameElement.classList.contains("is-editing") && event.key === "Enter") {
+    if (listNameElement.classList.contains('is-editing') && event.key === 'Enter') {
       event.preventDefault();
       finishManageListEditing(listNameElement);
       listNameElement.blur();
       return;
     }
 
-    if (listNameElement.classList.contains("is-editing") && event.key === "Escape") {
+    if (listNameElement.classList.contains('is-editing') && event.key === 'Escape') {
       event.preventDefault();
       finishManageListEditing(listNameElement, true);
       listNameElement.blur();
     }
   });
 
-  manageListsItemsContainer?.addEventListener("beforeinput", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
+  manageListsItemsContainer?.addEventListener('beforeinput', event => {
+    const listNameElement = event.target.closest('.manage-list-name');
 
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    if (!listNameElement || !listNameElement.classList.contains('is-editing')) {
       return;
     }
 
-    const isInsertOperation = event.inputType?.startsWith("insert");
+    const isInsertOperation = event.inputType?.startsWith('insert');
     if (!isInsertOperation) {
       return;
     }
 
-    const currentLength = (listNameElement.textContent || "").length;
+    const currentLength = (listNameElement.textContent || '').length;
     const selectionLength = getEditableSelectionLength(listNameElement);
     const nextLength = currentLength - selectionLength;
-    const insertedLength = (event.data || "").length;
+    const insertedLength = (event.data || '').length;
 
     if (nextLength >= SAVED_LIST_NAME_MAX_LENGTH || nextLength + insertedLength > SAVED_LIST_NAME_MAX_LENGTH) {
       event.preventDefault();
     }
   });
 
-  manageListsItemsContainer?.addEventListener("paste", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
+  manageListsItemsContainer?.addEventListener('paste', event => {
+    const listNameElement = event.target.closest('.manage-list-name');
 
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    if (!listNameElement || !listNameElement.classList.contains('is-editing')) {
       return;
     }
 
@@ -168,44 +168,44 @@ export function bindManageListsEvents(
     }
 
     event.preventDefault();
-    openValidationModal("Nao e permitido colar imagens neste campo.");
+    openValidationModal('Nao e permitido colar imagens neste campo.');
   });
 
-  manageListsItemsContainer?.addEventListener("input", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
+  manageListsItemsContainer?.addEventListener('input', event => {
+    const listNameElement = event.target.closest('.manage-list-name');
 
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    if (!listNameElement || !listNameElement.classList.contains('is-editing')) {
       return;
     }
 
     clampEditingTextLength(listNameElement, SAVED_LIST_NAME_MAX_LENGTH);
   });
 
-  manageListsItemsContainer?.addEventListener("focusout", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
+  manageListsItemsContainer?.addEventListener('focusout', event => {
+    const listNameElement = event.target.closest('.manage-list-name');
 
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
+    if (!listNameElement || !listNameElement.classList.contains('is-editing')) {
       return;
     }
 
     finishManageListEditing(listNameElement);
   });
 
-  manageListsItemsContainer?.addEventListener("change", (event) => {
-    const radioElement = event.target.closest(".manage-list-radio");
+  manageListsItemsContainer?.addEventListener('change', event => {
+    const radioElement = event.target.closest('.manage-list-radio');
 
     if (!radioElement) {
       return;
     }
 
-    const rowElement = radioElement.closest(".manage-list-row");
+    const rowElement = radioElement.closest('.manage-list-row');
     const selectedSavedListId = rowElement?.dataset?.savedListId;
 
     if (!selectedSavedListId) {
       return;
     }
 
-    const selectedSavedList = appState.savedLists.find((savedList) => savedList.id === selectedSavedListId);
+    const selectedSavedList = appState.savedLists.find(savedList => savedList.id === selectedSavedListId);
 
     if (!selectedSavedList) {
       return;
@@ -228,17 +228,17 @@ export function bindManageListsEvents(
     applySavedList(selectedSavedListId);
   });
 
-  manageListsItemsContainer?.addEventListener("dragstart", (event) => {
-    const dragHandleElement = event.target.closest(".manage-list-drag-handle");
+  manageListsItemsContainer?.addEventListener('dragstart', event => {
+    const dragHandleElement = event.target.closest('.manage-list-drag-handle');
 
     if (!dragHandleElement) {
       event.preventDefault();
       return;
     }
 
-    appState.draggedSavedListElement = dragHandleElement.closest(".manage-list-row");
+    appState.draggedSavedListElement = dragHandleElement.closest('.manage-list-row');
 
-    if (!appState.draggedSavedListElement || appState.draggedSavedListElement.classList.contains("hidden")) {
+    if (!appState.draggedSavedListElement || appState.draggedSavedListElement.classList.contains('hidden')) {
       event.preventDefault();
       return;
     }
@@ -247,16 +247,16 @@ export function bindManageListsEvents(
       finishManageListEditing(appState.activeManageListEditableItem);
     }
 
-    appState.draggedSavedListElement.classList.add("is-dragging");
+    appState.draggedSavedListElement.classList.add('is-dragging');
 
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", appState.draggedSavedListElement.dataset.savedListId || "");
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', appState.draggedSavedListElement.dataset.savedListId || '');
   });
 
-  manageListsItemsContainer?.addEventListener("dragover", handleSavedListsDragOver);
-  manageListsBox?.addEventListener("dragover", handleSavedListsDragOver);
+  manageListsItemsContainer?.addEventListener('dragover', handleSavedListsDragOver);
+  manageListsBox?.addEventListener('dragover', handleSavedListsDragOver);
 
-  manageListsItemsContainer?.addEventListener("drop", (event) => {
+  manageListsItemsContainer?.addEventListener('drop', event => {
     if (!appState.draggedSavedListElement) {
       return;
     }
@@ -265,12 +265,12 @@ export function bindManageListsEvents(
     persistSavedListsFromDomOrder();
   });
 
-  manageListsItemsContainer?.addEventListener("dragend", () => {
+  manageListsItemsContainer?.addEventListener('dragend', () => {
     if (!appState.draggedSavedListElement) {
       return;
     }
 
-    appState.draggedSavedListElement.classList.remove("is-dragging");
+    appState.draggedSavedListElement.classList.remove('is-dragging');
     appState.draggedSavedListElement = null;
     renderSavedLists();
   });
@@ -293,14 +293,14 @@ export function bindSwitchListEvents(
   renderSavedLists,
   saveCurrentList,
   applySavedList,
-  openRemovalAlert,
+  openRemovalAlert
 ) {
-  switchListCancelButton?.addEventListener("click", () => {
+  switchListCancelButton?.addEventListener('click', () => {
     closeSwitchListModal();
     renderSavedLists();
   });
 
-  switchListSaveButton?.addEventListener("click", () => {
+  switchListSaveButton?.addEventListener('click', () => {
     if (!appState.pendingSelectedSavedListId) {
       return;
     }
@@ -313,10 +313,10 @@ export function bindSwitchListEvents(
 
     applySavedList(appState.pendingSelectedSavedListId);
     closeSwitchListModal();
-    openRemovalAlert("Lista salva e lista selecionada carregada.");
+    openRemovalAlert('Lista salva e lista selecionada carregada.');
   });
 
-  switchListConfirmButton?.addEventListener("click", () => {
+  switchListConfirmButton?.addEventListener('click', () => {
     if (appState.pendingSelectedSavedListId) {
       applySavedList(appState.pendingSelectedSavedListId);
     }
@@ -324,7 +324,7 @@ export function bindSwitchListEvents(
     closeSwitchListModal();
   });
 
-  switchListModal?.addEventListener("click", (event) => {
+  switchListModal?.addEventListener('click', event => {
     if (event.target === switchListModal) {
       closeSwitchListModal();
       renderSavedLists();

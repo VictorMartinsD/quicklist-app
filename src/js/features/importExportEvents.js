@@ -3,7 +3,7 @@
   DESCRIÇÃO: Event binding para funcionalidades de importação e exportação.
 */
 
-import { DOM_SELECTORS } from "../dom/selectors.js";
+import { DOM_SELECTORS } from '../dom/selectors.js';
 
 const {
   btnImportList,
@@ -81,18 +81,18 @@ export function bindImportExportModalEvents(
   openExportSuccessModal,
   openImportExportHelpModal,
   closeImportExportHelpModal,
-  getCurrentRowsSnapshot,
+  getCurrentRowsSnapshot
 ) {
-  btnImportList?.addEventListener("click", () => {
+  btnImportList?.addEventListener('click', () => {
     openImportCodeModal();
   });
 
-  btnExportList?.addEventListener("click", async () => {
+  btnExportList?.addEventListener('click', async () => {
     if (!appState.savedLists.length) {
       const rowsSnapshot = getCurrentRowsSnapshot();
 
       if (!rowsSnapshot.length) {
-        openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
+        openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
         return;
       }
 
@@ -103,31 +103,31 @@ export function bindImportExportModalEvents(
     await exportCurrentList();
   });
 
-  importCodeCancelButton?.addEventListener("click", closeImportCodeModal);
+  importCodeCancelButton?.addEventListener('click', closeImportCodeModal);
 
-  importCodeClearButton?.addEventListener("click", () => {
+  importCodeClearButton?.addEventListener('click', () => {
     if (importCodeInput) {
-      importCodeInput.value = "";
+      importCodeInput.value = '';
       importCodeInput.focus();
     }
   });
 
-  importCodeConfirmButton?.addEventListener("click", handleImportConfirmRequest);
+  importCodeConfirmButton?.addEventListener('click', handleImportConfirmRequest);
 
-  importCodeInput?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+  importCodeInput?.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleImportConfirmRequest();
     }
   });
 
-  importCodeModal?.addEventListener("click", (event) => {
+  importCodeModal?.addEventListener('click', event => {
     if (event.target === importCodeModal) {
       closeImportCodeModal();
     }
   });
 
-  importUnsavedSaveButton?.addEventListener("click", () => {
+  importUnsavedSaveButton?.addEventListener('click', () => {
     if (!appState.pendingImportPayload) {
       return;
     }
@@ -142,10 +142,10 @@ export function bindImportExportModalEvents(
     appState.pendingImportPayload = null;
     closeImportUnsavedModal();
     closeImportCodeModal();
-    openRemovalAlert("Lista importada com sucesso!");
+    openRemovalAlert('Lista importada com sucesso!');
   });
 
-  importUnsavedDiscardButton?.addEventListener("click", () => {
+  importUnsavedDiscardButton?.addEventListener('click', () => {
     if (!appState.pendingImportPayload) {
       return;
     }
@@ -154,14 +154,14 @@ export function bindImportExportModalEvents(
     appState.pendingImportPayload = null;
     closeImportUnsavedModal();
     closeImportCodeModal();
-    openRemovalAlert("Lista importada com sucesso!");
+    openRemovalAlert('Lista importada com sucesso!');
   });
 
-  importUnsavedCancelButton?.addEventListener("click", () => {
+  importUnsavedCancelButton?.addEventListener('click', () => {
     closeImportUnsavedModal();
   });
 
-  importDuplicateActivateButton?.addEventListener("click", () => {
+  importDuplicateActivateButton?.addEventListener('click', () => {
     if (!appState.pendingDuplicateSavedListId) {
       return;
     }
@@ -171,32 +171,32 @@ export function bindImportExportModalEvents(
     closeImportCodeModal();
   });
 
-  importDuplicateCancelButton?.addEventListener("click", closeImportDuplicateModal);
+  importDuplicateCancelButton?.addEventListener('click', closeImportDuplicateModal);
 
-  importDuplicateModal?.addEventListener("click", (event) => {
+  importDuplicateModal?.addEventListener('click', event => {
     if (event.target === importDuplicateModal) {
       closeImportDuplicateModal();
     }
   });
 
-  importDuplicateActiveConfirmButton?.addEventListener("click", () => {
+  importDuplicateActiveConfirmButton?.addEventListener('click', () => {
     closeImportDuplicateActiveModal();
     closeImportCodeModal();
   });
 
-  importDuplicateActiveModal?.addEventListener("click", (event) => {
+  importDuplicateActiveModal?.addEventListener('click', event => {
     if (event.target === importDuplicateActiveModal) {
       closeImportDuplicateActiveModal();
     }
   });
 
-  importUnsavedModal?.addEventListener("click", (event) => {
+  importUnsavedModal?.addEventListener('click', event => {
     if (event.target === importUnsavedModal) {
       closeImportUnsavedModal();
     }
   });
 
-  exportSaveConfirmButton?.addEventListener("click", async () => {
+  exportSaveConfirmButton?.addEventListener('click', async () => {
     const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
 
     if (!hasSavedCurrentList) {
@@ -207,27 +207,27 @@ export function bindImportExportModalEvents(
     await exportCurrentList();
   });
 
-  exportSaveCancelButton?.addEventListener("click", closeExportSaveModal);
+  exportSaveCancelButton?.addEventListener('click', closeExportSaveModal);
 
-  exportSaveModal?.addEventListener("click", (event) => {
+  exportSaveModal?.addEventListener('click', event => {
     if (event.target === exportSaveModal) {
       closeExportSaveModal();
     }
   });
 
-  exportSuccessCloseButton?.addEventListener("click", closeExportSuccessModal);
+  exportSuccessCloseButton?.addEventListener('click', closeExportSuccessModal);
 
-  exportSuccessModal?.addEventListener("click", (event) => {
+  exportSuccessModal?.addEventListener('click', event => {
     if (event.target === exportSuccessModal) {
       closeExportSuccessModal();
     }
   });
 
-  btnImportExportHelp?.addEventListener("click", openImportExportHelpModal);
-  importExportHelpCloseButton?.addEventListener("click", closeImportExportHelpModal);
-  btnImportExportHelpClose?.addEventListener("click", closeImportExportHelpModal);
+  btnImportExportHelp?.addEventListener('click', openImportExportHelpModal);
+  importExportHelpCloseButton?.addEventListener('click', closeImportExportHelpModal);
+  btnImportExportHelpClose?.addEventListener('click', closeImportExportHelpModal);
 
-  importExportHelpModal?.addEventListener("click", (event) => {
+  importExportHelpModal?.addEventListener('click', event => {
     if (event.target === importExportHelpModal) {
       closeImportExportHelpModal();
     }
