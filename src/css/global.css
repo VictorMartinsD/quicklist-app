@@ -176,7 +176,7 @@ html[data-theme="light"] .theme-toggle {
 
 .return {
   display: inline-block;
-  margin-top: 62px;
+  margin-top: 35px;
   font: var(--link);
   color: var(--color-brand);
 }
@@ -1533,22 +1533,33 @@ html[data-theme="dark"] .btn-import-export-help {
   }
 }
 
-@media (max-width: 21em) {
+.site-footer__break-mobile {
+  display: none;
+}
+
+@media (max-width: 23em) {
   .logo-name {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 7px;
   }
 
   .logo-name__brand {
-    flex: 1 0 100%;
-    justify-content: center;
+    flex: 0 1 auto;
+    justify-content: flex-start;
+    margin-inline: 0;
   }
 
   .theme-toggle {
-    position: static;
-    transform: none;
-    margin-inline: auto;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-inline: 0;
+  }
+
+  .site-footer__break-mobile {
+    display: block;
   }
 }
 
