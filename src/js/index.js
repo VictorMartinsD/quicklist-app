@@ -811,6 +811,14 @@ function importParsedList(parsedPayload) {
   saveSavedListsToStorage();
   applySavedList(newImportedList.id);
   renderSavedLists();
+
+  window.setTimeout(() => {
+    const manageListRow = manageListsItemsContainer?.querySelector(`[data-saved-list-id="${newImportedList.id}"]`);
+    if (manageListRow) {
+      manageListRow.focus();
+      manageListRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 180);
 }
 
 async function copyTextToClipboard(textToCopy) {
@@ -1100,7 +1108,7 @@ function applySavedList(savedListId) {
 }
 
 function saveCurrentList(options = {}) {
-  const { showSuccessAlert = true } = options;
+  const { showSuccessAlert = true, skipAutoFocus = false } = options;
   const currentRowsSnapshot = getCurrentRowsSnapshot();
 
   if (!currentRowsSnapshot.length) {
@@ -1125,6 +1133,16 @@ function saveCurrentList(options = {}) {
   appState.savedLists = [newSavedList, ...appState.savedLists];
   saveSavedListsToStorage();
   renderSavedLists();
+
+  if (!skipAutoFocus) {
+    window.setTimeout(() => {
+      const manageListRow = manageListsItemsContainer?.querySelector(`[data-saved-list-id="${newSavedList.id}"]`);
+      const nameElement = manageListRow?.querySelector('.manage-list-name');
+      if (nameElement) {
+        startManageListEditing(nameElement);
+      }
+    }, 180);
+  }
 
   if (showSuccessAlert) {
     openRemovalAlert('Lista atual salva com sucesso.');
@@ -1508,7 +1526,10 @@ function handleAddCategory() {
 
   input.value = '';
   window.setTimeout(() => {
-    newCategory.querySelector('.shopping-item')?.focus();
+    const categoryTextElement = newCategory.querySelector('.shopping-item');
+    if (categoryTextElement) {
+      startItemEditing(categoryTextElement);
+    }
   }, 180);
 }
 

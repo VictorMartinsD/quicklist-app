@@ -30,12 +30,12 @@ export function bindListActionEvents(
       return;
     }
 
-    if (event.ctrlKey) {
-      btnAddItem.click();
+    if (event.shiftKey) {
+      btnNewCategory.click();
       return;
     }
 
-    btnNewCategory.click();
+    btnAddItem.click();
   });
 
   bulkActionsToggle?.addEventListener('click', () => {

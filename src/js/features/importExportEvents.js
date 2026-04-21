@@ -132,7 +132,7 @@ export function bindImportExportModalEvents(
       return;
     }
 
-    const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
+    const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false, skipAutoFocus: true });
 
     if (!hasSavedCurrentList) {
       return;
