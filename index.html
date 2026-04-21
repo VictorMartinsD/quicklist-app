@@ -1,10 +1,15 @@
 <!doctype html>
 <html lang="pt-BR">
+  <!-- ================================================= -->
+  <!-- HEAD SECTION - META TAGS, ASSETS & CONFIGURATION -->
+  <!-- ================================================= -->
   <head>
+    <!-- Basic Meta Tags -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quicklist | Sua lista de compras</title>
 
+    <!-- SEO Meta Tags -->
     <meta
       name="description"
       content="Gerencie suas listas de compras de forma simples e rápida com o Quicklist. Adicione itens, marque como concluído e tenha total controle da sua lista." />
@@ -12,12 +17,14 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://victormartinsd.github.io/quicklist-app/" />
 
+    <!-- Font Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Sora:wght@700&display=swap"
       rel="stylesheet" />
 
+    <!-- Open Graph Meta Tags -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Quicklist - Gerenciador de Compras Inteligente" />
     <meta
@@ -27,6 +34,7 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
+    <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Quicklist - Gerenciador de Compras Inteligente" />
     <meta
@@ -34,13 +42,18 @@
       content="Aplicação responsiva para gerenciar itens de mercado, com interface limpa e feedbacks em tempo real." />
     <meta name="twitter:image" content="assets/img/preview.png" />
 
+    <!-- Favicon & Icons -->
     <link rel="icon" href="assets/img/favicon.png?v=2" type="image/png" />
     <link rel="shortcut icon" href="assets/img/favicon.png?v=2" type="image/png" />
     <link rel="apple-touch-icon" href="assets/img/favicon.png?v=2" />
 
+    <!-- CSS Assets -->
     <link rel="stylesheet" href="src/css/index.css" />
+
+    <!-- JavaScript Assets -->
     <script type="module" src="src/js/index.js"></script>
 
+    <!-- Theme Initialization Script -->
     <script>
       const THEME_STORAGE_KEY = "quicklist:theme";
 
@@ -67,7 +80,13 @@
       }
     </script>
   </head>
+  <!-- ================================================= -->
+  <!-- BODY SECTION - APPLICATION INTERFACE -->
+  <!-- ================================================= -->
   <body>
+    <!-- ================================================= -->
+    <!-- HEADER - LOGO & THEME TOGGLE -->
+    <!-- ================================================= -->
     <header class="logo-name desktop-only">
       <div class="logo-name__brand">
         <svg id="logo" aria-hidden="true" focusable="false">
@@ -83,6 +102,9 @@
       </button>
     </header>
 
+    <!-- ================================================= -->
+    <!-- APP HEADING - NAVIGATION & TITLE -->
+    <!-- ================================================= -->
     <div class="app-heading grid gap-16">
       <a href="#" class="return focus-mode-collapsible">&lt;- Voltar</a>
 
@@ -102,7 +124,11 @@
       </div>
     </div>
 
+    <!-- ================================================= -->
+    <!-- MAIN CONTENT - FORM & ITEMS LIST -->
+    <!-- ================================================= -->
     <main>
+      <!-- New Item Input Section -->
       <div class="new-item focus-mode-collapsible flex gap-16">
         <input
           id="item"
@@ -113,6 +139,7 @@
         <button class="btn-add-item">Adicionar item</button>
       </div>
 
+      <!-- Bulk Actions Section -->
       <div class="bulk-clear-slot focus-mode-collapsible">
         <div class="bulk-actions flex gap-12" id="bulk-actions-list">
           <button class="btn-new-category" type="button" aria-label="Criar nova categoria de itens.">
@@ -141,6 +168,7 @@
         </div>
       </div>
 
+      <!-- Items List Container -->
       <div class="items-scroll">
         <div class="items grid gap-12">
           <div class="item-added flex gap-12 hidden">
@@ -161,6 +189,11 @@
       </div>
     </main>
 
+    <!-- ================================================= -->
+    <!-- MODALS - VALIDATION & CONFIRMATION DIALOGS -->
+    <!-- ================================================= -->
+
+    <!-- Validation Modal -->
     <div
       class="validation-modal hidden"
       role="alertdialog"
@@ -187,6 +220,7 @@
       </div>
     </div>
 
+    <!-- Clear Confirmation Modal -->
     <div
       class="clear-modal hidden"
       role="alertdialog"
@@ -211,6 +245,11 @@
       </div>
     </div>
 
+    <!-- ================================================= -->
+    <!-- MODALS - LIST MANAGEMENT -->
+    <!-- ================================================= -->
+
+    <!-- Manage Lists Modal -->
     <div
       class="manage-lists-modal hidden"
       role="dialog"
@@ -273,6 +312,11 @@
       </div>
     </div>
 
+    <!-- ================================================= -->
+    <!-- MODALS - LIST SWITCHING -->
+    <!-- ================================================= -->
+
+    <!-- Switch List Modal -->
     <div
       class="switch-list-modal hidden"
       role="alertdialog"
@@ -294,6 +338,11 @@
       </div>
     </div>
 
+    <!-- ================================================= -->
+    <!-- MODALS - IMPORT/EXPORT FUNCTIONALITY -->
+    <!-- ================================================= -->
+
+    <!-- Import Code Modal -->
     <div
       class="import-code-modal hidden"
       role="dialog"
@@ -320,6 +369,7 @@
       </div>
     </div>
 
+    <!-- Import Unsaved Modal -->
     <div
       class="import-unsaved-modal hidden"
       role="alertdialog"
@@ -338,6 +388,7 @@
       </div>
     </div>
 
+    <!-- Import Duplicate Modal -->
     <div
       class="import-duplicate-modal hidden"
       role="alertdialog"
@@ -359,6 +410,7 @@
       </div>
     </div>
 
+    <!-- Import Duplicate Active Modal -->
     <div
       class="import-duplicate-active-modal hidden"
       role="alertdialog"
@@ -375,6 +427,7 @@
       </div>
     </div>
 
+    <!-- Export Save Modal -->
     <div
       class="export-save-modal hidden"
       role="alertdialog"
@@ -394,6 +447,7 @@
       </div>
     </div>
 
+    <!-- Export Success Modal -->
     <div
       class="export-success-modal hidden"
       role="alertdialog"
@@ -415,6 +469,7 @@
       </div>
     </div>
 
+    <!-- Import Export Help Modal -->
     <div
       class="import-export-help-modal hidden"
       role="dialog"
@@ -472,7 +527,11 @@
       </div>
     </div>
 
+    <!-- ================================================= -->
+    <!-- FOOTER SECTION - ALERTS & SITE INFO -->
+    <!-- ================================================= -->
     <div class="alert-footer-stack">
+      <!-- Alert Notification -->
       <div class="alert focus-mode-alert flex gap-8 hidden">
         <svg id="warning" class="icon" aria-hidden="true" focusable="false">
           <use href="assets/img/icons.svg#warning"></use>
@@ -485,6 +544,7 @@
         </button>
       </div>
 
+      <!-- Site Footer -->
       <footer class="site-footer">
         <p>
           Crafted with precision by
