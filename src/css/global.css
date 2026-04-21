@@ -1431,6 +1431,22 @@ html[data-theme="dark"] .btn-export-list {
   line-height: 1.5;
 }
 
+.import-export-help-section ul {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  font: var(--link);
+  color: var(--content-secondary);
+  line-height: 1.5;
+}
+
+.import-export-help-section li + li {
+  margin-top: 4px;
+}
+
+.import-export-help-section__subtitle {
+  margin-top: 10px;
+}
+
 .import-export-help-modal__actions {
   display: flex;
   gap: 10px;
