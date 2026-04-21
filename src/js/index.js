@@ -8,6 +8,11 @@ import { DOM_SELECTORS } from "./dom/selectors.js";
 import { createAppState } from "./state/appState.js";
 import { getStorageItem, removeStorageItem, setStorageItem } from "./storage/localStorage.js";
 import { generateId } from "./utils.js";
+import { bindListActionEvents, bindListItemEvents } from "./features/listEvents.js";
+import { bindClearModalEvents, bindValidationModalEvents } from "./features/modalEvents.js";
+import { bindImportExportModalEvents } from "./features/importExportEvents.js";
+import { bindManageListsEvents, bindSwitchListEvents } from "./features/manageListsEvents.js";
+import { bindGlobalUiEvents } from "./features/globalEvents.js";
 
 const {
   input,
@@ -1654,777 +1659,105 @@ function handleAddItem() {
   }
 }
 
-function bindListActionEvents() {
-  btnAddItem.addEventListener("click", handleAddItem);
-  btnNewCategory.addEventListener("click", handleAddCategory);
-
-  input.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    if (event.ctrlKey) {
-      btnAddItem.click();
-      return;
-    }
-
-    btnNewCategory.click();
-  });
-
-  bulkActionsToggle?.addEventListener("click", () => {
-    const isCurrentlyExpanded = bulkActionsToggle.getAttribute("aria-expanded") === "true";
-    updateBulkActionsToggleState(!isCurrentlyExpanded);
-  });
-
-  btnSelectAll?.addEventListener("click", handleToggleSelectAll);
-}
-
-function bindListItemEvents() {
-  itemsContainer.addEventListener("click", (event) => {
-    const removeButton = event.target.closest(".icon-button");
-
-    if (!removeButton) {
-      return;
-    }
-
-    const itemElement = removeButton.closest(".item-added");
-
-    if (!itemElement || itemElement.classList.contains("hidden")) {
-      return;
-    }
-
-    if (isCategoryRow(itemElement)) {
-      openCategoryClearModal(itemElement);
-      return;
-    }
-
-    const removedItemText = itemElement.querySelector(".shopping-item")?.textContent?.trim() || "";
-    itemElement.remove();
-    refreshCategoryStructure();
-    saveItemsToStorage();
-    updateClearAllButtonVisibility();
-
-    if (removedItemText) {
-      openRemovalAlert(`Removido da lista: "${removedItemText}".`);
-      return;
-    }
-
-    openRemovalAlert("O item foi removido da lista.");
-  });
-
-  itemsContainer.addEventListener("click", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText || document.body.classList.contains("is-grabbing")) {
-      return;
-    }
-
-    startItemEditing(shoppingItemText);
-  });
-
-  itemsContainer.addEventListener("focusin", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText || shoppingItemText.classList.contains("is-editing")) {
-      return;
-    }
-
-    if (appState.activeEditableItem && appState.activeEditableItem !== shoppingItemText) {
-      finishItemEditing(appState.activeEditableItem);
-    }
-  });
-
-  itemsContainer.addEventListener("keydown", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText) {
-      return;
-    }
-
-    if (!shoppingItemText.classList.contains("is-editing") && event.key === "Enter") {
-      event.preventDefault();
-      startItemEditing(shoppingItemText);
-      return;
-    }
-
-    if (shoppingItemText.classList.contains("is-editing") && event.key === "Enter") {
-      event.preventDefault();
-      finishItemEditing(shoppingItemText);
-      shoppingItemText.blur();
-      return;
-    }
-
-    if (shoppingItemText.classList.contains("is-editing") && event.key === "Escape") {
-      event.preventDefault();
-      finishItemEditing(shoppingItemText, true);
-      shoppingItemText.blur();
-    }
-  });
-
-  itemsContainer.addEventListener("beforeinput", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
-      return;
-    }
-
-    const isInsertOperation = event.inputType?.startsWith("insert");
-
-    if (!isInsertOperation) {
-      return;
-    }
-
-    const currentLength = (shoppingItemText.textContent || "").length;
-    const selectionLength = getEditableSelectionLength(shoppingItemText);
-    const nextLength = currentLength - selectionLength;
-
-    if (nextLength >= ITEM_NAME_MAX_LENGTH) {
-      event.preventDefault();
-    }
-  });
-
-  itemsContainer.addEventListener("paste", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
-      return;
-    }
-
-    if (!clipboardHasImage(event)) {
-      return;
-    }
-
-    event.preventDefault();
-    openValidationModal("Nao e permitido colar imagens neste campo.");
-  });
-
-  itemsContainer.addEventListener("input", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
-      return;
-    }
-
-    clampEditingTextLength(shoppingItemText);
-  });
-
-  itemsContainer.addEventListener("focusout", (event) => {
-    const shoppingItemText = event.target.closest(".shopping-item");
-
-    if (!shoppingItemText || !shoppingItemText.classList.contains("is-editing")) {
-      return;
-    }
-
-    finishItemEditing(shoppingItemText);
-  });
-
-  itemsContainer.addEventListener("change", (event) => {
-    const checkboxElement = event.target.closest('input[type="checkbox"]');
-
-    if (!checkboxElement) {
-      return;
-    }
-
-    const rowElement = checkboxElement.closest(".item-added");
-
-    if (!rowElement || rowElement.classList.contains("hidden")) {
-      return;
-    }
-
-    if (!isCategoryRow(rowElement)) {
-      saveItemsToStorage();
-      updateSelectAllButtonState();
-      return;
-    }
-
-    const { rows } = getCategoryScopeRows(rowElement);
-
-    rows.slice(1).forEach((scopedRow) => {
-      const scopedCheckbox = scopedRow.querySelector('input[type="checkbox"]');
-
-      if (scopedCheckbox) {
-        scopedCheckbox.checked = checkboxElement.checked;
-      }
-    });
-
-    saveItemsToStorage();
-    updateSelectAllButtonState();
-  });
-
-  itemsContainer.addEventListener("dragstart", (event) => {
-    const dragHandle = event.target.closest(".drag-handle");
-
-    if (!dragHandle) {
-      event.preventDefault();
-      return;
-    }
-
-    appState.draggedItemElement = dragHandle.closest(".item-added");
-
-    if (!appState.draggedItemElement || appState.draggedItemElement.classList.contains("hidden")) {
-      event.preventDefault();
-      return;
-    }
-
-    if (appState.activeEditableItem) {
-      finishItemEditing(appState.activeEditableItem);
-    }
-
-    appState.draggedRows = [appState.draggedItemElement];
-
-    appState.draggedRows.forEach((rowElement) => rowElement.classList.add("is-dragging"));
-    document.body.classList.add("is-grabbing");
-
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", appState.draggedItemElement.dataset.itemId || "");
-  });
-
-  itemsContainer.addEventListener("dragover", (event) => {
-    if (!appState.draggedItemElement) {
-      return;
-    }
-
-    event.preventDefault();
-
-    const nextItem = getItemAfterPointerPosition(event.clientY);
-
-    if (nextItem && appState.draggedItemElement === nextItem) {
-      return;
-    }
-
-    if (!nextItem) {
-      itemsContainer.append(appState.draggedItemElement);
-      return;
-    }
-
-    itemsContainer.insertBefore(appState.draggedItemElement, nextItem);
-  });
-
-  itemsContainer.addEventListener("drop", (event) => {
-    if (!appState.draggedItemElement) {
-      return;
-    }
-
-    event.preventDefault();
-    refreshCategoryStructure();
-    saveItemsToStorage();
-  });
-
-  itemsContainer.addEventListener("dragend", () => {
-    if (!appState.draggedItemElement) {
-      return;
-    }
-
-    appState.draggedRows.forEach((rowElement) => rowElement.classList.remove("is-dragging"));
-    document.body.classList.remove("is-grabbing");
-    refreshCategoryStructure();
-    appState.draggedRows = [];
-    appState.draggedItemElement = null;
-  });
-}
-
-function bindClearModalEvents() {
-  clearAllButton.addEventListener("click", openClearModal);
-  clearModalCloseButton.addEventListener("click", closeClearModal);
-  clearModalCancelButton.addEventListener("click", closeClearModal);
-  clearModalCategoryOnlyButton.addEventListener("click", clearCategoryOnly);
-
-  clearModalConfirmButton.addEventListener("click", () => {
-    if (appState.clearModalMode === "category") {
-      clearCategoryItems();
-      return;
-    }
-
-    clearAllItems();
-  });
-
-  clearModal.addEventListener("click", (event) => {
-    if (event.target === clearModal) {
-      closeClearModal();
-    }
-  });
-}
-
-function bindImportExportModalEvents() {
-  btnImportList?.addEventListener("click", () => {
-    openImportCodeModal();
-  });
-
-  btnExportList?.addEventListener("click", async () => {
-    if (!appState.savedLists.length) {
-      const rowsSnapshot = getCurrentRowsSnapshot();
-
-      if (!rowsSnapshot.length) {
-        openValidationModal("Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.");
-        return;
-      }
-
-      openExportSaveModal();
-      return;
-    }
-
-    await exportCurrentList();
-  });
-
-  importCodeCancelButton?.addEventListener("click", closeImportCodeModal);
-
-  importCodeClearButton?.addEventListener("click", () => {
-    if (importCodeInput) {
-      importCodeInput.value = "";
-      importCodeInput.focus();
-    }
-  });
-
-  importCodeConfirmButton?.addEventListener("click", handleImportConfirmRequest);
-
-  importCodeInput?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleImportConfirmRequest();
-    }
-  });
-
-  importCodeModal?.addEventListener("click", (event) => {
-    if (event.target === importCodeModal) {
-      closeImportCodeModal();
-    }
-  });
-
-  importUnsavedSaveButton?.addEventListener("click", () => {
-    if (!appState.pendingImportPayload) {
-      return;
-    }
-
-    const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
-
-    if (!hasSavedCurrentList) {
-      return;
-    }
-
-    importParsedList(appState.pendingImportPayload);
-    appState.pendingImportPayload = null;
-    closeImportUnsavedModal();
-    closeImportCodeModal();
-    openRemovalAlert("Lista importada com sucesso!");
-  });
-
-  importUnsavedDiscardButton?.addEventListener("click", () => {
-    if (!appState.pendingImportPayload) {
-      return;
-    }
-
-    importParsedList(appState.pendingImportPayload);
-    appState.pendingImportPayload = null;
-    closeImportUnsavedModal();
-    closeImportCodeModal();
-    openRemovalAlert("Lista importada com sucesso!");
-  });
-
-  importUnsavedCancelButton?.addEventListener("click", () => {
-    closeImportUnsavedModal();
-  });
-
-  importDuplicateActivateButton?.addEventListener("click", () => {
-    if (!appState.pendingDuplicateSavedListId) {
-      return;
-    }
-
-    applySavedList(appState.pendingDuplicateSavedListId);
-    closeImportDuplicateModal();
-    closeImportCodeModal();
-  });
-
-  importDuplicateCancelButton?.addEventListener("click", closeImportDuplicateModal);
-
-  importDuplicateModal?.addEventListener("click", (event) => {
-    if (event.target === importDuplicateModal) {
-      closeImportDuplicateModal();
-    }
-  });
-
-  importDuplicateActiveConfirmButton?.addEventListener("click", () => {
-    closeImportDuplicateActiveModal();
-    closeImportCodeModal();
-  });
-
-  importDuplicateActiveModal?.addEventListener("click", (event) => {
-    if (event.target === importDuplicateActiveModal) {
-      closeImportDuplicateActiveModal();
-    }
-  });
-
-  importUnsavedModal?.addEventListener("click", (event) => {
-    if (event.target === importUnsavedModal) {
-      closeImportUnsavedModal();
-    }
-  });
-
-  exportSaveConfirmButton?.addEventListener("click", async () => {
-    const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
-
-    if (!hasSavedCurrentList) {
-      return;
-    }
-
-    closeExportSaveModal();
-    await exportCurrentList();
-  });
-
-  exportSaveCancelButton?.addEventListener("click", closeExportSaveModal);
-
-  exportSaveModal?.addEventListener("click", (event) => {
-    if (event.target === exportSaveModal) {
-      closeExportSaveModal();
-    }
-  });
-
-  exportSuccessCloseButton?.addEventListener("click", closeExportSuccessModal);
-
-  exportSuccessModal?.addEventListener("click", (event) => {
-    if (event.target === exportSuccessModal) {
-      closeExportSuccessModal();
-    }
-  });
-
-  btnImportExportHelp?.addEventListener("click", openImportExportHelpModal);
-  importExportHelpCloseButton?.addEventListener("click", closeImportExportHelpModal);
-  btnImportExportHelpClose?.addEventListener("click", closeImportExportHelpModal);
-
-  importExportHelpModal?.addEventListener("click", (event) => {
-    if (event.target === importExportHelpModal) {
-      closeImportExportHelpModal();
-    }
-  });
-}
-
-function bindManageListsEvents() {
-  btnManageLists?.addEventListener("click", openManageListsModal);
-  manageListsModalCloseButton?.addEventListener("click", closeManageListsModal);
-
-  manageListsModal?.addEventListener("click", (event) => {
-    if (event.target === manageListsModal) {
-      closeManageListsModal();
-    }
-  });
-
-  btnSaveCurrentList?.addEventListener("click", saveCurrentList);
-
-  manageListsItemsContainer?.addEventListener("click", (event) => {
-    const removeButton = event.target.closest(".manage-list-remove");
-
-    if (removeButton) {
-      const rowElement = removeButton.closest(".manage-list-row");
-      const savedListId = rowElement?.dataset?.savedListId;
-
-      if (savedListId) {
-        removeSavedList(savedListId);
-      }
-
-      return;
-    }
-
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (listNameElement) {
-      startManageListEditing(listNameElement);
-    }
-  });
-
-  manageListsItemsContainer?.addEventListener("focusin", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (!listNameElement || listNameElement.classList.contains("is-editing")) {
-      return;
-    }
-
-    if (appState.activeManageListEditableItem && appState.activeManageListEditableItem !== listNameElement) {
-      finishManageListEditing(appState.activeManageListEditableItem);
-    }
-  });
-
-  manageListsItemsContainer?.addEventListener("keydown", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (!listNameElement) {
-      return;
-    }
-
-    if (!listNameElement.classList.contains("is-editing") && event.key === "Enter") {
-      event.preventDefault();
-      startManageListEditing(listNameElement);
-      return;
-    }
-
-    if (listNameElement.classList.contains("is-editing") && event.key === "Enter") {
-      event.preventDefault();
-      finishManageListEditing(listNameElement);
-      listNameElement.blur();
-      return;
-    }
-
-    if (listNameElement.classList.contains("is-editing") && event.key === "Escape") {
-      event.preventDefault();
-      finishManageListEditing(listNameElement, true);
-      listNameElement.blur();
-    }
-  });
-
-  manageListsItemsContainer?.addEventListener("beforeinput", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
-      return;
-    }
-
-    const isInsertOperation = event.inputType?.startsWith("insert");
-    if (!isInsertOperation) {
-      return;
-    }
-
-    const currentLength = (listNameElement.textContent || "").length;
-    const selectionLength = getEditableSelectionLength(listNameElement);
-    const nextLength = currentLength - selectionLength;
-    const insertedLength = (event.data || "").length;
-
-    if (nextLength >= SAVED_LIST_NAME_MAX_LENGTH || nextLength + insertedLength > SAVED_LIST_NAME_MAX_LENGTH) {
-      event.preventDefault();
-    }
-  });
-
-  manageListsItemsContainer?.addEventListener("paste", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
-      return;
-    }
-
-    if (!clipboardHasImage(event)) {
-      return;
-    }
-
-    event.preventDefault();
-    openValidationModal("Nao e permitido colar imagens neste campo.");
-  });
-
-  manageListsItemsContainer?.addEventListener("input", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
-      return;
-    }
-
-    clampEditingTextLength(listNameElement, SAVED_LIST_NAME_MAX_LENGTH);
-  });
-
-  manageListsItemsContainer?.addEventListener("focusout", (event) => {
-    const listNameElement = event.target.closest(".manage-list-name");
-
-    if (!listNameElement || !listNameElement.classList.contains("is-editing")) {
-      return;
-    }
-
-    finishManageListEditing(listNameElement);
-  });
-
-  manageListsItemsContainer?.addEventListener("change", (event) => {
-    const radioElement = event.target.closest(".manage-list-radio");
-
-    if (!radioElement) {
-      return;
-    }
-
-    const rowElement = radioElement.closest(".manage-list-row");
-    const selectedSavedListId = rowElement?.dataset?.savedListId;
-
-    if (!selectedSavedListId) {
-      return;
-    }
-
-    const selectedSavedList = appState.savedLists.find((savedList) => savedList.id === selectedSavedListId);
-
-    if (!selectedSavedList) {
-      return;
-    }
-
-    const currentRowsSnapshot = getCurrentRowsSnapshot();
-    const currentSignature = getRowsSignature(currentRowsSnapshot);
-    const selectedSignature = getRowsSignature(selectedSavedList.items);
-
-    if (currentSignature === selectedSignature) {
-      renderSavedLists();
-      return;
-    }
-
-    if (currentRowsSnapshot.length > 0 && !isCurrentListSaved()) {
-      openSwitchListModal(selectedSavedListId);
-      return;
-    }
-
-    applySavedList(selectedSavedListId);
-  });
-
-  manageListsItemsContainer?.addEventListener("dragstart", (event) => {
-    const dragHandleElement = event.target.closest(".manage-list-drag-handle");
-
-    if (!dragHandleElement) {
-      event.preventDefault();
-      return;
-    }
-
-    appState.draggedSavedListElement = dragHandleElement.closest(".manage-list-row");
-
-    if (!appState.draggedSavedListElement || appState.draggedSavedListElement.classList.contains("hidden")) {
-      event.preventDefault();
-      return;
-    }
-
-    if (appState.activeManageListEditableItem) {
-      finishManageListEditing(appState.activeManageListEditableItem);
-    }
-
-    appState.draggedSavedListElement.classList.add("is-dragging");
-
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", appState.draggedSavedListElement.dataset.savedListId || "");
-  });
-
-  manageListsItemsContainer?.addEventListener("dragover", handleSavedListsDragOver);
-  manageListsBox?.addEventListener("dragover", handleSavedListsDragOver);
-
-  manageListsItemsContainer?.addEventListener("drop", (event) => {
-    if (!appState.draggedSavedListElement) {
-      return;
-    }
-
-    event.preventDefault();
-    persistSavedListsFromDomOrder();
-  });
-
-  manageListsItemsContainer?.addEventListener("dragend", () => {
-    if (!appState.draggedSavedListElement) {
-      return;
-    }
-
-    appState.draggedSavedListElement.classList.remove("is-dragging");
-    appState.draggedSavedListElement = null;
-    renderSavedLists();
-  });
-}
-
-function bindSwitchListEvents() {
-  switchListCancelButton?.addEventListener("click", () => {
-    closeSwitchListModal();
-    renderSavedLists();
-  });
-
-  switchListSaveButton?.addEventListener("click", () => {
-    if (!appState.pendingSelectedSavedListId) {
-      return;
-    }
-
-    const hasSavedCurrentList = saveCurrentList({ showSuccessAlert: false });
-
-    if (!hasSavedCurrentList) {
-      return;
-    }
-
-    applySavedList(appState.pendingSelectedSavedListId);
-    closeSwitchListModal();
-    openRemovalAlert("Lista salva e lista selecionada carregada.");
-  });
-
-  switchListConfirmButton?.addEventListener("click", () => {
-    if (appState.pendingSelectedSavedListId) {
-      applySavedList(appState.pendingSelectedSavedListId);
-    }
-
-    closeSwitchListModal();
-  });
-
-  switchListModal?.addEventListener("click", (event) => {
-    if (event.target === switchListModal) {
-      closeSwitchListModal();
-      renderSavedLists();
-    }
-  });
-}
-
-function bindGlobalUiEvents() {
-  themeToggleButton?.addEventListener("click", toggleTheme);
-  focusModeToggleButton?.addEventListener("click", toggleFocusMode);
-
-  removalAlertCloseButton.addEventListener("click", closeRemovalAlert);
-  validationCloseButton.addEventListener("click", closeValidationModal);
-
-  validationModal.addEventListener("click", (event) => {
-    if (event.target === validationModal) {
-      closeValidationModal();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !exportSuccessModal.classList.contains("hidden")) {
-      closeExportSuccessModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !exportSaveModal.classList.contains("hidden")) {
-      closeExportSaveModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !importUnsavedModal.classList.contains("hidden")) {
-      closeImportUnsavedModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !importDuplicateModal.classList.contains("hidden")) {
-      closeImportDuplicateModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !importDuplicateActiveModal.classList.contains("hidden")) {
-      closeImportDuplicateActiveModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !importCodeModal.classList.contains("hidden")) {
-      closeImportCodeModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !switchListModal.classList.contains("hidden")) {
-      closeSwitchListModal();
-      renderSavedLists();
-      return;
-    }
-
-    if (event.key === "Escape" && !manageListsModal.classList.contains("hidden")) {
-      closeManageListsModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !clearModal.classList.contains("hidden")) {
-      closeClearModal();
-      return;
-    }
-
-    if (event.key === "Escape" && !validationModal.classList.contains("hidden")) {
-      closeValidationModal();
-    }
-  });
-
-  window.addEventListener("resize", syncBulkActionsByViewport);
-}
-
 function bindEvents() {
-  bindListActionEvents();
-  bindListItemEvents();
-  bindClearModalEvents();
-  bindImportExportModalEvents();
-  bindManageListsEvents();
-  bindSwitchListEvents();
-  bindGlobalUiEvents();
+  bindListActionEvents(handleAddItem, handleAddCategory, updateBulkActionsToggleState, handleToggleSelectAll);
+
+  bindListItemEvents(
+    appState,
+    isCategoryRow,
+    openCategoryClearModal,
+    refreshCategoryStructure,
+    saveItemsToStorage,
+    updateClearAllButtonVisibility,
+    openRemovalAlert,
+    startItemEditing,
+    finishItemEditing,
+    getEditableSelectionLength,
+    ITEM_NAME_MAX_LENGTH,
+    clipboardHasImage,
+    openValidationModal,
+    clampEditingTextLength,
+    updateSelectAllButtonState,
+    getCategoryScopeRows,
+    getItemAfterPointerPosition,
+  );
+
+  bindClearModalEvents(appState, openClearModal, closeClearModal, clearCategoryOnly, clearCategoryItems, clearAllItems);
+  bindValidationModalEvents(closeValidationModal);
+
+  bindImportExportModalEvents(
+    appState,
+    openImportCodeModal,
+    closeImportCodeModal,
+    openExportSaveModal,
+    exportCurrentList,
+    handleImportConfirmRequest,
+    saveCurrentList,
+    importParsedList,
+    openRemovalAlert,
+    closeImportUnsavedModal,
+    openImportUnsavedModal,
+    closeImportDuplicateModal,
+    openImportDuplicateModal,
+    closeImportDuplicateActiveModal,
+    openImportDuplicateActiveModal,
+    closeExportSaveModal,
+    closeExportSuccessModal,
+    openExportSuccessModal,
+    openImportExportHelpModal,
+    closeImportExportHelpModal,
+    getCurrentRowsSnapshot,
+  );
+
+  bindManageListsEvents(
+    appState,
+    openManageListsModal,
+    closeManageListsModal,
+    saveCurrentList,
+    removeSavedList,
+    startManageListEditing,
+    finishManageListEditing,
+    getEditableSelectionLength,
+    SAVED_LIST_NAME_MAX_LENGTH,
+    clipboardHasImage,
+    openValidationModal,
+    clampEditingTextLength,
+    getCurrentRowsSnapshot,
+    getRowsSignature,
+    openSwitchListModal,
+    applySavedList,
+    handleSavedListsDragOver,
+    persistSavedListsFromDomOrder,
+    renderSavedLists,
+  );
+
+  bindSwitchListEvents(
+    appState,
+    closeSwitchListModal,
+    renderSavedLists,
+    saveCurrentList,
+    applySavedList,
+    openRemovalAlert,
+  );
+
+  bindGlobalUiEvents(
+    appState,
+    toggleTheme,
+    toggleFocusMode,
+    closeRemovalAlert,
+    closeValidationModal,
+    closeExportSuccessModal,
+    closeExportSaveModal,
+    closeImportUnsavedModal,
+    closeImportDuplicateModal,
+    closeImportDuplicateActiveModal,
+    closeImportCodeModal,
+    closeSwitchListModal,
+    renderSavedLists,
+    closeManageListsModal,
+    closeClearModal,
+    syncBulkActionsByViewport,
+  );
 }
 
 bindEvents();
