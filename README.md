@@ -66,6 +66,8 @@ Para detalhes sobre as regras de negócio e requisitos, acesse a [Especificaçã
 - **Tema Claro/Escuro**: Alternância entre temas visuais
 - **Modo Foco**: Interface simplificada sem distrações
 
+<a name="tecnologias"></a>
+
 ## 🛠️ Tecnologias e Ferramentas (Análise Técnica)
 
 ### Core
@@ -99,6 +101,8 @@ Para detalhes sobre as regras de negócio e requisitos, acesse a [Especificaçã
 | **Husky**       | ^9.1.7   | Git hooks para rodar Prettier em pre-commit |
 | **lint-staged** | ^16.2.7  | Executa linting apenas em arquivos staged   |
 | **npm**         | Built-in | Package manager e scripts automation        |
+
+<a name="arquitetura"></a>
 
 ## 🏗️ Arquitetura e Decisões Técnicas
 
@@ -283,6 +287,8 @@ For details on business rules and requirements, access the [Product Specificatio
 - **Light/Dark Theme**: Toggle between visual themes
 - **Focus Mode**: Simplified interface without distractions
 
+<a name="technologies"></a>
+
 ## 🛠️ Technologies & Tools (Technical Analysis)
 
 ### Core
@@ -316,6 +322,8 @@ For details on business rules and requirements, access the [Product Specificatio
 | **Husky**       | ^9.1.7   | Git hooks for running Prettier in pre-commit |
 | **lint-staged** | ^16.2.7  | Executes linting only on staged files        |
 | **npm**         | Built-in | Package manager and scripts automation       |
+
+<a name="architecture"></a>
 
 ## 🏗️ Architecture & Technical Decisions
 
