@@ -859,14 +859,14 @@ async function exportCurrentList() {
   const rowsSnapshot = getCurrentRowsSnapshot();
 
   if (!rowsSnapshot.length) {
-    openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
+    openValidationModal('Adicione um item, categoria ou selecione uma lista salva para exportar.');
     return;
   }
 
   const payload = buildShareCodePayload(rowsSnapshot, getCurrentListNameForShare());
 
   if (!payload) {
-    openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
+    openValidationModal('Adicione um item, categoria ou selecione uma lista salva para exportar.');
     return;
   }
 
