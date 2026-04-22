@@ -1823,3 +1823,57 @@ refreshCategoryStructure();
 updateClearAllButtonVisibility();
 syncBulkActionsByViewport();
 applyFocusMode(false);
+
+// Mobile keyboard detection and handling
+function setupMobileKeyboardHandling() {
+  let initialViewportHeight = window.innerHeight;
+  let isKeyboardVisible = false;
+
+  function handleViewportChange() {
+    const currentViewportHeight = window.innerHeight;
+    const heightDifference = initialViewportHeight - currentViewportHeight;
+    const threshold = 150;
+
+    const isCurrentlyKeyboardVisible = heightDifference > threshold;
+
+    if (isCurrentlyKeyboardVisible !== isKeyboardVisible) {
+      isKeyboardVisible = isCurrentlyKeyboardVisible;
+
+      if (isKeyboardVisible) {
+        document.body.classList.add('keyboard-visible');
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.tagName === 'INPUT') {
+          setTimeout(() => {
+            activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+      } else {
+        document.body.classList.remove('keyboard-visible');
+        initialViewportHeight = window.innerHeight;
+      }
+    }
+  }
+
+  window.addEventListener('resize', handleViewportChange);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      initialViewportHeight = window.innerHeight;
+      handleViewportChange();
+    }, 100);
+  });
+
+  const inputElement = document.getElementById('item');
+  if (inputElement) {
+    inputElement.addEventListener('focus', () => {
+      setTimeout(handleViewportChange, 300);
+    });
+
+    inputElement.addEventListener('blur', () => {
+      setTimeout(handleViewportChange, 100);
+    });
+  }
+}
+
+if (window.innerWidth <= 640) {
+  setupMobileKeyboardHandling();
+}

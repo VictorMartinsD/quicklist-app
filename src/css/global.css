@@ -1692,6 +1692,34 @@ body.modal-open {
   overflow: hidden;
 }
 
+/* Keyboard-aware adjustments for mobile */
+.keyboard-visible {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.keyboard-visible .new-item {
+  position: sticky;
+  bottom: 0;
+  background: var(--background-primary);
+  padding: 16px;
+  margin: 0 -16px;
+  border-top: 1px solid var(--border-primary);
+  z-index: 100;
+}
+
+.keyboard-visible .app-heading,
+.keyboard-visible .bulk-clear-slot {
+  display: none;
+}
+
+.keyboard-visible .items-scroll {
+  max-height: calc(100vh - 200px);
+  max-height: calc(100dvh - 200px);
+  overflow-y: auto;
+}
+
 @media (max-width: 40em) {
   body {
     width: auto;
