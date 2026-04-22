@@ -292,7 +292,7 @@ function updateSelectAllButtonState() {
   const areAllSelected = hasCheckboxes && visibleCheckboxes.every(checkboxElement => checkboxElement.checked);
 
   btnSelectAll.classList.toggle('is-all-selected', areAllSelected);
-  btnSelectAll.disabled = !hasCheckboxes;
+  btnSelectAll.disabled = false;
   btnSelectAll.setAttribute(
     'aria-label',
     areAllSelected ? 'Desmarcar todos os itens e categorias.' : 'Selecionar todos os itens e categorias.'
@@ -303,6 +303,7 @@ function handleToggleSelectAll() {
   const visibleCheckboxes = getVisibleCheckboxes();
 
   if (!visibleCheckboxes.length) {
+    openValidationModal('Adicione um item ou categoria para poder selecionar.');
     return;
   }
 
@@ -859,14 +860,14 @@ async function exportCurrentList() {
   const rowsSnapshot = getCurrentRowsSnapshot();
 
   if (!rowsSnapshot.length) {
-    openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
+    openValidationModal('Adicione um item, categoria ou selecione uma lista salva para exportar.');
     return;
   }
 
   const payload = buildShareCodePayload(rowsSnapshot, getCurrentListNameForShare());
 
   if (!payload) {
-    openValidationModal('Você precisa de pelo menos um item na lista ou uma lista salva exportá-la.');
+    openValidationModal('Adicione um item, categoria ou selecione uma lista salva para exportar.');
     return;
   }
 
