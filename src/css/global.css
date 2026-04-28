@@ -468,8 +468,29 @@ html[data-theme='dark'] #item {
   border-left: 2px solid transparent;
 }
 
-.item-added.is-dragging {
-  opacity: 0.55;
+.item-added.is-dragging,
+.item-added.is-keyboard-dragging {
+  opacity: 0.72;
+  z-index: 1;
+  outline: 1px solid color-mix(in srgb, var(--color-brand) 38%, transparent);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-brand) 16%, transparent);
+}
+
+.item-added.is-dragging::before,
+.item-added.is-keyboard-dragging::before {
+  content: attr(data-drag-label);
+  position: absolute;
+  top: -11px;
+  left: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--card-surface);
+  border: 1px solid var(--color-brand);
+  color: var(--color-brand);
+  font: var(--link);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .item-added.category-added {
@@ -566,6 +587,47 @@ input[type='checkbox'] {
   place-content: center;
 }
 
+.block-drag-handle {
+  visibility: hidden;
+}
+
+.item-added.category-added[data-category-level='0'] .block-drag-handle,
+.item-added.category-added:hover .block-drag-handle,
+.item-added.category-added:focus-within .block-drag-handle {
+  visibility: visible;
+}
+
+.item-added.category-added .block-drag-handle {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--content-tertiary);
+  cursor: grab;
+  user-select: none;
+  display: grid;
+  place-content: center;
+}
+
+.item-added.category-added .block-drag-handle:active,
+body.is-grabbing .item-added.category-added .block-drag-handle {
+  cursor: grabbing;
+}
+
+.item-added.category-added .block-drag-handle:hover,
+.item-added.category-added .block-drag-handle:focus-visible {
+  color: var(--content-secondary);
+}
+
+.item-added.category-added .block-drag-handle .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.item-added.category-added .block-drag-handle svg,
+.item-added.category-added .block-drag-handle use {
+  color: inherit;
+}
+
 .drag-handle:active,
 body.is-grabbing .drag-handle {
   cursor: grabbing;
@@ -579,6 +641,12 @@ body.is-grabbing {
   width: 16px;
   height: 16px;
   color: var(--content-tertiary);
+}
+
+#grip-vertical {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
 }
 
 .drag-handle:hover,
@@ -1744,7 +1812,16 @@ body.modal-open {
     column-gap: 12px;
   }
 
+  .item-added.category-added {
+    grid-template-columns: auto auto 1fr auto auto;
+  }
+
   .item-added .drag-handle {
+    align-self: center;
+    justify-self: start;
+  }
+
+  .item-added .block-drag-handle {
     align-self: center;
     justify-self: start;
   }

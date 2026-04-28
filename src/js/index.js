@@ -423,6 +423,8 @@ function refreshCategoryStructure() {
       groupedRow.classList.add('is-group-continuation');
     });
   });
+
+  syncCategoryBlockDragHandles();
 }
 
 function getCategoryScopeRows(categoryRowElement) {
@@ -1482,6 +1484,46 @@ function createListItemElement(itemText, itemId = generateId()) {
   return newItemElement;
 }
 
+function createCategoryBlockDragHandle() {
+  const blockDragHandle = document.createElement('button');
+  blockDragHandle.className = 'drag-handle block-drag-handle';
+  blockDragHandle.type = 'button';
+  blockDragHandle.draggable = true;
+
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.classList.add('icon');
+  icon.setAttribute('aria-hidden', 'true');
+  icon.setAttribute('focusable', 'false');
+
+  const iconUse = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  iconUse.setAttribute('href', 'assets/img/icons.svg#grip-vertical');
+  icon.append(iconUse);
+
+  blockDragHandle.append(icon);
+  blockDragHandle.setAttribute('aria-label', 'Mover categoria e subcategorias');
+  blockDragHandle.setAttribute('title', 'Mover categoria e subcategorias');
+
+  return blockDragHandle;
+}
+
+function syncCategoryBlockDragHandles() {
+  const categoryRows = [...itemsContainer.querySelectorAll('.item-added.category-added')];
+
+  categoryRows.forEach(categoryRowElement => {
+    const blockDragHandle = categoryRowElement.querySelector('.block-drag-handle');
+
+    if (!blockDragHandle) {
+      return;
+    }
+
+    const categoryLevel = Number(categoryRowElement.dataset.categoryLevel || 0);
+    const dragLabel = categoryLevel > 0 ? 'Mover subcategoria' : 'Mover categoria e subcategorias';
+
+    blockDragHandle.setAttribute('aria-label', dragLabel);
+    blockDragHandle.setAttribute('title', dragLabel);
+  });
+}
+
 function createCategoryElement(categoryText, categoryId = generateId()) {
   const newCategoryElement = createListItemElement(categoryText, categoryId);
   const normalizedCategoryText = normalizeItemText(categoryText);
@@ -1500,7 +1542,14 @@ function createCategoryElement(categoryText, categoryId = generateId()) {
     checkboxElement.setAttribute('aria-label', `Marcar itens da categoria: ${normalizedCategoryText}`);
   }
 
+  const blockDragHandle = createCategoryBlockDragHandle();
   const removeButton = newCategoryElement.querySelector('.icon-button');
+
+  if (removeButton) {
+    removeButton.before(blockDragHandle);
+  } else {
+    newCategoryElement.append(blockDragHandle);
+  }
 
   if (removeButton) {
     removeButton.setAttribute('aria-label', 'Apagar categoria.');

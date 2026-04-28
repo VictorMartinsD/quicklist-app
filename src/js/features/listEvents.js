@@ -7,6 +7,211 @@ import { DOM_SELECTORS } from '../dom/selectors.js';
 
 const { btnAddItem, btnNewCategory, btnSelectAll, bulkActionsToggle, input, itemsContainer } = DOM_SELECTORS;
 
+function getVisibleRows(excludedRows = []) {
+  const excludedSet = new Set(excludedRows);
+  return [...itemsContainer.querySelectorAll('.item-added:not(.hidden)')].filter(
+    rowElement => !excludedSet.has(rowElement)
+  );
+}
+
+function getBlockAnchorRow(rowElement, visibleRows = getVisibleRows()) {
+  if (!rowElement) {
+    return null;
+  }
+
+  if (rowElement.dataset.rowType === 'category') {
+    return rowElement;
+  }
+
+  const rowIndex = visibleRows.indexOf(rowElement);
+
+  if (rowIndex === -1) {
+    return rowElement;
+  }
+
+  for (let index = rowIndex; index >= 0; index -= 1) {
+    const currentRow = visibleRows[index];
+
+    if (currentRow?.dataset?.rowType === 'category') {
+      return currentRow;
+    }
+  }
+
+  return rowElement;
+}
+
+function getBlockAnchors(excludedRows = []) {
+  const visibleRows = getVisibleRows(excludedRows);
+  const uniqueAnchors = [];
+  const seenAnchors = new Set();
+
+  visibleRows.forEach(rowElement => {
+    const anchorRow = getBlockAnchorRow(rowElement, visibleRows);
+
+    if (!anchorRow || seenAnchors.has(anchorRow)) {
+      return;
+    }
+
+    seenAnchors.add(anchorRow);
+    uniqueAnchors.push(anchorRow);
+  });
+
+  return uniqueAnchors;
+}
+
+function getBlockInsertionTarget(pointerY, excludedRows = []) {
+  return getBlockAnchors(excludedRows).reduce(
+    (closestAnchor, currentAnchor) => {
+      const rowRect = currentAnchor.getBoundingClientRect();
+      const pointerOffset = pointerY - rowRect.top - rowRect.height / 2;
+
+      if (pointerOffset < 0 && pointerOffset > closestAnchor.offset) {
+        return { offset: pointerOffset, element: currentAnchor };
+      }
+
+      return closestAnchor;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
+  ).element;
+}
+
+function getBlockDragLabel(categoryRowElement) {
+  const categoryLevel = Number(categoryRowElement?.dataset?.categoryLevel || 0);
+  return categoryLevel > 0 ? 'Movendo subcategoria' : 'Movendo categoria inteira';
+}
+
+function updateDraggedRowsFeedback(appState, label, isKeyboardDrag = false) {
+  appState.draggedRows.forEach((rowElement, index) => {
+    rowElement.classList.add('is-dragging');
+
+    if (isKeyboardDrag) {
+      rowElement.classList.add('is-keyboard-dragging');
+    }
+
+    if (index === 0) {
+      rowElement.dataset.dragLabel = label;
+    } else {
+      delete rowElement.dataset.dragLabel;
+    }
+  });
+
+  document.body.classList.add('is-grabbing');
+}
+
+function resetDraggedRowsFeedback(appState) {
+  appState.draggedRows.forEach(rowElement => {
+    rowElement.classList.remove('is-dragging', 'is-keyboard-dragging');
+    delete rowElement.dataset.dragLabel;
+  });
+
+  if (appState.draggedHandleElement?.classList.contains('block-drag-handle')) {
+    appState.draggedHandleElement.setAttribute('aria-pressed', 'false');
+  }
+
+  document.body.classList.remove('is-grabbing');
+  appState.draggedItemElement = null;
+  appState.draggedHandleElement = null;
+  appState.draggedRows = [];
+  appState.dragMode = null;
+  appState.isKeyboardDragActive = false;
+}
+
+function beginBlockDrag(appState, categoryRowElement, handleElement, event, finishItemEditing, getCategoryScopeRows) {
+  const draggedRows = categoryRowElement ? getCategoryScopeRows(categoryRowElement).rows : [];
+
+  if (!draggedRows.length) {
+    return false;
+  }
+
+  if (appState.activeEditableItem) {
+    finishItemEditing(appState.activeEditableItem);
+  }
+
+  appState.draggedItemElement = categoryRowElement;
+  appState.draggedHandleElement = handleElement;
+  appState.draggedRows = draggedRows;
+  appState.dragMode = 'block';
+  appState.isKeyboardDragActive = Boolean(event?.type === 'keydown');
+
+  updateDraggedRowsFeedback(appState, getBlockDragLabel(categoryRowElement), appState.isKeyboardDragActive);
+
+  if (appState.isKeyboardDragActive) {
+    handleElement?.setAttribute('aria-pressed', 'true');
+    return true;
+  }
+
+  if (event?.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', categoryRowElement?.dataset?.itemId || '');
+  }
+
+  return true;
+}
+
+function positionDraggedRowsBeforeTarget(appState, targetRowElement) {
+  if (!appState.draggedRows.length) {
+    return;
+  }
+
+  if (!targetRowElement) {
+    itemsContainer.append(...appState.draggedRows);
+    return;
+  }
+
+  appState.draggedRows.forEach(rowElement => {
+    itemsContainer.insertBefore(rowElement, targetRowElement);
+  });
+}
+
+function positionDraggedRowsAtStart(appState) {
+  if (!appState.draggedRows.length) {
+    return;
+  }
+
+  itemsContainer.prepend(...appState.draggedRows);
+}
+
+function getKeyboardBlockTarget(appState, direction) {
+  const allVisibleRows = getVisibleRows();
+  const rootRowElement = appState.draggedItemElement;
+
+  if (!rootRowElement) {
+    return null;
+  }
+
+  const rootIndex = allVisibleRows.indexOf(rootRowElement);
+
+  if (rootIndex === -1) {
+    return null;
+  }
+
+  if (direction < 0) {
+    for (let index = rootIndex - 1; index >= 0; index -= 1) {
+      const candidateRow = allVisibleRows[index];
+
+      if (appState.draggedRows.includes(candidateRow)) {
+        continue;
+      }
+
+      return getBlockAnchorRow(candidateRow, allVisibleRows);
+    }
+
+    return null;
+  }
+
+  for (let index = rootIndex + appState.draggedRows.length; index < allVisibleRows.length; index += 1) {
+    const candidateRow = allVisibleRows[index];
+
+    if (appState.draggedRows.includes(candidateRow)) {
+      continue;
+    }
+
+    return getBlockAnchorRow(candidateRow, allVisibleRows);
+  }
+
+  return null;
+}
+
 /**
  * Vincula eventos de ação da lista principal
  * @param {Function} handleAddItem - Função para adicionar item
@@ -259,6 +464,32 @@ export function bindListItemEvents(
   });
 
   itemsContainer.addEventListener('dragstart', event => {
+    const blockDragHandle = event.target.closest('.block-drag-handle');
+
+    if (blockDragHandle) {
+      const categoryRowElement = blockDragHandle.closest('.item-added.category-added');
+
+      if (!categoryRowElement || categoryRowElement.classList.contains('hidden')) {
+        event.preventDefault();
+        return;
+      }
+
+      const started = beginBlockDrag(
+        appState,
+        categoryRowElement,
+        blockDragHandle,
+        event,
+        finishItemEditing,
+        getCategoryScopeRows
+      );
+
+      if (!started) {
+        event.preventDefault();
+      }
+
+      return;
+    }
+
     const dragHandle = event.target.closest('.drag-handle');
 
     if (!dragHandle) {
@@ -293,6 +524,17 @@ export function bindListItemEvents(
 
     event.preventDefault();
 
+    if (appState.dragMode === 'block') {
+      const nextBlockTarget = getBlockInsertionTarget(event.clientY, appState.draggedRows);
+
+      if (nextBlockTarget && nextBlockTarget === appState.draggedItemElement) {
+        return;
+      }
+
+      positionDraggedRowsBeforeTarget(appState, nextBlockTarget);
+      return;
+    }
+
     const nextItem = getItemAfterPointerPosition(event.clientY);
 
     if (nextItem && appState.draggedItemElement === nextItem) {
@@ -322,10 +564,58 @@ export function bindListItemEvents(
       return;
     }
 
-    appState.draggedRows.forEach(rowElement => rowElement.classList.remove('is-dragging'));
-    document.body.classList.remove('is-grabbing');
+    resetDraggedRowsFeedback(appState);
     refreshCategoryStructure();
-    appState.draggedRows = [];
-    appState.draggedItemElement = null;
+  });
+
+  itemsContainer.addEventListener('keydown', event => {
+    const blockDragHandle = event.target.closest('.block-drag-handle');
+
+    if (!blockDragHandle) {
+      return;
+    }
+
+    const categoryRowElement = blockDragHandle.closest('.item-added.category-added');
+
+    if (!categoryRowElement || categoryRowElement.classList.contains('hidden')) {
+      return;
+    }
+
+    const isActivationKey = event.key === 'Enter' || event.key === ' ';
+
+    if (isActivationKey && !appState.isKeyboardDragActive) {
+      event.preventDefault();
+      beginBlockDrag(appState, categoryRowElement, blockDragHandle, event, finishItemEditing, getCategoryScopeRows);
+      return;
+    }
+
+    if (!appState.isKeyboardDragActive || appState.dragMode !== 'block') {
+      return;
+    }
+
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      const nextTarget = getKeyboardBlockTarget(appState, event.key === 'ArrowUp' ? -1 : 1);
+
+      if (nextTarget) {
+        positionDraggedRowsBeforeTarget(appState, nextTarget);
+      } else if (event.key === 'ArrowUp') {
+        positionDraggedRowsAtStart(appState);
+      } else {
+        itemsContainer.append(...appState.draggedRows);
+      }
+
+      refreshCategoryStructure();
+      saveItemsToStorage();
+
+      return;
+    }
+
+    if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      resetDraggedRowsFeedback(appState);
+      refreshCategoryStructure();
+      saveItemsToStorage();
+    }
   });
 }
