@@ -509,7 +509,11 @@ function openCategoryClearModal(categoryRowElement) {
 
   appState.categoryRowsToDelete = rows;
   appState.clearModalMode = 'category';
-  appState.categoryOnlyRowToDelete = hasSubcategories ? categoryRowElement : null;
+
+  const categoryLevel = Number(categoryRowElement.dataset.categoryLevel || 0);
+  const allowCategoryOnly = hasSubcategories || categoryLevel > 0;
+
+  appState.categoryOnlyRowToDelete = allowCategoryOnly ? categoryRowElement : null;
 
   if (appState.categoryOnlyRowToDelete) {
     clearModalCategoryOnlyButton.classList.remove('hidden');
@@ -517,9 +521,14 @@ function openCategoryClearModal(categoryRowElement) {
     clearModalCategoryOnlyButton.classList.add('hidden');
   }
 
-  clearModalDescription.textContent = hasSubcategories
-    ? 'Tem certeza que deseja apagar os itens dessa categoria e suas sub-categorias correspondentes?'
-    : 'Tem certeza que deseja apagar os itens dessa categoria?';
+  if (hasSubcategories) {
+    clearModalDescription.textContent =
+      'Tem certeza que deseja apagar os itens dessa categoria e suas sub-categorias correspondentes?';
+  } else if (categoryLevel > 0) {
+    clearModalDescription.textContent = 'Tem certeza que deseja apagar somente esta subcategoria?';
+  } else {
+    clearModalDescription.textContent = 'Tem certeza que deseja apagar os itens dessa categoria?';
+  }
 
   clearModal.classList.remove('hidden');
   syncModalOpenState();
