@@ -735,6 +735,14 @@ input[type='checkbox']:checked::after {
   place-content: center;
 }
 
+.items .item-added {
+  padding-left: 20px;
+}
+
+.items .item-added .icon-button {
+  margin-right: 25px;
+}
+
 #trash {
   color: var(--icon-muted);
   width: 16px;
