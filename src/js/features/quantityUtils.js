@@ -63,11 +63,169 @@ export function initializeQuantityFields(itemElement, data = {}) {
   quantityInput.value = quantity;
   unitSelect.value = unit;
 
+  initializeCustomUnitSelect(itemElement, unit);
+
   // Atualiza tooltip se necessário
   updateQuantityTooltip(quantityInput);
 
   // Event listeners para validação
   bindQuantityInputEvents(quantityInput);
+}
+
+/**
+ * Inicializa o custom select de unidade sem alterar o visual fechado do campo
+ * @param {HTMLElement} itemElement - Elemento do item
+ * @param {string} unitValue - Valor de unidade inicial
+ * @returns {void}
+ */
+function initializeCustomUnitSelect(itemElement, unitValue = 'un.') {
+  if (!itemElement) return;
+
+  const unitSelect = itemElement.querySelector('.unit-select');
+  const wrapper = itemElement.querySelector('.quantity-unit-wrapper');
+
+  if (!unitSelect || !wrapper) {
+    return;
+  }
+
+  // Evita inicializações duplicadas ao restaurar/renderizar novamente linhas
+  if (wrapper.querySelector('.unit-select-trigger')) {
+    syncCustomUnitSelectState(itemElement, unitValue || unitSelect.value || 'un.');
+    return;
+  }
+
+  unitSelect.value = unitValue || unitSelect.value || 'un.';
+  unitSelect.classList.add('unit-select-native');
+  unitSelect.setAttribute('aria-hidden', 'true');
+  unitSelect.tabIndex = -1;
+
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'unit-select-trigger';
+  trigger.setAttribute('aria-label', 'Unidade de medida');
+  trigger.setAttribute('aria-haspopup', 'listbox');
+  trigger.setAttribute('aria-expanded', 'false');
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'unit-select-dropdown hidden';
+
+  const optionsList = document.createElement('ul');
+  optionsList.className = 'unit-select-options';
+  optionsList.setAttribute('role', 'listbox');
+
+  [...unitSelect.options].forEach(optionElement => {
+    const optionItem = document.createElement('li');
+    const optionButton = document.createElement('button');
+
+    optionButton.type = 'button';
+    optionButton.className = 'unit-select-option';
+    optionButton.dataset.value = optionElement.value;
+    optionButton.textContent = optionElement.textContent || optionElement.value;
+    optionButton.setAttribute('role', 'option');
+
+    if (optionElement.value === unitSelect.value) {
+      optionButton.classList.add('is-selected');
+      optionButton.setAttribute('aria-selected', 'true');
+    } else {
+      optionButton.setAttribute('aria-selected', 'false');
+    }
+
+    optionItem.append(optionButton);
+    optionsList.append(optionItem);
+  });
+
+  dropdown.append(optionsList);
+  wrapper.append(trigger, dropdown);
+
+  const closeDropdown = () => {
+    dropdown.classList.add('hidden');
+    trigger.setAttribute('aria-expanded', 'false');
+  };
+
+  const openDropdown = () => {
+    dropdown.classList.remove('hidden');
+    trigger.setAttribute('aria-expanded', 'true');
+  };
+
+  const toggleDropdown = () => {
+    if (dropdown.classList.contains('hidden')) {
+      openDropdown();
+      return;
+    }
+
+    closeDropdown();
+  };
+
+  trigger.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleDropdown();
+  });
+
+  optionsList.addEventListener('click', event => {
+    const optionButton = event.target.closest('.unit-select-option');
+
+    if (!optionButton) {
+      return;
+    }
+
+    const value = optionButton.dataset.value || 'un.';
+
+    syncCustomUnitSelectState(itemElement, value);
+    saveQuantityData(itemElement);
+    closeDropdown();
+  });
+
+  trigger.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleDropdown();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  document.addEventListener('click', event => {
+    if (!wrapper.contains(event.target)) {
+      closeDropdown();
+    }
+  });
+
+  syncCustomUnitSelectState(itemElement, unitSelect.value || 'un.');
+}
+
+/**
+ * Sincroniza valor visual e estado interno do custom select
+ * @param {HTMLElement} itemElement - Elemento do item
+ * @param {string} value - Valor de unidade
+ * @returns {void}
+ */
+function syncCustomUnitSelectState(itemElement, value) {
+  if (!itemElement) return;
+
+  const unitSelect = itemElement.querySelector('.unit-select');
+  const trigger = itemElement.querySelector('.unit-select-trigger');
+  const optionButtons = [...itemElement.querySelectorAll('.unit-select-option')];
+
+  if (!unitSelect || !trigger) {
+    return;
+  }
+
+  const hasMatchingOption = [...unitSelect.options].some(optionElement => optionElement.value === value);
+  const nextValue = hasMatchingOption ? value : 'un.';
+
+  unitSelect.value = nextValue;
+  trigger.textContent = nextValue;
+  trigger.title = nextValue;
+
+  optionButtons.forEach(optionButton => {
+    const isSelected = optionButton.dataset.value === nextValue;
+    optionButton.classList.toggle('is-selected', isSelected);
+    optionButton.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+  });
 }
 
 /**
@@ -219,6 +377,8 @@ export function restoreQuantityData(itemElement, data = {}) {
   if (unitSelect) {
     unitSelect.value = data.unit || 'un.';
   }
+
+  syncCustomUnitSelectState(itemElement, data.unit || 'un.');
 
   // Armazena em dataset
   itemElement.dataset.quantity = data.quantity || '';
