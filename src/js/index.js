@@ -13,7 +13,12 @@ import { bindClearModalEvents, bindValidationModalEvents } from './features/moda
 import { bindImportExportModalEvents } from './features/importExportEvents.js';
 import { bindManageListsEvents, bindSwitchListEvents } from './features/manageListsEvents.js';
 import { bindGlobalUiEvents } from './features/globalEvents.js';
-import { initializeQuantityFields, getQuantityData, restoreQuantityData, bindQuantityInputEvents } from './features/quantityUtils.js';
+import {
+  initializeQuantityFields,
+  getQuantityData,
+  restoreQuantityData,
+  bindQuantityInputEvents,
+} from './features/quantityUtils.js';
 
 const {
   input,
@@ -881,14 +886,35 @@ async function copyTextToClipboard(textToCopy) {
 }
 
 async function exportCurrentList() {
-  const rowsSnapshot = getCurrentRowsSnapshot();
+  let rowsSnapshot = null;
+  let preferredName = '';
+
+  if (manageListsModal && !manageListsModal.classList.contains('hidden') && manageListsItemsContainer) {
+    const selectedRadio = manageListsItemsContainer.querySelector(
+      '.manage-list-row:not(.hidden) .manage-list-radio:checked'
+    );
+    if (selectedRadio) {
+      const row = selectedRadio.closest('.manage-list-row');
+      const savedListId = row?.dataset?.savedListId;
+      const targetSavedList = appState.savedLists.find(savedList => savedList.id === savedListId);
+
+      if (targetSavedList) {
+        rowsSnapshot = Array.isArray(targetSavedList.items) ? targetSavedList.items.slice() : [];
+        preferredName = targetSavedList.name || '';
+      }
+    }
+  }
+
+  if (!rowsSnapshot) {
+    rowsSnapshot = getCurrentRowsSnapshot();
+  }
 
   if (!rowsSnapshot.length) {
     openValidationModal('Adicione um item, categoria ou selecione uma lista salva para exportar.');
     return;
   }
 
-  const payload = buildShareCodePayload(rowsSnapshot, getCurrentListNameForShare());
+  const payload = buildShareCodePayload(rowsSnapshot, preferredName || getCurrentListNameForShare());
 
   if (!payload) {
     openValidationModal('Adicione um item, categoria ou selecione uma lista salva para exportar.');
@@ -1841,6 +1867,7 @@ function bindEvents() {
     handleImportConfirmRequest,
     saveCurrentList,
     importParsedList,
+    applySavedList,
     openRemovalAlert,
     closeImportUnsavedModal,
     openImportUnsavedModal,
@@ -1871,6 +1898,7 @@ function bindEvents() {
     clampEditingTextLength,
     getCurrentRowsSnapshot,
     getRowsSignature,
+    isCurrentListSaved,
     openSwitchListModal,
     applySavedList,
     handleSavedListsDragOver,

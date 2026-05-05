@@ -57,6 +57,7 @@ export function bindManageListsEvents(
   clampEditingTextLength,
   getCurrentRowsSnapshot,
   getRowsSignature,
+  isCurrentListSaved,
   openSwitchListModal,
   applySavedList,
   handleSavedListsDragOver,

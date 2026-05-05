@@ -69,6 +69,7 @@ export function bindImportExportModalEvents(
   handleImportConfirmRequest,
   saveCurrentList,
   importParsedList,
+  applySavedList,
   openRemovalAlert,
   closeImportUnsavedModal,
   openImportUnsavedModal,
