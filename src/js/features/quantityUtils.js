@@ -42,6 +42,39 @@ export function validateQuantityValue(value, previousValue = '1') {
   return value;
 }
 
+let activeUnitSelectCloseDropdown = null;
+
+function positionUnitSelectDropdown(dropdown, trigger) {
+  const triggerRect = trigger.getBoundingClientRect();
+  const dropdownRect = dropdown.getBoundingClientRect();
+  const dropdownWidth = dropdownRect.width || 82;
+  const dropdownHeight = dropdownRect.height || 0;
+  const gap = 6;
+  const margin = 8;
+
+  const left = Math.min(
+    Math.max(margin, triggerRect.right - dropdownWidth),
+    Math.max(margin, window.innerWidth - dropdownWidth - margin)
+  );
+  const top = Math.min(triggerRect.bottom + gap, Math.max(margin, window.innerHeight - dropdownHeight - margin));
+
+  dropdown.style.position = 'fixed';
+  dropdown.style.left = `${Math.round(left)}px`;
+  dropdown.style.top = `${Math.round(top)}px`;
+  dropdown.style.right = 'auto';
+  dropdown.style.bottom = 'auto';
+  dropdown.style.zIndex = '5000';
+}
+
+function clearUnitSelectDropdownPosition(dropdown) {
+  dropdown.style.position = '';
+  dropdown.style.left = '';
+  dropdown.style.top = '';
+  dropdown.style.right = '';
+  dropdown.style.bottom = '';
+  dropdown.style.zIndex = '';
+}
+
 /**
  * Inicializa os campos de quantidade e unidade em um item
  * @param {HTMLElement} itemElement - Elemento do item
@@ -140,11 +173,29 @@ function initializeCustomUnitSelect(itemElement, unitValue = 'un.') {
   const closeDropdown = () => {
     dropdown.classList.add('hidden');
     trigger.setAttribute('aria-expanded', 'false');
+    wrapper.classList.remove('is-dropdown-open');
+    clearUnitSelectDropdownPosition(dropdown);
+
+    if (activeUnitSelectCloseDropdown === closeDropdown) {
+      activeUnitSelectCloseDropdown = null;
+    }
   };
 
   const openDropdown = () => {
+    if (activeUnitSelectCloseDropdown && activeUnitSelectCloseDropdown !== closeDropdown) {
+      activeUnitSelectCloseDropdown();
+    }
+
     dropdown.classList.remove('hidden');
     trigger.setAttribute('aria-expanded', 'true');
+    wrapper.classList.add('is-dropdown-open');
+    activeUnitSelectCloseDropdown = closeDropdown;
+
+    window.requestAnimationFrame(() => {
+      if (!dropdown.classList.contains('hidden')) {
+        positionUnitSelectDropdown(dropdown, trigger);
+      }
+    });
   };
 
   const toggleDropdown = () => {
