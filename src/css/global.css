@@ -468,6 +468,10 @@ html[data-theme='dark'] #item {
   border-left: 2px solid transparent;
 }
 
+.item-added:not(.category-added) {
+  padding-block: 2px;
+}
+
 .item-added.is-dragging,
 .item-added.is-keyboard-dragging {
   opacity: 0.72;
@@ -760,7 +764,7 @@ input[type='checkbox']:checked::after {
   max-width: 60px;
   width: 60px;
   height: 32px;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: var(--always-white);
@@ -812,7 +816,7 @@ html[data-theme='dark'] .quantity-input:focus-visible {
   max-width: 70px;
   width: 70px;
   height: 32px;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: var(--always-white);
