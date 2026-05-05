@@ -731,6 +731,12 @@ input[type='checkbox']:checked::after {
   overflow-y: auto;
 }
 
+html[data-theme='dark'] .shopping-item.is-editing,
+html[data-theme='dark'] .item-added.category-added .shopping-item.is-editing {
+  background: var(--background-secondary);
+  color: var(--content-primary);
+}
+
 .item-added .icon-button {
   flex-shrink: 0;
   margin-left: auto;
@@ -1496,6 +1502,11 @@ html[data-theme='dark'] .btn-export-list {
   outline: none;
   white-space: nowrap;
   overflow-x: hidden;
+}
+
+html[data-theme='dark'] .manage-list-name.is-editing {
+  background: var(--background-secondary);
+  color: var(--content-primary);
 }
 
 .manage-list-remove {
