@@ -13,6 +13,7 @@ import { bindClearModalEvents, bindValidationModalEvents } from './features/moda
 import { bindImportExportModalEvents } from './features/importExportEvents.js';
 import { bindManageListsEvents, bindSwitchListEvents } from './features/manageListsEvents.js';
 import { bindGlobalUiEvents } from './features/globalEvents.js';
+import { initializeQuantityFields, getQuantityData, restoreQuantityData, bindQuantityInputEvents } from './features/quantityUtils.js';
 
 const {
   input,
@@ -570,12 +571,24 @@ function getCurrentRowsSnapshot() {
   return getVisibleRows().map(rowElement => {
     const text = rowElement.querySelector('.shopping-item')?.textContent?.trim() || '';
     const checkboxElement = rowElement.querySelector('input[type="checkbox"]');
+    const quantityData = getQuantityData(rowElement);
 
-    return {
+    const row = {
       rowType: rowElement.dataset.rowType === 'category' ? 'category' : 'item',
       text,
       checked: Boolean(checkboxElement?.checked),
     };
+
+    if (rowElement.dataset.rowType !== 'category') {
+      if (quantityData.quantity) {
+        row.quantity = quantityData.quantity;
+      }
+      if (quantityData.unit) {
+        row.unit = quantityData.unit;
+      }
+    }
+
+    return row;
   });
 }
 
@@ -1391,13 +1404,24 @@ function saveItemsToStorage() {
     const text = itemElement.querySelector('.shopping-item')?.textContent?.trim() || '';
     const checkboxElement = itemElement.querySelector('input[type="checkbox"]');
     const isChecked = Boolean(checkboxElement?.checked);
+    const quantityData = getQuantityData(itemElement);
 
-    return {
+    const item = {
       id: itemElement.dataset.itemId,
       rowType: itemElement.dataset.rowType || 'item',
       text,
       checked: isChecked,
     };
+
+    if (itemElement.dataset.rowType === 'item' && quantityData.quantity) {
+      item.quantity = quantityData.quantity;
+    }
+
+    if (itemElement.dataset.rowType === 'item' && quantityData.unit) {
+      item.unit = quantityData.unit;
+    }
+
+    return item;
   });
 
   setStorageItem(ITEMS_STORAGE_KEY, JSON.stringify(currentItems));
@@ -1436,10 +1460,14 @@ function loadItemsFromStorage() {
     }
 
     const rowType = storedItem.rowType === 'category' ? 'category' : 'item';
+    const itemData = {
+      quantity: storedItem.quantity || '',
+      unit: storedItem.unit || 'un.',
+    };
     const newItem =
       rowType === 'category'
         ? createCategoryElement(normalizedText, storedItem.id)
-        : createListItemElement(normalizedText, storedItem.id);
+        : createListItemElement(normalizedText, storedItem.id, itemData);
 
     const checkboxElement = newItem.querySelector('input[type="checkbox"]');
 
@@ -1453,7 +1481,7 @@ function loadItemsFromStorage() {
   refreshCategoryStructure();
 }
 
-function createListItemElement(itemText, itemId = generateId()) {
+function createListItemElement(itemText, itemId = generateId(), itemData = {}) {
   const newItemElement = itemTemplate.cloneNode(true);
   newItemElement.classList.remove('hidden');
   const normalizedItemText = normalizeItemText(itemText);
@@ -1479,6 +1507,12 @@ function createListItemElement(itemText, itemId = generateId()) {
 
   if (removeButton) {
     removeButton.setAttribute('aria-label', 'Apagar item.');
+  }
+
+  initializeQuantityFields(newItemElement, itemData);
+
+  if (itemData.quantity || itemData.unit) {
+    restoreQuantityData(newItemElement, itemData);
   }
 
   return newItemElement;

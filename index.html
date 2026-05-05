@@ -185,6 +185,33 @@
               </svg>
             </button>
             <input type="checkbox" />
+            <div class="quantity-unit-wrapper flex gap-8">
+              <input
+                type="text"
+                class="quantity-input"
+                placeholder="Qtd"
+                maxlength="10"
+                aria-label="Quantidade do item"
+                inputmode="decimal"
+              />
+              <select class="unit-select" aria-label="Unidade de medida">
+                <option value="un.">un.</option>
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="L">L</option>
+                <option value="ml">ml</option>
+                <option value="pct.">pct.</option>
+                <option value="cx.">cx.</option>
+                <option value="dz.">dz.</option>
+                <option value="lt.">lt.</option>
+                <option value="bdj.">bdj.</option>
+                <option value="sc.">sc.</option>
+                <option value="fd.">fd.</option>
+                <option value="m">m</option>
+                <option value="cm">cm</option>
+                <option value="mg">mg</option>
+              </select>
+            </div>
             <p class="shopping-item"></p>
             <button class="icon-button" type="button" aria-label="Apagar item.">
               <svg id="trash" class="icon" aria-hidden="true" focusable="false">

@@ -463,6 +463,23 @@ export function bindListItemEvents(
     updateSelectAllButtonState();
   });
 
+  itemsContainer.addEventListener('change', event => {
+    const unitSelect = event.target.closest('.unit-select');
+
+    if (!unitSelect) {
+      return;
+    }
+
+    const itemElement = unitSelect.closest('.item-added');
+
+    if (!itemElement || itemElement.classList.contains('hidden')) {
+      return;
+    }
+
+    itemElement.dataset.unit = unitSelect.value;
+    saveItemsToStorage();
+  });
+
   itemsContainer.addEventListener('dragstart', event => {
     const blockDragHandle = event.target.closest('.block-drag-handle');
 

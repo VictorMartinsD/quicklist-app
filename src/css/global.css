@@ -743,6 +743,124 @@ input[type='checkbox']:checked::after {
   margin-right: 25px;
 }
 
+.quantity-unit-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-added.category-added .quantity-unit-wrapper {
+  display: none;
+}
+
+.quantity-input {
+  flex: 0 0 60px;
+  min-width: 60px;
+  max-width: 60px;
+  width: 60px;
+  height: 32px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--always-white);
+  color: var(--text-on-light-surface);
+  font: var(--caption);
+  text-align: center;
+  cursor: text;
+  appearance: none;
+  -moz-appearance: textfield;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+  overflow: hidden;
+}
+
+html[data-theme='dark'] .quantity-input {
+  background: var(--card-surface);
+  color: var(--content-primary);
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input:hover {
+  border-color: var(--border-hover);
+}
+
+.quantity-input:focus-visible {
+  outline: none;
+  border-color: var(--color-brand);
+  background: var(--always-white);
+}
+
+html[data-theme='dark'] .quantity-input:focus-visible {
+  background: var(--card-surface);
+}
+
+.quantity-input::placeholder {
+  color: var(--content-tertiary);
+}
+
+.unit-select {
+  flex: 0 0 70px;
+  min-width: 70px;
+  max-width: 70px;
+  width: 70px;
+  height: 32px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--always-white);
+  color: var(--text-on-light-surface);
+  font: var(--caption);
+  text-align: center;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 1.2em;
+  padding-right: 24px;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+html[data-theme='dark'] .unit-select {
+  background-color: var(--card-surface);
+  color: var(--content-primary);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.unit-select:hover {
+  border-color: var(--border-hover);
+}
+
+.unit-select:focus-visible {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+html[data-theme='dark'] .unit-select:focus-visible {
+  background-color: var(--card-surface);
+}
+
+.unit-select option {
+  background: var(--always-white);
+  color: var(--text-on-light-surface);
+}
+
+html[data-theme='dark'] .unit-select option {
+  background: var(--card-surface);
+  color: var(--content-primary);
+}
+
 #trash {
   color: var(--icon-muted);
   width: 16px;
