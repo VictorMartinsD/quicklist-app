@@ -473,19 +473,19 @@ html[data-theme='dark'] #item {
 }
 
 .item-added:not(.category-added).item-alt-1 {
-  background: transparent;
-}
-
-.item-added:not(.category-added).item-alt-2 {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.item-added:not(.category-added).item-alt-2 {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 html[data-theme='light'] .item-added:not(.category-added).item-alt-1 {
-  background: transparent;
+  background: #e2e8f0;
 }
 
 html[data-theme='light'] .item-added:not(.category-added).item-alt-2 {
-  background: #e2e8f0;
+  background: #dfe1e6;
 }
 
 .item-added.is-dragging,
