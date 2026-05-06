@@ -594,6 +594,26 @@
         </button>
       </div>
 
+      <!-- Search area (appears above footer in the reserved alert space) -->
+      <div class="search-area" aria-hidden="false">
+        <form class="search-form" role="search" aria-label="Pesquisar itens e categorias">
+          <label for="quicklist-search-input" class="sr-only">Procure um item ou categoria</label>
+          <input
+            id="quicklist-search-input"
+            class="quicklist-search-input"
+            type="search"
+            placeholder="Procure um item ou categoria"
+            aria-label="Procure um item ou categoria"
+            maxlength="84"
+          />
+          <button class="search-button icon-button" type="submit" aria-label="Pesquisar">
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/img/icons.svg#search"></use>
+            </svg>
+          </button>
+        </form>
+      </div>
+
       <!-- Site Footer -->
       <footer class="site-footer">
         <p>

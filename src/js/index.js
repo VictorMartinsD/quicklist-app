@@ -2017,3 +2017,216 @@ function setupMobileKeyboardHandling() {
 if (window.innerWidth <= 640) {
   setupMobileKeyboardHandling();
 }
+
+appState.searchMatches = [];
+appState.searchIndex = 0;
+appState.searchQuery = '';
+
+function normalizeForSearch(text) {
+  if (!text) return '';
+  try {
+    return text
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .trim()
+      .slice(0, ITEM_NAME_MAX_LENGTH);
+  } catch (e) {
+    return text.toLowerCase().trim().slice(0, ITEM_NAME_MAX_LENGTH);
+  }
+}
+
+function getRowSearchText(row) {
+  const itemEl = row.querySelector('.shopping-item');
+  return normalizeForSearch(itemEl?.textContent || '');
+}
+
+function findMatchesForQuery(query) {
+  const normalized = normalizeForSearch(query);
+  if (!normalized) return [];
+
+  const visible = getVisibleRows();
+  return visible.filter(row => getRowSearchText(row).includes(normalized));
+}
+
+let floatingTooltipEl = null;
+let floatingTooltipTimeout = null;
+
+function clearFloatingTooltip() {
+  if (!floatingTooltipEl) return;
+  floatingTooltipEl.remove();
+  floatingTooltipEl = null;
+  if (floatingTooltipTimeout) {
+    clearTimeout(floatingTooltipTimeout);
+    floatingTooltipTimeout = null;
+  }
+  document.removeEventListener('click', handleDocumentClickForTooltip);
+}
+
+function handleDocumentClickForTooltip(e) {
+  if (!floatingTooltipEl) return;
+  if (!floatingTooltipEl.contains(e.target)) {
+    clearFloatingTooltip();
+  }
+}
+
+function showFloatingTooltip(message, duration = 4000) {
+  clearFloatingTooltip();
+
+  const el = document.createElement('div');
+  el.className = 'floating-tooltip';
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
+
+  const txt = document.createElement('div');
+  txt.textContent = message;
+  el.append(txt);
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'floating-close';
+  closeBtn.setAttribute('aria-label', 'Fechar aviso');
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', clearFloatingTooltip);
+  el.append(closeBtn);
+
+  document.body.append(el);
+
+  const searchInputEl = document.getElementById('quicklist-search-input');
+  if (searchInputEl) {
+    const inputRect = searchInputEl.getBoundingClientRect();
+    const tooltipWidth = el.offsetWidth;
+    const viewportPadding = 8;
+    const centeredLeft = inputRect.left + inputRect.width / 2 - tooltipWidth / 2;
+    const clampedLeft = Math.max(
+      viewportPadding,
+      Math.min(centeredLeft, window.innerWidth - tooltipWidth - viewportPadding)
+    );
+    const top = Math.max(viewportPadding, inputRect.top - el.offsetHeight - 10);
+
+    el.style.left = `${clampedLeft}px`;
+    el.style.top = `${top}px`;
+  }
+
+  floatingTooltipEl = el;
+  document.addEventListener('click', handleDocumentClickForTooltip);
+
+  floatingTooltipTimeout = window.setTimeout(() => {
+    clearFloatingTooltip();
+  }, duration);
+}
+
+function isElementInViewport(el) {
+  if (!el) return false;
+  const rect = el.getBoundingClientRect();
+  return rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
+}
+
+function highlightRow(row) {
+  if (!row) return;
+  const editable = row.querySelector('.shopping-item');
+  if (!editable) return;
+
+  const removeClass = () => {
+    editable.classList.remove('search-highlight');
+    editable.removeEventListener('animationend', removeClass);
+  };
+
+  editable.classList.remove('search-highlight');
+  editable.offsetWidth;
+  editable.classList.add('search-highlight');
+  editable.addEventListener('animationend', removeClass);
+
+  window.setTimeout(removeClass, 900);
+}
+
+function scrollAndHighlightRow(row) {
+  if (!row) return;
+  const editable = row.querySelector('.shopping-item');
+  if (!editable) return;
+
+  if (isElementInViewport(editable)) {
+    highlightRow(row);
+    return;
+  }
+
+  editable.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  window.setTimeout(() => {
+    highlightRow(row);
+  }, 420);
+}
+
+function performSearchAction(rawQuery, advance = false) {
+  const query = String(rawQuery || '').trim();
+  if (!query) return;
+
+  if (appState.searchQuery !== query) {
+    appState.searchMatches = findMatchesForQuery(query);
+    appState.searchIndex = 0;
+    appState.searchQuery = query;
+  } else if (advance) {
+    appState.searchIndex = (appState.searchIndex + 1) % Math.max(1, appState.searchMatches.length || 1);
+  }
+
+  if (!appState.searchMatches || !appState.searchMatches.length) {
+    showFloatingTooltip('Item ou categoria não encontrado.', 4000);
+    const inputEl = document.getElementById('quicklist-search-input');
+    if (inputEl) {
+      inputEl.focus();
+      inputEl.select();
+    }
+    return;
+  }
+
+  const idx = appState.searchIndex % appState.searchMatches.length;
+  const targetRow = appState.searchMatches[idx];
+  if (targetRow) {
+    scrollAndHighlightRow(targetRow);
+  }
+
+  if (appState.searchMatches.length === 1) {
+    showFloatingTooltip('1 resultado encontrado.', 4000);
+  } else {
+    showFloatingTooltip(
+      `${idx + 1}/${appState.searchMatches.length} resultados encontrados. Clique na lupa para ver o próximo.`,
+      4000
+    );
+  }
+
+  const inputEl = document.getElementById('quicklist-search-input');
+  if (inputEl) inputEl.focus();
+}
+
+function bindSearchHandlers() {
+  const inputEl = document.getElementById('quicklist-search-input');
+  const formEl = document.querySelector('.search-form');
+
+  if (!inputEl || !formEl) return;
+
+  formEl.addEventListener('submit', e => {
+    e.preventDefault();
+    performSearchAction(inputEl.value, true);
+  });
+
+  inputEl.addEventListener('keydown', e => {
+    const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+    if (isPrintable && inputEl.value.length >= ITEM_NAME_MAX_LENGTH) {
+      e.preventDefault();
+      showFloatingTooltip('Limite de caracteres atingido.', 2000);
+      return;
+    }
+  });
+
+  inputEl.addEventListener('paste', e => {
+    const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+    const allowed = ITEM_NAME_MAX_LENGTH - inputEl.value.length;
+    if (paste.length > allowed) {
+      e.preventDefault();
+      inputEl.value = (inputEl.value + paste).slice(0, ITEM_NAME_MAX_LENGTH);
+      showFloatingTooltip('Limite de caracteres atingido.', 2000);
+    }
+  });
+}
+
+bindSearchHandlers();
