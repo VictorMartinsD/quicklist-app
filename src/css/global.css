@@ -472,6 +472,22 @@ html[data-theme='dark'] #item {
   padding-block: 2px;
 }
 
+.item-added:not(.category-added).item-alt-1 {
+  background: transparent;
+}
+
+.item-added:not(.category-added).item-alt-2 {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme='light'] .item-added:not(.category-added).item-alt-1 {
+  background: transparent;
+}
+
+html[data-theme='light'] .item-added:not(.category-added).item-alt-2 {
+  background: #f9fafb;
+}
+
 .item-added.is-dragging,
 .item-added.is-keyboard-dragging {
   opacity: 0.72;
@@ -533,21 +549,7 @@ html[data-theme='dark'] #item {
   right: 10px;
   bottom: 0;
   left: 10px;
-  border-left: 1px solid var(--card-border-soft);
-  border-right: 1px solid var(--card-border-soft);
   pointer-events: none;
-}
-
-.item-added.is-group-first::after {
-  border-top: 1px solid var(--card-border-soft);
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.item-added.is-group-last::after {
-  border-bottom: 1px solid var(--card-border-soft);
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
 }
 
 .items-scroll {
