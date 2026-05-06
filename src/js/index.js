@@ -357,7 +357,9 @@ function refreshCategoryStructure() {
       'is-group-first',
       'is-group-last',
       'is-group-continuation',
-      'is-subcategory-chain'
+      'is-subcategory-chain',
+      'item-alt-1',
+      'item-alt-2'
     );
     delete rowElement.dataset.groupId;
   });
@@ -428,6 +430,24 @@ function refreshCategoryStructure() {
     groupedRows.slice(1).forEach(groupedRow => {
       groupedRow.classList.add('is-group-continuation');
     });
+
+    let itemCount = 0;
+    groupedRows.forEach(rowElement => {
+      if (!isCategoryRow(rowElement)) {
+        const alternateClass = itemCount % 2 === 0 ? 'item-alt-1' : 'item-alt-2';
+        rowElement.classList.add(alternateClass);
+        itemCount++;
+      }
+    });
+  });
+
+  let itemCount = 0;
+  visibleRows.forEach(rowElement => {
+    if (!isCategoryRow(rowElement) && !rowElement.dataset.groupId) {
+      const alternateClass = itemCount % 2 === 0 ? 'item-alt-1' : 'item-alt-2';
+      rowElement.classList.add(alternateClass);
+      itemCount++;
+    }
   });
 
   syncCategoryBlockDragHandles();
