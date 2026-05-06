@@ -1838,6 +1838,14 @@ function handleAddItem() {
   const text = normalizeItemText(input.value);
 
   if (text !== '') {
+    const duplicate = findDuplicateItem(text);
+
+    if (duplicate) {
+      openRemovalAlert('Esse item já existe, escolha outro nome.');
+      scrollAndHighlightRow(duplicate);
+      return;
+    }
+
     const newItem = createListItemElement(text);
     itemsContainer.append(newItem);
     refreshCategoryStructure();
@@ -2039,6 +2047,16 @@ function normalizeForSearch(text) {
 function getRowSearchText(row) {
   const itemEl = row.querySelector('.shopping-item');
   return normalizeForSearch(itemEl?.textContent || '');
+}
+
+function findDuplicateItem(itemName) {
+  const normalizedName = normalizeForSearch(itemName);
+  if (!normalizedName) return null;
+
+  const visibleItems = getVisibleRows().filter(row => !isCategoryRow(row));
+  const duplicate = visibleItems.find(row => getRowSearchText(row) === normalizedName);
+
+  return duplicate || null;
 }
 
 function findMatchesForQuery(query) {
