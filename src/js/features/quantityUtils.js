@@ -224,6 +224,13 @@ function initializeCustomUnitSelect(itemElement, unitValue = 'un.') {
 
     syncCustomUnitSelectState(itemElement, value);
     saveQuantityData(itemElement);
+
+    // Dispara evento 'change' no select nativo para ativar listeners de persistência
+    const unitSelect = itemElement.querySelector('.unit-select');
+    if (unitSelect) {
+      unitSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
     closeDropdown();
   });
 

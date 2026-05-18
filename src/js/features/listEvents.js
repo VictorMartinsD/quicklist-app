@@ -480,6 +480,26 @@ export function bindListItemEvents(
     saveItemsToStorage();
   });
 
+  itemsContainer.addEventListener(
+    'blur',
+    event => {
+      const quantityInput = event.target.closest('.quantity-input');
+
+      if (!quantityInput) {
+        return;
+      }
+
+      const itemElement = quantityInput.closest('.item-added');
+
+      if (!itemElement || itemElement.classList.contains('hidden')) {
+        return;
+      }
+
+      saveItemsToStorage();
+    },
+    true
+  );
+
   itemsContainer.addEventListener('dragstart', event => {
     const blockDragHandle = event.target.closest('.block-drag-handle');
 

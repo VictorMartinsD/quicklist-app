@@ -585,6 +585,8 @@ function normalizeListRowsForComparison(rows) {
     rowType: row.rowType === 'category' ? 'category' : 'item',
     text: normalizeItemText(row.text || ''),
     checked: Boolean(row.checked),
+    quantity: row.quantity || '',
+    unit: row.unit || 'un.',
   }));
 }
 
@@ -1161,7 +1163,9 @@ function applySavedList(savedListId) {
 
   targetSavedList.items.forEach(savedRow => {
     const createdRow =
-      savedRow.rowType === 'category' ? createCategoryElement(savedRow.text) : createListItemElement(savedRow.text);
+      savedRow.rowType === 'category'
+        ? createCategoryElement(savedRow.text)
+        : createListItemElement(savedRow.text, savedRow.id, savedRow);
 
     const checkboxElement = createdRow.querySelector('input[type="checkbox"]');
 
@@ -1459,12 +1463,9 @@ function saveItemsToStorage() {
       checked: isChecked,
     };
 
-    if (itemElement.dataset.rowType === 'item' && quantityData.quantity) {
-      item.quantity = quantityData.quantity;
-    }
-
-    if (itemElement.dataset.rowType === 'item' && quantityData.unit) {
-      item.unit = quantityData.unit;
+    if (itemElement.dataset.rowType === 'item') {
+      item.quantity = quantityData.quantity || '';
+      item.unit = quantityData.unit || 'un.';
     }
 
     return item;
